@@ -1,0 +1,74 @@
+.afterlogin-container {
+  background-color: #FFEEB5;
+  min-height: calc(100vh - 180px); /* 헤더, 푸터 제외 */
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 280px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #000;
+}
+
+.card .date {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.card ul,
+.card ol {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px 0;
+}
+
+.card ul li,
+.card ol li {
+  font-size: 14px;
+  margin: 3px 0;
+  color: #333;
+}
+
+/* 캐릭터 박스 */
+.character-box {
+  height: 120px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #888;
+}
+
+.character-name {
+  text-align: center;
+  font-size: 14px;
+  color: #333;
+}
+
+/* 바로가기 링크 */
+.more-link {
+  font-size: 13px;
+  color: #FFD400;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.more-link:hover {
+  text-decoration: underline;
+}

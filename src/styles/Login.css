@@ -1,0 +1,100 @@
+.login-container {
+  background-color: #FFEEB5;
+  height: calc(100vh - 140px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-box {
+  background: #fff;
+  padding: 40px;
+  border-radius: 15px;
+  width: 350px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.login-box h2 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 20px;
+}
+
+/* 아이콘 + 입력창 */
+.input-group {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  padding: 0 10px;
+}
+.input-icon {
+  width: 18px;
+  margin-right: 8px;
+}
+.input-group input {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  outline: none;
+}
+
+/* 로그인 버튼 */
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background: #FFD400;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.login-btn:hover {
+  background: #e6c200;
+}
+
+.error-msg {
+  color: red;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+/* 링크 */
+.links {
+  display: flex;
+  justify-content: space-between;
+  margin: 15px 0;
+}
+.register-link {
+  font-size: 14px;
+  color: #333;
+}
+.find-links {
+  font-size: 14px;
+  color: #333;
+}
+.find-links span {
+  margin: 0 5px;
+}
+
+/* 소셜 로그인 */
+.social-login {
+  text-align: center;
+}
+.social-login p {
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+}
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+.social-icons img {
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+}

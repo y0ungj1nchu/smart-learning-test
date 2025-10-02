@@ -1,0 +1,63 @@
+.before-login-container {
+  background-color: #FFEEB5;
+  height: calc(100vh - 140px); /* 헤더,푸터 제외 높이*/
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.before-login-content {
+  text-align: center;
+}
+
+.before-login-content h1 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.before-login-content p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.btn-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* 로그인 버튼 */
+.login-btn {
+  background-color: #FFD400;
+  color: #333;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.2s;
+  min-width: 100px;
+  text-align: center;
+}
+
+.login-btn:hover {
+  background-color: #e6c200;
+}
+
+/* 회원가입 버튼 */
+.register-btn {
+  background-color: white;
+  color: #333;
+  border: 1px solid #ddd;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.register-btn:hover {
+  background-color: #f8f8f8;
+}

@@ -1,0 +1,98 @@
+/* 공통 헤더 */
+.header {
+  display: flex;
+  justify-content: space-evenly; /* 균등 배치 */
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #fff;
+  border-bottom: 2px solid #eee;
+  box-sizing: border-box;
+}
+
+/* 로고 */
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 검색창 */
+.search-box {
+  display: flex;
+  width: 350px;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  font-size: 14px;
+}
+
+.search-box button {
+  background: #FFD400;
+  border: 1px solid #ddd;
+  border-radius: 0 6px 6px 0;
+  padding: 8px 12px;
+}
+
+.search-box button img {
+  width: 16px;
+  height: 16px;
+}
+
+/* 로그인/회원가입 */
+.auth-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.auth-text {
+  font-size: 14px;
+  color: #333;
+  text-decoration: none;
+}
+
+.auth-text:hover {
+  text-decoration: underline;
+}
+
+.divider {
+  color: #999;
+  font-size: 14px;
+}
+
+/* 프로필 아이콘 */
+.profile-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+/* Header2 메뉴 */
+.header2 {
+  display: flex;
+  justify-content: space-evenly;
+  padding: 12px 0;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #eee;
+}
+
+.header2 a {
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.header2 a:hover {
+  color: #FFD400;
+}
+
+.header2 .disabled {
+  color: #aaa;
+  cursor: not-allowed;
+}

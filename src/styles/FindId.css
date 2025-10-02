@@ -1,0 +1,101 @@
+.findid-container {
+  background-color: #FFEEB5;
+  height: calc(100vh - 140px); /* 헤더,푸터 제외 높이 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.findid-box {
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  width: 360px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.findid-box h2 {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #000;
+}
+
+/* 입력창 */
+.findid-box input {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 10px;
+  font-size: 14px;
+  outline: none;
+}
+
+/* 에러 메시지 */
+.error-msg {
+  color: red;
+  font-size: 13px;
+  margin: 5px 0 10px 0;
+}
+
+/* 다음 버튼 */
+.next-btn {
+  width: 100%;
+  padding: 12px;
+  background: #FFD400;
+  border: none;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.next-btn:hover {
+  background: #e6c200;
+}
+
+/* 🔹 모달 팝업 스타일 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  text-align: center;
+  width: 320px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.modal-box p {
+  font-size: 15px;
+  color: #333;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.modal-btn {
+  background: #FFD400;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.modal-btn:hover {
+  background: #e6c200;
+}
