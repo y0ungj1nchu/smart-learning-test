@@ -39,9 +39,6 @@ function Header1({ isLoggedIn = false }) {
       <nav className="menu">
         {loggedIn ? (
           <>
-            <button className="menu-btn gray" onClick={handleProfileClick}>
-              내 정보
-            </button>
             <button className="menu-btn gray" onClick={handleLogout}>
               로그아웃
             </button>

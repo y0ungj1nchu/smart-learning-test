@@ -12,6 +12,7 @@ function Header2({ isLoggedIn }) {
           <Link to="/character">캐릭터</Link>
           <Link to="/games">게임</Link>
           <Link to="/ranking">사용자 레벨 순위</Link>
+          <Link to="/user/community">커뮤니티</Link>
         </>
       ) : (
         <>
@@ -20,6 +21,7 @@ function Header2({ isLoggedIn }) {
           <span className="disabled">캐릭터</span>
           <span className="disabled">게임</span>
           <span className="disabled">사용자 레벨 순위</span>
+          <span className="disabled">커뮤니티</span>
         </>
       )}
     </nav>
