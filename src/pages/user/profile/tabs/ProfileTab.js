@@ -3,7 +3,7 @@ import "../../../../styles/profile/Tabs.css";
 import basicUser from "../../../../assets/basicUser.png";
 
 function ProfileTab({ onNavigatePassword }) {
-  const [nickname, setNickname] = useState("지현");
+  const [nickname, setNickname] = useState("사과");
   const [profileImg, setProfileImg] = useState(basicUser);
 
   const handleNicknameChange = () => {

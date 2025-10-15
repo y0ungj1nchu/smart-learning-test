@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
-import "../../../components/common/Header1";
-import "../../../components/common/Header2";
+import Header1 from "../../../components/common/Header1";
+import Header2 from "../../../components/common/Header2";
 import "../../../styles/calendar/Calendar.css";
 
 function pad(n) { return n.toString().padStart(2, "0"); }
@@ -10,7 +10,7 @@ function ymd(d) {
   const day = pad(d.getDate());
   return `${y}-${m}-${day}`;
 }
-const weekDays = ["S","M","T","W","T","F","S"];
+const weekDays = ["일","월","화","수","목","금","토"];
 
 export default function CalendarPage() {
   const [current, setCurrent] = useState(() => {
@@ -115,7 +115,8 @@ export default function CalendarPage() {
   return (
     <div className="calendar-page">
       {/* 상단 헤더 */}
-      {/* <Header1 isLoggedIn={true}/> */}
+      <Header1 isLoggedIn={true} />
+      <Header2 isLoggedIn={true} />
 
       <div className="calendar-layout">
         {/* 좌측: To-Do List / 한 줄 일기 */}

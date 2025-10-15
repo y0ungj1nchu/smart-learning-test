@@ -12,6 +12,10 @@ import CalendarPage from "./pages/user/calendar/CalendarPage";
 import ProfileView from "./pages/user/profile/ProfileView";
 import NoticeDetail from "./pages/user/profile/tabs/NoticeDetail";
 import Community from "./pages/user/community/CommunityPage";
+import CharacterPage from "./pages/user/character/CharacterPage";
+import GamesPage from "./pages/user/games/GamesPage";
+import RankingPage from "./pages/user/ranking/RankingPage";
+import StudyPage from "./pages/user/study/StudyPage";
 
 function App() {
   return (
@@ -36,6 +40,18 @@ function App() {
 
         {/* 커뮤니티 페이지 */}
         <Route path="/user/community" element={<Community />} />
+
+        {/* 캐릭터 페이지 */}
+        <Route path="/user/character" element={<CharacterPage/>} />
+
+        {/* 단어 게임 페이지 */}
+        <Route path="/user/games" element={<GamesPage/>} />
+
+        {/* 사용자 레벨 순위 페이지 */}
+        <Route path="/user/ranking" element={<RankingPage/>} />
+
+        {/* 순공시간 페이지 */}
+        <Route path="/user/study" element={<StudyPage/>} />
 
         {/* 기본 루트 → 로그인 전 메인 리다이렉트 */}
         <Route path="/user/profile/notice-detail" element={<NoticeDetail />} />
