@@ -4,7 +4,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
 }
 
 .before-login-content {
@@ -30,34 +29,19 @@
   gap: 10px;
 }
 
-/* 로그인 버튼 */
-.login-btn {
-  background-color: #FFD400;
+/* (로그인, 회원가입) 공통 버튼 */
+.common-btn{
+  background-color: #ffd400;
   color: #333;
   font-weight: bold;
   padding: 10px 20px;
-  border-radius: 6px;
+  border-radius: 16px;
   text-decoration: none;
   transition: background 0.2s;
   min-width: 100px;
   text-align: center;
 }
 
-.login-btn:hover {
+.common-btn:hover{
   background-color: #e6c200;
-}
-
-/* 회원가입 버튼 */
-.register-btn {
-  background-color: white;
-  color: #333;
-  border: 1px solid #ddd;
-  padding: 10px 20px;
-  border-radius: 6px;
-  text-decoration: none;
-  transition: background 0.2s;
-}
-
-.register-btn:hover {
-  background-color: #f8f8f8;
 }

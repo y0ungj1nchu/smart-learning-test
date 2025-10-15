@@ -1,13 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./Header.css";
+import "./Header2.css";
 
 function Header2({ isLoggedIn }) {
   return (
     <nav className="header2">
       {isLoggedIn ? (
         <>
-          <Link to="/calendar">캘린더</Link>
+          <Link to="/user/calendar">캘린더</Link>
           <Link to="/study">순공시간 타이머</Link>
           <Link to="/character">캐릭터</Link>
           <Link to="/games">게임</Link>

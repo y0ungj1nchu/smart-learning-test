@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import "../../../styles/FindPw.css";
+import "../../../styles/auth/FindPw.css";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 
@@ -43,7 +43,7 @@ function FindPw() {
 
   return (
     <>
-      <Header1 />
+      <Header1 isLoggedIn={false} />
       <Header2 isLoggedIn={false} />
 
       <div className="findpw-container">

@@ -1,24 +1,49 @@
+/* 전체 */
 .afterlogin-container {
-  background-color: #FFEEB5;
-  min-height: calc(100vh - 180px); /* 헤더, 푸터 제외 */
+  background-color: #ffeeB5;
+  min-height: calc(100vh - 220px); /* 헤더2 + 푸터 제외 */
   display: flex;
   justify-content: center;
-  gap: 20px;
-  padding: 40px;
+  align-items: flex-start;
+  gap: 40px;
+  padding: 60px 40px;
+  flex-wrap: wrap;
 }
 
+/* 카드 전체 그룹 */
+.card-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* 카드 제목 (캘린더 / 캐릭터 / 사용자 레벨 순위) */
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin-left: 6px;
+  margin-bottom: 10px;
+}
+
+/* 개별 카드 */
 .card {
   background: #fff;
-  padding: 20px;
   border-radius: 12px;
   width: 280px;
+  height: 230px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
+/* 카드 내용 */
 .card h3 {
   font-size: 16px;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   color: #000;
 }
 
@@ -32,17 +57,16 @@
 .card ol {
   list-style: none;
   padding: 0;
-  margin: 0 0 10px 0;
+  margin: 0 0 12px 0;
+  line-height: 1.8;
 }
 
-.card ul li,
-.card ol li {
+.card li {
   font-size: 14px;
-  margin: 3px 0;
   color: #333;
 }
 
-/* 캐릭터 박스 */
+/* 캐릭터 카드 */
 .character-box {
   height: 120px;
   border: 1px solid #ddd;
@@ -61,12 +85,15 @@
   color: #333;
 }
 
-/* 바로가기 링크 */
+/* 바로가기 */
 .more-link {
   font-size: 13px;
   color: #FFD400;
   text-decoration: none;
   font-weight: bold;
+  text-align: right;
+  display: block;
+  margin-top: 4px;
 }
 
 .more-link:hover {

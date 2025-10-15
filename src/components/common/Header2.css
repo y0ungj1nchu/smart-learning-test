@@ -1,0 +1,28 @@
+/* 헤더 전체 */
+.header2 {
+  display: flex;
+  justify-content: space-evenly;
+  padding: 12px 0;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #eee;
+}
+
+/* 메뉴 */
+.header2 a {
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* hover -> 강조 */
+.header2 a:hover {
+  color: #FFD400;
+}
+
+/* 비활성 상태 */
+.header2 .disabled {
+  color: #aaa;
+  cursor: not-allowed;
+  font-size: 14px;
+}

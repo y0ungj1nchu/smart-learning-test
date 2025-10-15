@@ -8,6 +8,9 @@ import Register from "./pages/user/auth/Register";
 import FindId from "./pages/user/auth/FindId";
 import FindPw from "./pages/user/auth/FindPw";
 import EmailVerification from "./pages/user/auth/EmailVerification";
+import CalendarPage from "./pages/user/calendar/CalendarPage";
+import ProfileView from "./pages/user/profile/ProfileView";
+import NoticeDetail from "./pages/user/profile/tabs/NoticeDetail";
 
 function App() {
   return (
@@ -24,7 +27,14 @@ function App() {
         <Route path="/user/auth/FindPw" element={<FindPw />} />
         <Route path="/user/auth/EmailVerification" element={<EmailVerification />} />
 
+        {/* 내 정보 */}
+        <Route path="/user/profile/view" element={<ProfileView />} />
+        
+        {/* 캘린더 페이지 */}
+        <Route path="/user/calendar" element={<CalendarPage />} />
+
         {/* 기본 루트 → 로그인 전 메인 리다이렉트 */}
+        <Route path="/user/profile/notice-detail" element={<NoticeDetail />} />
         <Route path="*" element={<MainBeforeLogin />} />
       </Routes>
     </Router>

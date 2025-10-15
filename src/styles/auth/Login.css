@@ -1,3 +1,4 @@
+/* 전체 배경 */
 .login-container {
   background-color: #FFEEB5;
   height: calc(100vh - 140px);
@@ -6,16 +7,19 @@
   align-items: center;
 }
 
+/* 카드 박스 */
 .login-box {
   background: #fff;
   padding: 40px;
   border-radius: 15px;
   width: 350px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: left;
 }
 
+/* 제목 */
 .login-box h2 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   color: #000;
   margin-bottom: 20px;
@@ -55,6 +59,7 @@
   background: #e6c200;
 }
 
+/* 에러 메시지 */
 .error-msg {
   color: red;
   font-size: 14px;
@@ -65,6 +70,7 @@
 .links {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin: 15px 0;
 }
 .register-link {
@@ -81,12 +87,18 @@
 
 /* 소셜 로그인 */
 .social-login {
+  margin-top: 20px;
   text-align: center;
+  background-color: #e5e5e5;
+  height: 90px;
+  border-radius: 8px;
+  gap: 20px;
 }
 .social-login p {
   margin-bottom: 8px;
   color: #333;
   font-size: 14px;
+  padding-top: 15px;
 }
 .social-icons {
   display: flex;

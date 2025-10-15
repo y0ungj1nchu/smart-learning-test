@@ -1,0 +1,81 @@
+/* 전체 컨테이너 */
+.profile-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 40px;
+  min-height: calc(100vh - 200px);
+  padding: 40px 0;
+  background-color: #fafafa;
+}
+
+/* 왼쪽 사이드바 */
+.profile-sidebar {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  width: 220px;
+  height: fit-content;
+  padding: 10px 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.sidebar-title {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+  margin-left: 20px;
+  margin-bottom: 8px;
+}
+
+.profile-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-sidebar li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.profile-sidebar li:hover {
+  background-color: #f8f8f8;
+}
+
+.profile-sidebar li.active {
+  color: #FFD400;
+  font-weight: bold;
+  background-color: #fff8d1;
+}
+
+/* 아이콘 여백 */
+.profile-sidebar svg {
+  min-width: 18px;
+}
+
+/* New 배지 */
+.new-badge {
+  font-size: 10px;
+  background: #FFD400;
+  color: #333;
+  font-weight: bold;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: 6px;
+  position: relative;
+  top: -1px;
+}
+
+/* 오른쪽 본문 */
+.profile-content {
+  flex: 1;
+  max-width: 740px;
+}

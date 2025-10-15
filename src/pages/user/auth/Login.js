@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../../../styles/Login.css";
+import "../../../styles/auth/Login.css";
 import lockIcon from "../../../assets/lock.png";
 import userIcon from "../../../assets/user.png";
 import kakaoLogo from "../../../assets/kakao.png";
@@ -25,19 +25,20 @@ function Login() {
       setError("비밀번호가 틀렸습니다.");
     } else {
       setError("");
+      localStorage.setItem("isLoggedIn", "true");
       navigate("/home/after");
     }
   };
 
   return (
     <>
-      <Header1 />
+      <Header1 isLoggedIn={false} />
       <Header2 isLoggedIn={false} />
 
       <div className="login-container">
         <div className="login-box">
           <h2>
-            로그인으로 <br /> 스마트 학습 도우미를 이용하세요.
+            로그인으로 <br /> 스마트 학습 도우미를<br /> 이용하세요.
           </h2>
           <form onSubmit={handleLogin}>
             {/* 아이콘 + 입력창 */}

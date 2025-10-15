@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../../styles/FindId.css";
+import "../../../styles/auth/FindId.css";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 
@@ -43,7 +43,7 @@ function FindId() {
 
   return (
     <>
-      <Header1 />
+      <Header1 isLoggedIn={false} />
       <Header2 isLoggedIn={false} />
 
       <div className="findid-container">

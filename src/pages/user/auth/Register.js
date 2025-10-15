@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../../styles/Register.css";
+import "../../../styles/auth/Register.css";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import kakaoLogo from "../../../assets/kakao.png";
@@ -39,7 +39,7 @@ function Register() {
 
   return (
     <>
-      <Header1 />
+      <Header1 isLoggedIn={false} />
       <Header2 isLoggedIn={false} />
 
       <div className="register-container">
