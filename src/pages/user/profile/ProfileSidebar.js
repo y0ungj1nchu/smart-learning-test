@@ -1,6 +1,6 @@
 import React from "react";
 import "../../../styles/profile/ProfileView.css";
-import { User, Settings, Bell, MessageSquare, FileText } from "lucide-react";
+import { User, Settings, Bell } from "lucide-react";
 
 function ProfileSidebar({ activeTab, setActiveTab }) {
   return (
@@ -27,20 +27,6 @@ function ProfileSidebar({ activeTab, setActiveTab }) {
         >
           <Bell size={16} /> 알림
           <span className="new-badge">New</span>
-        </li>
-
-        <li
-          className={activeTab === "faq" ? "active" : ""}
-          onClick={() => setActiveTab("faq")}
-        >
-          <MessageSquare size={16} /> 1:1 문의 및 FAQ
-        </li>
-
-        <li
-          className={activeTab === "notice" ? "active" : ""}
-          onClick={() => setActiveTab("notice")}
-        >
-          <FileText size={16} /> 공지사항
         </li>
       </ul>
     </div>

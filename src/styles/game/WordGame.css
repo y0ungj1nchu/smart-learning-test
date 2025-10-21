@@ -1,0 +1,265 @@
+/* Word Game 공통 요소 */
+.wordgame-page {
+  background-color: #ffeeB5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 40px 0;
+  font-family: "Pretendard", sans-serif;
+}
+
+/* 공통 버튼 */
+.wordgame-nav-btn {
+  background: #ffd400;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.wordgame-nav-btn:hover {
+  background: #ffea7d;
+}
+
+/* + 아이콘 */
+.wordgame-plus-icon {
+  font-size: 28px;
+  font-weight: 800;
+  margin-right: 6px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/*  [GamePage.js] 게임 선택 페이지 */
+/* 제목 */
+.wordgame-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 40px;
+}
+
+/* 카드 목록 */
+.wordgame-list {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+/* 카드 */
+.wordgame-card {
+  width: 260px;
+  background: #fff;
+  border: 2px solid #ffd400;
+  border-radius: 16px;
+  padding: 40px 20px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+/* 카드 호버 */
+.wordgame-card:hover {
+  transform: translateY(-5px);
+  background: #fff6ac;
+}
+
+/* 카드 텍스트 */
+.wordgame-card h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 8px;
+}
+.wordgame-card p {
+  color: #555;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+/* [WordGamePage.js] 단어 세트 목록 페이지 */
+/* 업로드 영역 */
+.wordgame-header-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.wordgame-upload-card {
+  background: #fff;
+  border: 2px dashed #ffd400;
+  border-radius: 12px;
+  padding: 16px 24px;
+  cursor: pointer;
+  text-align: center;
+}
+
+/* 업로드 카드 내부 정렬 */
+.wordgame-upload-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 700;
+  color: #444;
+}
+
+/* 폴더 그리드 */
+.wordgame-folder-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px 40px;
+  justify-items: center;
+}
+
+.wordgame-folder-card {
+  background: #fff;
+  border: 2px solid #f5d96f;
+  border-radius: 16px;
+  padding: 20px;
+  width: 220px;
+  height: 100px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: 0.2s;
+}
+.wordgame-folder-card:hover {
+  background: #fff8d1;
+}
+.wordgame-folder-card img {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+.wordgame-folder-card:hover p {
+  font-weight: 800;
+  color: #333;
+}
+
+/* [WordQuizPage.js] 문제 풀이 페이지 */
+.wordgame-quiz-container {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px;
+  width: 500px;
+  margin: 60px auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+.wordgame-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.wordgame-question {
+  font-size: 36px;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 24px;
+}
+
+.wordgame-option-btn {
+  background: #fff;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-weight: 700;
+  font-size: 16px;
+}
+.wordgame-option-btn.correct {
+  background: #c9f7c9;
+  border-color: #5ec45e;
+}
+.wordgame-option-btn.wrong {
+  background: #f7c9c9;
+  border-color: #d36b6b;
+}
+.wordgame-option-btn:hover:not(:disabled) {
+  border-color: #ffd400;
+  background: #fffbe5;
+}
+
+/* 네비게이션 */
+.wordgame-nav {
+  display: flex;
+  justify-content: center;
+  gap: 150px;
+  margin-top: 24px;
+}
+
+/* [ResultPage.js] 결과 페이지 */
+.wordgame-result {
+  background: #fff;
+  border-radius: 16px;
+  border: 2px solid #ffd400;
+  padding: 40px;
+  width: 600px;
+  margin: 60px auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+/* 결과 테이블 */
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+  background-color: #fff;
+}
+.result-table th,
+.result-table td {
+  border: 2px solid #ffd400;
+  padding: 12px 14px;
+  text-align: center;
+  background-color: #fff;
+}
+.result-table th {
+  font-weight: 800;
+  color: #333;
+  background-color: #ffeeB5;
+  border-bottom: 2px solid #ffd400;
+}
+
+.correct-row {
+  color: #2e7d32;
+}
+.wrong-row {
+  color: #c62828;
+}
+
+/* 결과 버튼 */
+.wordgame-result-btns {
+  display: flex;
+  justify-content: center;
+  gap: 120px;
+  margin-top: 24px;
+}
+.wordgame-result-btns .wordgame-nav-btn {
+  background: #ffd400;
+  color: #333;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.wordgame-result-btns .wordgame-nav-btn:hover {
+  background: #ffea7d;
+}

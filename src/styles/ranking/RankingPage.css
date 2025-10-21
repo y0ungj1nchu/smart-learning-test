@@ -1,0 +1,57 @@
+/* 전체 배경 */
+.ranking-page {
+  background-color: #ffeeB5;
+  min-height: 100vh;
+}
+
+/* 컨테이너 */
+.ranking-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 16px;
+}
+
+/* 제목 */
+.ranking-container h2 {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: #444;
+  margin-bottom: 20px;
+}
+
+/* 표 스타일 */
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 표 헤더 */
+.ranking-table thead {
+  background-color: #ffeb6b;
+}
+
+.ranking-table th {
+  font-weight: 800;
+  color: #444;
+  padding: 16px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+/* 표 내용 */
+.ranking-table td {
+  padding: 16px;
+  text-align: center;
+  color: #555;
+  border-bottom: 1px solid #eee;
+}
+
+/* 마지막 줄 경계 제거 */
+.ranking-table tr:last-child td {
+  border-bottom: none;
+}

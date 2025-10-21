@@ -1,30 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../../../styles/profile/Tabs.css";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import WriteTab from "./WriteTab";
-import NoticeDetail from "./NoticeDetail";
+import WriteTab from "../../profile/tabs/WriteTab";
+import NoticeDetail from "../../profile/tabs/NoticeDetail";
 
 function NoticeTab({ setActiveTab }) {
   const [search, setSearch] = useState("");
   const [isWriting, setIsWriting] = useState(false);
   const [selectedNotice, setSelectedNotice] = useState(null);
   const [noticeList, setNoticeList] = useState([
-    {
-      id: 1,
-      title: "업데이트 공지",
-      time: "14:20",
-      content: "업데이트 되었으니 확인 바랍니다.",
-    },
-    {
-      id: 2,
-      title: "점검 안내",
-      time: "10:15",
-      content: "내일 10시부터 점검이 예정되어 있습니다.",
-    },
+    { id: 1, title: "업데이트 공지", time: "14:20", content: "업데이트 되었으니 확인 바랍니다." },
+    { id: 2, title: "점검 안내", time: "10:15", content: "내일 10시부터 점검이 예정되어 있습니다." },
   ]);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const saved = localStorage.getItem("noticeList");
+    if (saved) setNoticeList(JSON.parse(saved));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("noticeList", JSON.stringify(noticeList));
+  }, [noticeList]);
 
   const handleSearch = (e) => setSearch(e.target.value);
 
@@ -34,7 +33,7 @@ function NoticeTab({ setActiveTab }) {
       now.getMinutes()
     ).padStart(2, "0")}`;
     const newItem = {
-      id: noticeList.length + 1,
+      id: Date.now(),
       title: newPost.title,
       time,
       content: newPost.content,
@@ -70,8 +69,13 @@ function NoticeTab({ setActiveTab }) {
     );
   }
 
-  // 기본 목록 화면
-  const filteredList = noticeList.filter((item) =>
+  // 최신시간이 위로 오도록 정렬
+  const sortedList = [...noticeList].sort((a, b) => {
+    return new Date(`1970/01/01 ${b.time}`) - new Date(`1970/01/01 ${a.time}`);
+  });
+
+  // 정렬된 리스트 기준으로 필터링
+  const filteredList = sortedList.filter((item) =>
     item.title.toLowerCase().includes(search.toLowerCase())
   );
 

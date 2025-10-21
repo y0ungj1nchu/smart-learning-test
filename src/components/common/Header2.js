@@ -10,7 +10,7 @@ function Header2({ isLoggedIn }) {
           <Link to="/user/calendar">캘린더</Link>
           <Link to="/user/study">순공시간 타이머</Link>
           <Link to="/user/character">캐릭터</Link>
-          <Link to="/user/games">게임</Link>
+          <Link to="/user/game">게임</Link>
           <Link to="/user/ranking">사용자 레벨 순위</Link>
           <Link to="/user/community">커뮤니티</Link>
         </>

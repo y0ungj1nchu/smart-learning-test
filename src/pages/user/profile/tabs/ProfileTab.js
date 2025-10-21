@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../../../styles/profile/Tabs.css";
 import basicUser from "../../../../assets/basicUser.png";
 
@@ -6,7 +6,16 @@ function ProfileTab({ onNavigatePassword }) {
   const [nickname, setNickname] = useState("사과");
   const [profileImg, setProfileImg] = useState(basicUser);
 
+  // localStorage 불러오기
+  useEffect(() => {
+    const savedNickname = localStorage.getItem("nickname");
+    const savedImg = localStorage.getItem("profileImg");
+    if (savedNickname) setNickname(savedNickname);
+    if (savedImg) setProfileImg(savedImg);
+  }, []);
+
   const handleNicknameChange = () => {
+    localStorage.setItem("nickname", nickname);
     alert("닉네임이 변경되었습니다");
   };
 
@@ -14,7 +23,10 @@ function ProfileTab({ onNavigatePassword }) {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => setProfileImg(reader.result);
+      reader.onload = () => {
+        setProfileImg(reader.result);
+        localStorage.setItem("profileImg", reader.result);
+      };
       reader.readAsDataURL(file);
     }
   };

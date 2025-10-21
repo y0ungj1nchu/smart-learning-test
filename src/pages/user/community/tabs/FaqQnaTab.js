@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../../../../styles/profile/Tabs.css";
 import { Search } from "lucide-react";
-import WriteTab from "./WriteTab";
+import WriteTab from "../../profile/tabs/WriteTab";
 
 function FaqQnaTab({ setActiveTab }) {
   const [activeSubTab, setActiveSubTab] = useState("faq");
@@ -44,6 +44,12 @@ function FaqQnaTab({ setActiveTab }) {
   const handleBackToList = () => {
     setIsWriting(false);
   };
+
+  const filteredList = (activeSubTab === "faq" ? faqList : qnaList).filter(
+    (item) =>
+      item.title.toLowerCase().includes(search.toLowerCase()) ||
+      (item.content && item.content.toLowerCase().includes(search.toLowerCase()))
+  );
 
   // FAQ / QNA 목록 테이블
   const renderTable = (list) => (
@@ -106,10 +112,10 @@ function FaqQnaTab({ setActiveTab }) {
         </button>
       </div>
 
-      {/* 목록 */}
+      {/* 목록 렌더링 */}
       {activeSubTab === "faq"
-        ? renderTable(faqList)
-        : renderTable(qnaList)}
+        ? renderTable(filteredList)
+        : renderTable(filteredList)}
 
       {/* 글쓰기 버튼 */}
       {activeSubTab === "faq" && (

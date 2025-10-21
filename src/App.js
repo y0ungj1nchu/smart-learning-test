@@ -13,9 +13,12 @@ import ProfileView from "./pages/user/profile/ProfileView";
 import NoticeDetail from "./pages/user/profile/tabs/NoticeDetail";
 import Community from "./pages/user/community/CommunityPage";
 import CharacterPage from "./pages/user/character/CharacterPage";
-import GamesPage from "./pages/user/games/GamesPage";
 import RankingPage from "./pages/user/ranking/RankingPage";
 import StudyPage from "./pages/user/study/StudyPage";
+import GamePage from "./pages/user/game/GamePage";
+import WordGamePage from "./pages/user/game/WordGamePage";
+import WordQuizPage from "./pages/user/game/WordQuizPage";
+import ResultPage from "./pages/user/game/ResultPage";
 
 function App() {
   return (
@@ -45,7 +48,10 @@ function App() {
         <Route path="/user/character" element={<CharacterPage/>} />
 
         {/* 단어 게임 페이지 */}
-        <Route path="/user/games" element={<GamesPage/>} />
+        <Route path="/user/game" element={<GamePage />} />
+        <Route path="/user/game/word" element={<WordGamePage />} />
+        <Route path="/user/game/quiz" element={<WordQuizPage />} />
+        <Route path="/user/game/result" element={<ResultPage />} />
 
         {/* 사용자 레벨 순위 페이지 */}
         <Route path="/user/ranking" element={<RankingPage/>} />
