@@ -1,6 +1,6 @@
 /* 전체 레이아웃 */
 .study-container {
-  background-color: #fff7cc;
+  background-color: #ffeeB5;
   min-height: calc(100vh - 200px);
   display: flex;
   justify-content: center;
