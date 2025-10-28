@@ -8,9 +8,11 @@ import naverLogo from "../../../assets/naver.png";
 import googleLogo from "../../../assets/google.png";
 import eyeOpen from "../../../assets/eye-open.png";
 import eyeOff from "../../../assets/eye-off.png";
+import { signupUser } from "../../../util/api";
 
 function Register() {
-  const [name, setName] = useState("");
+  //const [name, setName] = useState("");
+  const [nickname, setNickname] = useState("")
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
@@ -19,22 +21,21 @@ function Register() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     if (password !== confirmPw) {
       setError("비밀번호가 일치하지 않습니다.");
       return;
     }
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    if (users.find((user) => user.email === email)) {
-      setError("이미 가입된 이메일입니다.");
-      return;
+    try {
+      // 백엔드 API 호출
+      const response = await signupUser({ nickname, email, password });
+      alert(response.message || "회원가입이 완료되었습니다!"); // 백엔드 메시지 사용 (없으면 기본 메시지)
+      navigate("/user/auth/Login"); // 성공 시 로그인 페이지로 이동
+    } catch (apiError) {
+      // API 응답에서 받은 에러 메시지 표시
+      setError(apiError.message || "회원가입 중 오류가 발생했습니다.");
     }
-    const newUser = { name, email, password };
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
-    alert("회원가입이 완료되었습니다!");
-    navigate("/user/auth/Login");
   };
 
   return (
@@ -48,9 +49,9 @@ function Register() {
           <form onSubmit={handleRegister}>
             <input
               type="text"
-              placeholder="이름"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="닉네임 (2~10)"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
               required
             />
             <input
