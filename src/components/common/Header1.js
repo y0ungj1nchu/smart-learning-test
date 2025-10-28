@@ -6,7 +6,7 @@ import userIcon from "../../assets/basicUser.png";
 function Header1({ isLoggedIn = false }) {
   const navigate = useNavigate();
 
-  const loggedIn = isLoggedIn || localStorage.getItem("isLoggedIn") === "true";
+  const loggedIn = localStorage.getItem("isLoggedIn") === "true";
 
   const handleLogoClick = () => {
     if (loggedIn) {
@@ -18,6 +18,8 @@ function Header1({ isLoggedIn = false }) {
 
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem('authToken'); // 토큰 삭제
+    localStorage.removeItem('userInfo'); // 사용자 정보 삭제
     navigate("/home/before");
   };
 
