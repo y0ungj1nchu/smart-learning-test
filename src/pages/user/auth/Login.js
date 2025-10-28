@@ -8,25 +8,36 @@ import naverLogo from "../../../assets/naver.png";
 import googleLogo from "../../../assets/google.png";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
+import { loginUser } from "../../../util/api";
 
 function Login() {
   const navigate = useNavigate();
-  const [id, setId] = useState("");
+  //const [id, setId] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const dummyUser = { id: "testuser", password: "1234" };
+  //const dummyUser = { id: "testuser", password: "1234" };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (id !== dummyUser.id) {
-      setError("아이디가 틀렸습니다.");
-    } else if (password !== dummyUser.password) {
-      setError("비밀번호가 틀렸습니다.");
-    } else {
-      setError("");
-      localStorage.setItem("isLoggedIn", "true");
-      navigate("/home/after");
+    setError("");
+    try {
+      // 백엔드 로그인 API 호출
+      const response = await loginUser({ email, password });
+
+      // 응답에서 토큰과 사용자 정보 저장
+      localStorage.setItem('authToken', response.token);
+      localStorage.setItem('userInfo', JSON.stringify(response.user)); // 필요 시 사용자 정보도 저장
+      localStorage.setItem('isLoggedIn', 'true'); // 즉각적인 UI 업데이트를 위해 유지
+
+      navigate("/home/after"); // 성공 시 리다이렉트
+    } catch (apiError) {
+      // API 에러 메시지 표시
+      setError(apiError.message || "로그인 중 오류가 발생했습니다.");
+      localStorage.removeItem('authToken'); // 실패 시 토큰 제거
+      localStorage.removeItem('userInfo');
+      localStorage.removeItem('isLoggedIn');
     }
   };
 
@@ -45,10 +56,10 @@ function Login() {
             <div className="input-group">
               <img src={userIcon} alt="user" className="input-icon" />
               <input
-                type="text"
-                placeholder="아이디"
-                value={id}
-                onChange={(e) => setId(e.target.value)}
+                type="email"
+                placeholder="이메일"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
