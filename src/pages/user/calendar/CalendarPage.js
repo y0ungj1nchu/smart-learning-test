@@ -1,11 +1,23 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import writeIcon from "../../../assets/writebutton.png";
 import rewriteIcon from "../../../assets/rewritebutton.png";
 import deleteIcon from "../../../assets/delete.png";
 import "../../../styles/calendar/Calendar.css";
+// API 함수들을 정확한 경로에서 import 합니다.
+import {
+  getCalendarData,
+  addTodo,
+  updateTodo,
+  toggleTodo,
+  deleteTodoApi,
+  addDiary,
+  updateDiary,
+  deleteDiaryApi
+} from "../../../util/api"; // 경로 확인 필요
 
+// 날짜 포맷팅 함수
 function pad(n) { return n.toString().padStart(2, "0"); }
 function ymd(d) {
   const y = d.getFullYear();
@@ -13,43 +25,49 @@ function ymd(d) {
   const day = pad(d.getDate());
   return `${y}-${m}-${day}`;
 }
-const weekDays = ["일","월","화","수","목","금","토"];
+const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
 
 export default function CalendarPage() {
-  /* 상태 */
+  /* 상태 관리 */
   const [current, setCurrent] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [selected, setSelected] = useState(() => new Date());
   const [showTodoModal, setShowTodoModal] = useState(false);
   const [showDiaryModal, setShowDiaryModal] = useState(false);
-  const [editIndex, setEditIndex] = useState(null);
+  const [editingTodo, setEditingTodo] = useState(null); // 수정할 Todo 객체 저장 (null이면 추가)
+  const [editingDiary, setEditingDiary] = useState(null); // 수정할 Diary 객체 저장 (null이면 추가)
 
+  // 모달 입력 상태
   const [todoTitle, setTodoTitle] = useState("");
-  const [todoMemo, setTodoMemo] = useState("");
+  // const [todoMemo, setTodoMemo] = useState(""); // 백엔드 API에 memo 필드가 있다면 추가
   const [diaryTitle, setDiaryTitle] = useState("");
   const [diaryContent, setDiaryContent] = useState("");
 
-  const keyTodo = `todos:${ymd(selected)}`;
-  const keyDiary = `diary:${ymd(selected)}`;
+  // API로부터 받아올 데이터 상태
   const [todos, setTodos] = useState([]);
   const [diary, setDiary] = useState(null);
 
-  /* 로컬스토리지 로드 */
+  /* 데이터 로딩 함수 */
+  const fetchData = useCallback(async () => {
+    try {
+      const dateStr = ymd(selected);
+      // 백엔드 API 호출
+      const data = await getCalendarData(dateStr);
+      setTodos(data.todos || []);
+      setDiary(data.diary || null);
+    } catch (error) {
+      console.error("데이터 로딩 실패:", error);
+      alert("데이터를 불러오는 중 오류가 발생했습니다.");
+      setTodos([]);
+      setDiary(null);
+    }
+  }, [selected]);
+
+  // selected 날짜가 변경될 때마다 데이터 다시 불러옴
   useEffect(() => {
-  const t = JSON.parse(localStorage.getItem(keyTodo) || "[]");
-  const cleaned = (Array.isArray(t) ? t : []).filter(item => item && item.title);
-  const normalized = cleaned.map(item => ({
-    title: item.title || "",
-    memo: item.memo || "",
-    checklist: item.checklist ?? true,
-    done: item.done ?? false
-  }));
-  setTodos(normalized);
+    fetchData();
+  }, [fetchData]);
 
-  const d = JSON.parse(localStorage.getItem(keyDiary) || "null");
-  setDiary(d);
-}, [keyTodo, keyDiary]);
-
-  /* 달력 생성 */
+  /* 달력 UI 계산 */
   const grid = useMemo(() => {
     const y = current.getFullYear();
     const m = current.getMonth();
@@ -59,83 +77,144 @@ export default function CalendarPage() {
   const monthLabel = useMemo(() => `${current.getFullYear()}년 ${current.getMonth() + 1}월`, [current]);
   const dateLabel = useMemo(() => {
     const m = selected.getMonth() + 1, d = selected.getDate();
-    const koDayNames = ["일요일","월요일","화요일","수요일","목요일","금요일","토요일"];
+    const koDayNames = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
     return `${m}월 ${d}일 ${koDayNames[selected.getDay()]}`;
   }, [selected]);
 
   const prevMonth = () => setCurrent(new Date(current.getFullYear(), current.getMonth() - 1, 1));
   const nextMonth = () => setCurrent(new Date(current.getFullYear(), current.getMonth() + 1, 1));
+  const isSameDate = (a, b) => ymd(a) === ymd(b);
 
-  /* To-Do 리스트 */
-  const saveTodo = () => {
-    if (!todoTitle.trim()) return;
-    const next = [...todos];
-    const newItem = { title: todoTitle.trim(), memo: todoMemo.trim(), checklist: true, done: false };
-    if (editIndex !== null) next[editIndex] = newItem;
-    else next.unshift(newItem);
-    setTodos(next);
-    localStorage.setItem(keyTodo, JSON.stringify(next));
-    setTodoTitle("");
-    setTodoMemo("");
-    setEditIndex(null);
+  /* 모달 닫기 및 초기화 함수 */
+  const closeTodoModal = () => {
     setShowTodoModal(false);
+    setEditingTodo(null);
+    setTodoTitle("");
+    // setTodoMemo("");
+  }
+  const closeDiaryModal = () => {
+    setShowDiaryModal(false);
+    setEditingDiary(null);
+    setDiaryTitle("");
+    setDiaryContent("");
+  }
+
+  /* --- API 연동 함수 (원래 함수명 유지) --- */
+
+  /* 할 일 (Todo) */
+  const saveTodo = async () => { // 이름 유지
+    if (!todoTitle.trim()) {
+      alert("할 일 내용을 입력해주세요.");
+      return;
+    }
+    try {
+      const todoData = {
+        title: todoTitle.trim(),
+        dueDate: ymd(selected)
+        // memo: todoMemo.trim()
+      };
+
+      if (editingTodo) { // 수정
+        await updateTodo(editingTodo.id, todoData); //
+      } else { // 추가
+        await addTodo(todoData); //
+      }
+      closeTodoModal();
+      fetchData(); // 데이터 새로고침
+    } catch (error) {
+      alert(`할 일 저장 실패: ${error.message}`);
+    }
   };
 
-  const openEditTodo = (i) => {
-    setEditIndex(i);
-    setTodoTitle(todos[i].title);
-    setTodoMemo(todos[i].memo);
+  const toggleTodoDone = async (todoItem) => { // 이름 유지
+    try {
+      await toggleTodo(todoItem.id, !todoItem.isCompleted); //
+      fetchData();
+    } catch (error) {
+      alert(`할 일 상태 변경 실패: ${error.message}`);
+    }
+  };
+
+  const deleteTodo = async (todoId) => { // 이름 유지
+    if (window.confirm("정말로 삭제하시겠습니까?")) {
+      try {
+        await deleteTodoApi(todoId); //
+        fetchData();
+      } catch (error) {
+        alert(`할 일 삭제 실패: ${error.message}`);
+      }
+    }
+  };
+
+  // 할 일 수정 모달 열기 (기존 openEditTodo의 역할)
+  const handleOpenEditTodo = (todoItem) => {
+    setEditingTodo(todoItem);
+    setTodoTitle(todoItem.title);
+    // setTodoMemo(todoItem.memo || "");
     setShowTodoModal(true);
   };
 
-  const deleteTodo = (i) => {
-    const next = todos.filter((_, idx) => idx !== i);
-    setTodos(next);
-    localStorage.setItem(keyTodo, JSON.stringify(next));
+  // 할 일 추가 모달 열기 (기존 로직과 유사)
+  const handleOpenAddTodo = () => {
+    setEditingTodo(null); // 추가 모드
+    setTodoTitle("");
+    // setTodoMemo("");
+    setShowTodoModal(true);
   };
 
-  const toggleTodoDone = (i) => {
-    const next = [...todos];
-    next[i].done = !next[i].done;
-    setTodos(next);
-    localStorage.setItem(keyTodo, JSON.stringify(next));
-  };
-
-  /* 한 줄 일기 */
-  const saveDiary = () => {
-    if (!diaryTitle.trim() && !diaryContent.trim()) return;
-    const data = { title: diaryTitle.trim(), content: diaryContent.trim() };
-    setDiary(data);
-    localStorage.setItem(keyDiary, JSON.stringify(data));
-    setDiaryTitle("");
-    setDiaryContent("");
-    setShowDiaryModal(false);
-  };
-
-  const openEditDiary = () => {
-    if (diary) {
-      setDiaryTitle(diary.title);
-      setDiaryContent(diary.content);
+  /* 일기 (Diary) */
+  const saveDiary = async () => { // 이름 유지
+    if (!diaryTitle.trim() && !diaryContent.trim()) {
+      alert("제목이나 내용을 입력해주세요.");
+      return;
     }
-    setShowDiaryModal(true);
+    try {
+      const diaryData = {
+        title: diaryTitle.trim(),
+        content: diaryContent.trim(),
+        diaryDate: ymd(selected)
+      };
+
+      if (editingDiary) { // 수정
+        await updateDiary(editingDiary.id, diaryData); //
+      } else { // 추가
+        await addDiary(diaryData); //
+      }
+      closeDiaryModal();
+      fetchData();
+    } catch (error) {
+      alert(`일기 저장 실패: ${error.message}`);
+    }
   };
 
-  const clearDiary = () => {
-    setDiary(null);
-    localStorage.removeItem(keyDiary);
+  const clearDiary = async () => { // 이름 유지
+    if (diary && window.confirm("일기를 삭제하시겠습니까?")) {
+      try {
+        await deleteDiaryApi(diary.id); //
+        fetchData();
+      } catch (error) {
+        alert(`일기 삭제 실패: ${error.message}`);
+      }
+    }
   };
 
-  const openNewDiary = () => {
+  const openEditDiary = () => { // 이름 유지
+    if (diary) {
+      setEditingDiary(diary);
+      setDiaryTitle(diary.title);
+      setDiaryContent(diary.content || "");
+      setShowDiaryModal(true);
+    }
+  };
+
+  const openNewDiary = () => { // 이름 유지
+    setEditingDiary(null); // 추가 모드
     setDiaryTitle("");
     setDiaryContent("");
     setShowDiaryModal(true);
   };
 
-  const isSameDate = (a, b) =>
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
-
+  /* --- JSX 렌더링 --- */
   return (
     <div className="calendar-page">
       <Header1 isLoggedIn={true} />
@@ -149,11 +228,9 @@ export default function CalendarPage() {
             <div className="month-label">{monthLabel}</div>
             <button className="nav-btn" onClick={nextMonth}>›</button>
           </div>
-
           <div className="weekday-row">
             {weekDays.map((w) => <div key={w} className="weekday">{w}</div>)}
           </div>
-
           <div className="grid">
             {grid.map((d, i) => {
               const inMonth = d.getMonth() === current.getMonth();
@@ -171,43 +248,44 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {/* To-Do 리스트 + 한 줄 일기 */}
+        {/* 오른쪽 패널: To-Do 리스트 + 한 줄 일기 */}
         <div className="side-panel">
           {/* To-Do 리스트 */}
           <div className="panel-card">
             <div className="panel-head">
               <h3>To-Do List</h3>
-              <img src={writeIcon} alt="추가" className="icon-img large" onClick={() => setShowTodoModal(true)} />
+              {/* 추가 버튼: handleOpenAddTodo 호출 */}
+              <img src={writeIcon} alt="추가" className="icon-img large" onClick={handleOpenAddTodo} />
             </div>
             <div className="date-chip">{dateLabel}</div>
-
             <ul className="todo-list">
               {todos.length === 0 ? (
-                <li className="muted">(등록된 체크리스트가 없습니다)</li>
+                <li className="muted">(등록된 할 일이 없습니다)</li>
               ) : (
-                todos.map((t, i) => (
-                  <li key={i} className="todo-item" onClick={() => openEditTodo(i)}>
+                todos.map((t) => (
+                  // 수정 버튼: handleOpenEditTodo 호출
+                  <li key={t.id} className="todo-item" onClick={() => handleOpenEditTodo(t)}>
                     <div className="todo-left">
-                      {t.checklist && (
-                        <input
-                          type="checkbox"
-                          checked={t.done}
-                          onChange={() => toggleTodoDone(i)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      )}
+                      <input
+                        type="checkbox"
+                        checked={t.isCompleted}
+                        // 완료 토글: toggleTodoDone 호출
+                        onChange={() => toggleTodoDone(t)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
                       <div>
-                        <div className={`todo-title ${t.done ? "done" : ""}`}>{t.title}</div>
-                        {t.memo && <div className="todo-memo">{t.memo}</div>}
+                        <div className={`todo-title ${t.isCompleted ? "done" : ""}`}>{t.title}</div>
+                        {/* {t.memo && <div className="todo-memo">{t.memo}</div>} */}
                       </div>
                     </div>
+                    {/* 삭제 버튼: deleteTodo 호출 */}
                     <img
                       src={deleteIcon}
                       alt="삭제"
                       className="icon-img large"
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteTodo(i);
+                        deleteTodo(t.id);
                       }}
                     />
                   </li>
@@ -222,23 +300,25 @@ export default function CalendarPage() {
               <h3>한 줄 일기</h3>
               <div className="head-actions spaced">
                 {!diary ? (
+                  // 작성 버튼: openNewDiary 호출
                   <img src={writeIcon} alt="작성" className="icon-img large" onClick={openNewDiary} />
                 ) : (
                   <>
+                    {/* 수정 버튼: openEditDiary 호출 */}
                     <img src={rewriteIcon} alt="수정" className="icon-img large" onClick={openEditDiary} />
+                    {/* 삭제 버튼: clearDiary 호출 */}
                     <img src={deleteIcon} alt="삭제" className="icon-img large" onClick={clearDiary} />
                   </>
                 )}
               </div>
             </div>
-
             {diary ? (
               <div className="diary-box">
                 {diary.title && <div className="diary-title">{diary.title}</div>}
                 <div className="diary-content">{diary.content || "(내용 없음)"}</div>
               </div>
             ) : (
-              <div className="empty-text">내용이 없습니다.</div>
+              <div className="empty-text">작성된 일기가 없습니다.</div>
             )}
           </div>
         </div>
@@ -246,21 +326,20 @@ export default function CalendarPage() {
 
       {/* To-Do 모달 */}
       {showTodoModal && (
-        <div className="modal-backdrop" onClick={() => setShowTodoModal(false)}>
+        <div className="modal-backdrop" onClick={closeTodoModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-title">{editIndex !== null ? "체크리스트 수정" : "체크리스트 추가"}</div>
+            {/* editingTodo 상태에 따라 제목 변경 */}
+            <div className="modal-title">{editingTodo ? "할 일 수정" : "할 일 추가"}</div>
             <div className="modal-body">
               <label className="field">
-                <span>항목 이름</span>
-                <input value={todoTitle} onChange={(e) => setTodoTitle(e.target.value)} />
+                <span>할 일 내용</span>
+                <input value={todoTitle} onChange={(e) => setTodoTitle(e.target.value)} placeholder="예: React 강의 듣기" />
               </label>
-              <label className="field">
-                <span>메모</span>
-                <textarea rows={4} value={todoMemo} onChange={(e) => setTodoMemo(e.target.value)} />
-              </label>
+              {/* 메모 입력 필드가 필요하면 추가 */}
             </div>
             <div className="modal-actions">
-              <button className="btn secondary" onClick={() => setShowTodoModal(false)}>취소</button>
+              <button className="btn secondary" onClick={closeTodoModal}>취소</button>
+              {/* 저장 버튼: saveTodo 호출 */}
               <button className="btn primary" onClick={saveTodo}>확인</button>
             </div>
           </div>
@@ -269,21 +348,23 @@ export default function CalendarPage() {
 
       {/* 한 줄 일기 모달 */}
       {showDiaryModal && (
-        <div className="modal-backdrop" onClick={() => setShowDiaryModal(false)}>
+        <div className="modal-backdrop" onClick={closeDiaryModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-title">한 줄 일기</div>
+            {/* editingDiary 상태에 따라 제목 변경 */}
+            <div className="modal-title">{editingDiary ? "일기 수정" : "일기 작성"}</div>
             <div className="modal-body">
               <label className="field">
                 <span>제목</span>
-                <input value={diaryTitle} onChange={(e) => setDiaryTitle(e.target.value)} />
+                <input value={diaryTitle} onChange={(e) => setDiaryTitle(e.target.value)} placeholder="오늘 하루를 요약한다면?"/>
               </label>
               <label className="field">
                 <span>내용</span>
-                <textarea rows={6} value={diaryContent} onChange={(e) => setDiaryContent(e.target.value)} />
+                <textarea rows={6} value={diaryContent} onChange={(e) => setDiaryContent(e.target.value)} placeholder="오늘 배운 점이나 느낀 점을 기록해보세요."/>
               </label>
             </div>
             <div className="modal-actions">
-              <button className="btn secondary" onClick={() => setShowDiaryModal(false)}>취소</button>
+              <button className="btn secondary" onClick={closeDiaryModal}>취소</button>
+              {/* 저장 버튼: saveDiary 호출 */}
               <button className="btn primary" onClick={saveDiary}>확인</button>
             </div>
           </div>
