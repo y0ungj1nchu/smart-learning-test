@@ -4,13 +4,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap; /* ✅ 창 줄이면 자동 줄바꿈 */
+  flex-wrap: wrap; 
   gap: clamp(40px, 6vw, 100px);
   padding: clamp(20px, 5vw, 60px);
   font-family: "Pretendard", sans-serif;
 }
 
-/* 왼쪽 원형 영역 */
 .character-left {
   background: #fff;
   width: clamp(250px, 30vw, 400px);
@@ -27,7 +26,6 @@
   object-fit: contain;
 }
 
-/* 오른쪽 카드 */
 .character-right {
   background: #fff7b5;
   border-radius: 30px;
@@ -46,7 +44,6 @@
   margin-bottom: 25px;
 }
 
-/* 캐릭터 정보 행 */
 .info-row {
   display: flex;
   align-items: center;
@@ -83,7 +80,6 @@
   font-weight: 500;
 }
 
-/* 버튼 그룹 */
 .btn-group {
   display: flex;
   justify-content: center;
@@ -122,7 +118,6 @@
   cursor: pointer;
 }
 
-/* 캐릭터 선택 캐러셀 */
 .carousel-wrapper {
   position: relative;
   display: flex;
@@ -147,6 +142,12 @@
   padding: 20px 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
   transition: all 0.3s ease;
+}
+
+.character-option.locked {
+  opacity: 0.4; 
+  pointer-events: none; 
+  position: relative;
 }
 
 .character-option.selected {

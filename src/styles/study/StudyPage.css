@@ -4,13 +4,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap; /* ✅ 창 줄이면 자동 세로 배치 */
+  flex-wrap: wrap; 
   gap: clamp(40px, 5vw, 80px);
   padding: clamp(30px, 5vw, 60px);
   font-family: "Pretendard", sans-serif;
 }
 
-/* 타이머 전체 */
 .timer-box {
   display: flex;
   flex-direction: column;
@@ -18,7 +17,6 @@
   gap: clamp(16px, 2vw, 24px);
 }
 
-/* 원형 타이머 */
 .timer-circle {
   position: relative;
   width: clamp(200px, 25vw, 260px);
@@ -32,7 +30,6 @@
   transition: background 0.5s linear;
 }
 
-/* 내부 흰 원 */
 .timer-inner {
   position: absolute;
   width: clamp(150px, 18vw, 200px);
@@ -44,14 +41,12 @@
   align-items: center;
 }
 
-/* 중앙 시간 텍스트 */
 .timer-text {
   font-size: clamp(26px, 3vw, 36px);
   font-weight: 700;
   color: #000;
 }
 
-/* 버튼 그룹 */
 .timer-btns {
   display: flex;
   justify-content: center;
@@ -75,7 +70,6 @@
   background: #fff9d1;
 }
 
-/* 기록 박스 */
 .record-box {
   background: #fff7b5;
   border-radius: 24px;
@@ -84,7 +78,6 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* 기록 제목 */
 .record-title {
   background: #ffd400;
   text-align: center;
@@ -95,7 +88,6 @@
   margin-bottom: clamp(18px, 3vw, 25px);
 }
 
-/* 개별 기록 항목 */
 .record-item {
   display: flex;
   justify-content: space-between;
@@ -108,7 +100,6 @@
   margin-bottom: clamp(10px, 1.8vw, 15px);
 }
 
-/* 📏 화면이 더 줄어들 때 (세로 정렬 유지 + 여백 줄이기) */
 @media (max-width: 900px) {
   .study-container {
     flex-direction: column;
