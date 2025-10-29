@@ -1,5 +1,5 @@
 import React from "react";
-import "../../../../styles/profile/Tabs.css";
+import "../../../../styles/community/Tabs.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header1 from "../../../../components/common/Header1";
 import ProfileSidebar from "../../profile/ProfileSidebar";

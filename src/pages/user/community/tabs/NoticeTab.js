@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "../../../../styles/profile/Tabs.css";
+import "../../../../styles/community/Tabs.css";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import WriteTab from "./WriteTab";

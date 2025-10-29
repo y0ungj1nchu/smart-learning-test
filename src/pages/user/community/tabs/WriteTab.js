@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../../../../styles/profile/Tabs.css";
+import "../../../../styles/community/Tabs.css";
 
 function WriteTab({ onBack, onSubmit }) {
   const [title, setTitle] = useState("");
