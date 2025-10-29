@@ -7,11 +7,12 @@ import deleteIcon from "../../../assets/delete.png";
 import "../../../styles/calendar/Calendar.css";
 
 function pad(n) { return n.toString().padStart(2, "0"); }
-function ymd(d) {
-  const y = d.getFullYear();
-  const m = pad(d.getMonth() + 1);
-  const day = pad(d.getDate());
-  return `${y}-${m}-${day}`;
+function ymd(date) {
+  const localDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const y = localDate.getUTCFullYear();
+  const m = pad(localDate.getUTCMonth() + 1);
+  const d = pad(localDate.getUTCDate());
+  return `${y}년 ${m}월 ${d}일`;
 }
 const weekDays = ["일","월","화","수","목","금","토"];
 
@@ -33,27 +34,26 @@ export default function CalendarPage() {
   const [todos, setTodos] = useState([]);
   const [diary, setDiary] = useState(null);
 
-  /* 로컬스토리지 로드 */
+  /* 로컬스토리지 데이터 */
   useEffect(() => {
-  const t = JSON.parse(localStorage.getItem(keyTodo) || "[]");
-  const cleaned = (Array.isArray(t) ? t : []).filter(item => item && item.title);
-  const normalized = cleaned.map(item => ({
-    title: item.title || "",
-    memo: item.memo || "",
-    checklist: item.checklist ?? true,
-    done: item.done ?? false
-  }));
-  setTodos(normalized);
+    const t = JSON.parse(localStorage.getItem(keyTodo) || "[]");
+    const valid = (Array.isArray(t) ? t : []).filter(
+      (item) => item && item.title
+    );
+    setTodos(valid);
 
-  const d = JSON.parse(localStorage.getItem(keyDiary) || "null");
-  setDiary(d);
-}, [keyTodo, keyDiary]);
+    const d = JSON.parse(localStorage.getItem(keyDiary) || "null");
+    setDiary(d);
+  }, [keyTodo, keyDiary]);
 
   /* 달력 생성 */
   const grid = useMemo(() => {
     const y = current.getFullYear();
     const m = current.getMonth();
-    return Array.from({ length: 42 }, (_, i) => new Date(y, m, 1 - new Date(y, m, 1).getDay() + i));
+    return Array.from(
+      { length: 42 },
+      (_, i) => new Date(y, m, 1 - new Date(y, m, 1).getDay() + i)
+    );
   }, [current]);
 
   const monthLabel = useMemo(() => `${current.getFullYear()}년 ${current.getMonth() + 1}월`, [current]);
@@ -66,69 +66,75 @@ export default function CalendarPage() {
   const prevMonth = () => setCurrent(new Date(current.getFullYear(), current.getMonth() - 1, 1));
   const nextMonth = () => setCurrent(new Date(current.getFullYear(), current.getMonth() + 1, 1));
 
-  /* To-Do 리스트 */
+  /* To-Do 저장 */
   const saveTodo = () => {
     if (!todoTitle.trim()) return;
-    const next = [...todos];
-    const newItem = { title: todoTitle.trim(), memo: todoMemo.trim(), checklist: true, done: false };
-    if (editIndex !== null) next[editIndex] = newItem;
-    else next.unshift(newItem);
-    setTodos(next);
-    localStorage.setItem(keyTodo, JSON.stringify(next));
+    const newItem = { title: todoTitle, memo: todoMemo, done: false };
+    const updated =
+      editIndex !== null
+        ? todos.map((t, i) => (i === editIndex ? newItem : t))
+        : [...todos, newItem];
+    setTodos(updated);
+    localStorage.setItem(keyTodo, JSON.stringify(updated));
     setTodoTitle("");
     setTodoMemo("");
     setEditIndex(null);
     setShowTodoModal(false);
   };
-
+  /* To-Do 편집 */
   const openEditTodo = (i) => {
     setEditIndex(i);
     setTodoTitle(todos[i].title);
     setTodoMemo(todos[i].memo);
     setShowTodoModal(true);
   };
-
-  const deleteTodo = (i) => {
-    const next = todos.filter((_, idx) => idx !== i);
-    setTodos(next);
-    localStorage.setItem(keyTodo, JSON.stringify(next));
+  /* 체크 토글 */
+  const toggleTodoDone = (i) => {
+    const updated = todos.map((t, idx) =>
+      idx === i ? { ...t, done: !t.done } : t
+    );
+    setTodos(updated);
+    localStorage.setItem(keyTodo, JSON.stringify(updated));
   };
 
-  const toggleTodoDone = (i) => {
-    const next = [...todos];
-    next[i].done = !next[i].done;
-    setTodos(next);
-    localStorage.setItem(keyTodo, JSON.stringify(next));
+  const deleteTodo = (i) => {
+    setTodos((prevTodos) => {
+      const updated = prevTodos.filter((_, idx) => idx !== i);
+      localStorage.setItem(keyTodo, JSON.stringify(updated)); // 상태 업데이트 직후 동기화
+      return updated;
+    });
   };
 
   /* 한 줄 일기 */
   const saveDiary = () => {
     if (!diaryTitle.trim() && !diaryContent.trim()) return;
-    const data = { title: diaryTitle.trim(), content: diaryContent.trim() };
-    setDiary(data);
-    localStorage.setItem(keyDiary, JSON.stringify(data));
+    const entry = { title: diaryTitle, content: diaryContent };
+    setDiary(entry);
+    localStorage.setItem(keyDiary, JSON.stringify(entry));
+    setShowDiaryModal(false);
     setDiaryTitle("");
     setDiaryContent("");
-    setShowDiaryModal(false);
   };
 
+  /* 한 줄 일기 수정 */
   const openEditDiary = () => {
     if (diary) {
-      setDiaryTitle(diary.title);
-      setDiaryContent(diary.content);
+      setDiaryTitle(diary.title || "");
+      setDiaryContent(diary.content || "");
     }
+    setShowDiaryModal(true);
+  };
+
+  /* 새로운 일기 작성 */
+  const openNewDiary = () => {
+    setDiaryTitle("");
+    setDiaryContent("");
     setShowDiaryModal(true);
   };
 
   const clearDiary = () => {
     setDiary(null);
     localStorage.removeItem(keyDiary);
-  };
-
-  const openNewDiary = () => {
-    setDiaryTitle("");
-    setDiaryContent("");
-    setShowDiaryModal(true);
   };
 
   const isSameDate = (a, b) =>
@@ -182,7 +188,7 @@ export default function CalendarPage() {
             <div className="date-chip">{dateLabel}</div>
 
             <ul className="todo-list">
-              {todos.length === 0 ? (
+            {Array.isArray(todos) && todos.length === 0 ? (
                 <li className="muted">(등록된 체크리스트가 없습니다)</li>
               ) : (
                 todos.map((t, i) => (

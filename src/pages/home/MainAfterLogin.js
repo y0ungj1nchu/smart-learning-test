@@ -1,11 +1,36 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "../../styles/home/MainAfterLogin.css";
 import Header1 from "../../components/common/Header1";
 import Header2 from "../../components/common/Header2";
 import Footer from "../../components/common/Footer";
+import { sortedRanking } from "../../data/rankingData";
+
+function pad(n) {
+  return n.toString().padStart(2, "0");
+}
+function ymd(date) {
+  const localDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const y = localDate.getUTCFullYear();
+  const m = pad(localDate.getUTCMonth() + 1);
+  const d = pad(localDate.getUTCDate());
+  return `${y}년 ${m}월 ${d}일`;
+}
 
 function MainAfterLogin() {
+  const [todayTodos, setTodayTodos] = useState([]);
+  const [ranking, setRanking] = useState([]);
+
+  useEffect(() => {
+    const today = new Date();
+    const todayKey = `todos:${ymd(today)}`;
+
+    const stored = JSON.parse(localStorage.getItem(todayKey) || "[]");
+    setTodayTodos(stored);
+
+    setRanking(sortedRanking.slice(0, 5));
+  }, []);
+
   return (
     <>
       <Header1 isLoggedIn={true} />
@@ -17,13 +42,21 @@ function MainAfterLogin() {
           <p className="card-title">캘린더</p>
           <div className="card">
             <h3>오늘의 할 일</h3>
-            <p className="date">2025-09-24</p>
-            <ul>
-              <li>내용1</li>
-              <li>내용2</li>
-              <li>내용3</li>
-            </ul>
-            <Link to="/calendar" className="more-link">
+            <p className="date">{ymd(new Date())}</p>
+            {todayTodos.length === 0 ? (
+              <ul>
+                <li>오늘의 일정이 없습니다.</li>
+              </ul>
+            ) : (
+              <ul>
+                {todayTodos.slice(0, 3).map((t, i) => (
+                  <li key={i}>
+                    {t.done ? <s>{t.title}</s> : t.title}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link to="/user/calendar" className="more-link">
               바로가기 →
             </Link>
           </div>
@@ -43,15 +76,21 @@ function MainAfterLogin() {
           <p className="card-title">사용자 레벨 순위</p>
           <div className="card">
             <h3>주간 순위</h3>
-            <p className="date">2025년 9월 2주차</p>
-            <ol>
-              <li>1. ○○○</li>
-              <li>2. □□□</li>
-              <li>3. ☆☆</li>
-              <li>4. △△△</li>
-              <li>5. ◇◇◇</li>
-            </ol>
-            <Link to="/ranking" className="more-link">
+            <p className="date">{ymd(new Date())}</p>
+            {ranking.length === 0 ? (
+              <ul>
+                <li>순위 데이터가 없습니다.</li>
+              </ul>
+            ) : (
+              <ol>
+                {ranking.map((user, i) => (
+                  <li key={i}>
+                    {i + 1}. {user.nickname}  —  Lv.{user.level}
+                  </li>
+                ))}
+              </ol>
+            )}
+            <Link to="/user/ranking" className="more-link">
               바로가기 →
             </Link>
           </div>

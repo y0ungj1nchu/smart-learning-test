@@ -1,0 +1,21 @@
+/* 전체 배경 */
+.community-wrapper {
+  display: flex;
+  min-height: calc(100vh - 120px);
+  background-color: #ffeeB5;
+}
+
+/* 사이드바 영역 */
+.community-sidebar-container {
+  width: 240px;
+  background: #ffeeB5;
+  padding: 70px 20px 0px 40px;
+  position: relative;
+}
+
+/* 오른쪽 탭 영역 */
+.community-main-content {
+  flex: 1;
+  padding: 50px 60px;
+  background: transparent;
+}
