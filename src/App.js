@@ -10,7 +10,7 @@ import FindPw from "./pages/user/auth/FindPw";
 import EmailVerification from "./pages/user/auth/EmailVerification";
 import CalendarPage from "./pages/user/calendar/CalendarPage";
 import ProfileView from "./pages/user/profile/ProfileView";
-import NoticeDetail from "./pages/user/profile/tabs/NoticeDetail";
+import NoticeDetail from "./pages/user/community/tabs/NoticeDetail";
 import Community from "./pages/user/community/CommunityPage";
 import CharacterPage from "./pages/user/character/CharacterPage";
 import RankingPage from "./pages/user/ranking/RankingPage";
@@ -19,6 +19,7 @@ import GamePage from "./pages/user/game/GamePage";
 import WordGamePage from "./pages/user/game/WordGamePage";
 import WordQuizPage from "./pages/user/game/WordQuizPage";
 import ResultPage from "./pages/user/game/ResultPage";
+import WordGameUpload from "./pages/user/game/WordGameUpload";
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
         {/* 단어 게임 페이지 */}
         <Route path="/user/game" element={<GamePage />} />
         <Route path="/user/game/word" element={<WordGamePage />} />
+        <Route path="/user/game/upload" element={<WordGameUpload />} />
         <Route path="/user/game/quiz" element={<WordQuizPage />} />
         <Route path="/user/game/result" element={<ResultPage />} />
 

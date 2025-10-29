@@ -71,17 +71,17 @@ export default function WordGamePage() {
     try {
       const text = await file.text();
       const json = JSON.parse(text);
-      const setName = json.setName || "업로드 세트";
+      const setName = json.setName || "사용자 업로드 세트";
       const wordList = Array.isArray(json.wordList) ? json.wordList : [];
       if (!wordList.length) {
-        alert("유효한 wordList가 없습니다.");
+        alert("유효한 단어 목록이 없습니다.");
         return;
       }
       navigate("/user/game/quiz", { state: { setName, wordList } });
     } catch {
-      alert("JSON 파싱 오류입니다.");
+      alert("JSON 파싱 오류입니다. 올바른 형식을 사용하세요.");
     } finally {
-      e.target.value = "";
+      e.target.value = "";  //같은 파일 다시 업로드 O
     }
   };
 
@@ -92,19 +92,7 @@ export default function WordGamePage() {
 
       <div className="wordgame-page">
         {/* 타이틀 + 업로드 */}
-        <div className="wordgame-header-section">
           <h2 className="wordgame-title">단어 맞추기</h2>
-
-          <label className="wordgame-upload-card">
-            <div className="wordgame-upload-inner">
-              <span className="wordgame-plus-icon"> + </span>
-              <span>파일 업로드</span>
-              {/* JSON (setName, sordList),
-              각 문제는 word, correct, opitons 필드 포함해야 함 */}
-            </div>
-            <input type="file" accept="application/json" onChange={handleUpload} hidden />
-          </label>
-        </div>
 
         <div className="wordgame-folder-container">
           {presets.map((set) => (

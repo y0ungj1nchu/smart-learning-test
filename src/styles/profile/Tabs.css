@@ -372,6 +372,7 @@ h2 {
 /* 테이블 */
 .table {
   width: 100%;
+  background-color: #fff;
   border-collapse: collapse;
   text-align: center;
 }
