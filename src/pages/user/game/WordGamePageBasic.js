@@ -5,11 +5,10 @@ import folderIcon from "../../../assets/folder-open.png";
 import "../../../styles/game/WordGame.css";
 import { useNavigate } from "react-router-dom";
 
-export default function WordGamePage() {
+export default function WordGamePageBasic() {
   const navigate = useNavigate();
 
-  // 예시 week1~7
-  const presets = [
+  const PRESET_WORDSETS = [
     {
       name: "토익 영단어 week1",
       wordList: [
@@ -64,25 +63,14 @@ export default function WordGamePage() {
     },
   ];
 
-  // 업로드 핸들러
-  const handleUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const text = await file.text();
-      const json = JSON.parse(text);
-      const setName = json.setName || "사용자 업로드 세트";
-      const wordList = Array.isArray(json.wordList) ? json.wordList : [];
-      if (!wordList.length) {
-        alert("유효한 단어 목록이 없습니다.");
-        return;
-      }
-      navigate("/user/game/quiz", { state: { setName, wordList } });
-    } catch {
-      alert("JSON 파싱 오류입니다. 올바른 형식을 사용하세요.");
-    } finally {
-      e.target.value = "";  //같은 파일 다시 업로드 O
-    }
+  const startPreset = (preset) => {
+    navigate("/user/game/quiz", {
+      state: {
+        setName: preset.name,
+        wordList: preset.wordList,
+        origin: "preset",
+      },
+    });
   };
 
   return (
@@ -91,23 +79,25 @@ export default function WordGamePage() {
       <Header2 isLoggedIn={true} />
 
       <div className="wordgame-page">
-        {/* 타이틀 + 업로드 */}
-          <h2 className="wordgame-title">단어 맞추기</h2>
+        <h2 className="wordgame-title">기본 제공 단어 맞추기</h2>
 
-        <div className="wordgame-folder-container">
-          {presets.map((set) => (
-            <div
-              className="wordgame-folder-card"
-              key={set.name}
-              onClick={() =>
-                navigate("/user/game/quiz", { state: { setName: set.name, wordList: set.wordList } })
-              }
-            >
-              <img src={folderIcon} alt="folder" />
-              <p>{set.name}</p>
-            </div>
-          ))}
-        </div>
+        <section style={{ width: "100%", maxWidth: "800px" }}>
+          <div className="wordgame-folder-container">
+            {PRESET_WORDSETS.map((preset) => (
+              <div
+                className="wordgame-folder-card"
+                key={preset.name}
+                onClick={() => startPreset(preset)}
+                style={{ cursor: "pointer" }}
+              >
+                <div className="wordgame-folder-left">
+                  <img src={folderIcon} alt="folder" />
+                  <p>{preset.name}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </>
   );

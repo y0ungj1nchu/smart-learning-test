@@ -9,6 +9,8 @@ export default function WordQuizPage() {
   const location = useLocation();
 
   const wordList = location.state?.wordList || [];
+  const origin = location.state?.origin || null;
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [autoNext, setAutoNext] = useState(false);
@@ -26,14 +28,13 @@ export default function WordQuizPage() {
     ];
     setAnswers(updated);
 
-
     // 마지막 문제 제외 나머지 자동으로
     if (currentIndex < wordList.length - 1) {
       setAutoNext(true);
     }
   };
 
-  // 자동 이동
+  // 자동 이동 타이머
   useEffect(() => {
     if (autoNext) {
       const timer = setTimeout(() => {
@@ -50,7 +51,13 @@ export default function WordQuizPage() {
       setShowModal(true);
       return;
     }
-    navigate("/user/game/result", { state: { results: answers } });
+
+    navigate("/user/game/result", {
+      state: {
+        results: answers,
+        origin: origin,
+      },
+    });
   };
 
   return (
