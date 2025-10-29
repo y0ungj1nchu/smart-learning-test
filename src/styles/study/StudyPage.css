@@ -4,22 +4,25 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 80px;
-  padding: 60px;
+  flex-wrap: wrap; /* ✅ 창 줄이면 자동 세로 배치 */
+  gap: clamp(40px, 5vw, 80px);
+  padding: clamp(30px, 5vw, 60px);
   font-family: "Pretendard", sans-serif;
 }
 
+/* 타이머 전체 */
 .timer-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: clamp(16px, 2vw, 24px);
 }
 
+/* 원형 타이머 */
 .timer-circle {
   position: relative;
-  width: 260px;
-  height: 260px;
+  width: clamp(200px, 25vw, 260px);
+  height: clamp(200px, 25vw, 260px);
   border-radius: 50%;
   background: conic-gradient(#ffd400 0deg, #fff 0deg);
   display: flex;
@@ -29,10 +32,11 @@
   transition: background 0.5s linear;
 }
 
+/* 내부 흰 원 */
 .timer-inner {
   position: absolute;
-  width: 200px;
-  height: 200px;
+  width: clamp(150px, 18vw, 200px);
+  height: clamp(150px, 18vw, 200px);
   background: #fff;
   border-radius: 50%;
   display: flex;
@@ -40,23 +44,27 @@
   align-items: center;
 }
 
+/* 중앙 시간 텍스트 */
 .timer-text {
-  font-size: 36px;
+  font-size: clamp(26px, 3vw, 36px);
   font-weight: 700;
   color: #000;
 }
 
+/* 버튼 그룹 */
 .timer-btns {
   display: flex;
-  gap: 20px;
+  justify-content: center;
+  gap: clamp(12px, 2vw, 20px);
+  flex-wrap: wrap;
 }
 
 .timer-btn {
   background: #fff;
   border: 2px solid #ffd400;
   border-radius: 40px;
-  padding: 10px 28px;
-  font-size: 18px;
+  padding: clamp(8px, 1vw, 10px) clamp(20px, 3vw, 28px);
+  font-size: clamp(14px, 1.6vw, 18px);
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -67,32 +75,47 @@
   background: #fff9d1;
 }
 
+/* 기록 박스 */
 .record-box {
   background: #fff7b5;
   border-radius: 24px;
-  padding: 40px 30px;
-  width: 300px;
+  padding: clamp(25px, 4vw, 40px) clamp(20px, 3vw, 30px);
+  width: clamp(260px, 28vw, 300px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* 기록 제목 */
 .record-title {
   background: #ffd400;
   text-align: center;
-  padding: 10px 0;
+  padding: clamp(8px, 1vw, 10px) 0;
   border-radius: 20px;
   font-weight: 800;
-  font-size: 20px;
-  margin-bottom: 25px;
+  font-size: clamp(16px, 2vw, 20px);
+  margin-bottom: clamp(18px, 3vw, 25px);
 }
 
+/* 개별 기록 항목 */
 .record-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: #fff;
   border-radius: 20px;
-  padding: 15px 18px;
-  font-size: 17px;
+  padding: clamp(10px, 1.5vw, 15px) clamp(12px, 2vw, 18px);
+  font-size: clamp(14px, 1.6vw, 17px);
   font-weight: 600;
-  margin-bottom: 15px;
+  margin-bottom: clamp(10px, 1.8vw, 15px);
+}
+
+/* 📏 화면이 더 줄어들 때 (세로 정렬 유지 + 여백 줄이기) */
+@media (max-width: 900px) {
+  .study-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .record-box {
+    width: 90%;
+  }
 }
