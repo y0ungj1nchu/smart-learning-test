@@ -43,12 +43,12 @@ function ProfileView() {
       <Header1 isLoggedIn={isLoggedIn} />
       <Header2 isLoggedIn={isLoggedIn} />
 
-      <div className="profile-container">
-        {/* 왼쪽 사이드 */}
-        <ProfileSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <div className="profile-wrapper">
+        <aside className="profile-sidebar-container">
+          <ProfileSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        </aside>
 
-        {/* 오른쪽 본문 */}
-        <div className="profile-content">{renderContent()}</div>
+        <main className="profile-main-content">{renderContent()}</main>
       </div>
     </>
   );

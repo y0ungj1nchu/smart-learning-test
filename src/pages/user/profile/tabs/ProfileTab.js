@@ -33,7 +33,6 @@ function ProfileTab({ onNavigatePassword }) {
 
   return (
     <div className="tab-inner profile-main">
-      <h3>프로필</h3>
 
       <div className="profile-box">
         {/* 프로필 이미지 + 닉네임 */}
@@ -80,7 +79,7 @@ function ProfileTab({ onNavigatePassword }) {
         <div className="profile-info">
           <div className="info-row">
             <label>아이디</label>
-            <input type="text" value="jihyun123" readOnly />
+            <input type="text" value="testuser" readOnly />
           </div>
 
           <div className="info-row">

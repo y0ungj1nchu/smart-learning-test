@@ -23,8 +23,15 @@ export default function GamePage() {
               className="wordgame-card"
               onClick={() => navigate("/user/game/word")}
             >
-              <h3>단어 맞추기</h3>
-              <p>가볍게 즐기는 퀴즈 게임</p>
+              <h3>기본 제공 단어 맞추기</h3>
+              <p>토익 영단어 week1~7 퀴즈</p>
+            </div>
+            <div
+              className="wordgame-card"
+              onClick={() => navigate("/user/game/upload")}
+            >
+              <h3>업로드 단어 맞추기</h3>
+              <p>직접 만드는 퀴즈!</p>
             </div>
           </div>
         </div>

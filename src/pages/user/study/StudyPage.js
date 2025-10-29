@@ -18,6 +18,7 @@ function StudyPage() {
     return () => clearInterval(timerRef.current);
   }, [running]);
 
+  // 시간 포맷팅 (00:00:00)
   const formatTime = (t) => {
     const ms = String(Math.floor((t / 10) % 100)).padStart(2, "0");
     const s = String(Math.floor((t / 1000) % 60)).padStart(2, "0");
@@ -25,14 +26,15 @@ function StudyPage() {
     return `${m}:${s}:${ms}`;
   };
 
+  // Lap 추가
   const handleLap = () => {
-    setLaps([...laps, time]);
+    setLaps((prev) => [...prev, time]);
   };
 
+  // Reset (Lap 기록은 유지, 타이머만 초기화)
   const handleReset = () => {
     setRunning(false);
     setTime(0);
-    setLaps([]);
   };
 
   return (
@@ -43,19 +45,24 @@ function StudyPage() {
       <div className="study-container">
         {/* 타이머 */}
         <div className="timer-box">
-          <div className="timer-circle">
+          <div
+            className="timer-circle"
+            style={{
+              background: `conic-gradient(#FFD400 ${(time / 60000) * 360}deg, #fff 0deg)`,
+            }}
+          >
             <div className="timer-inner">
               <div className="timer-text">{formatTime(time)}</div>
             </div>
           </div>
+
           <div className="timer-btns">
-            <button
-              className="timer-btn"
-              onClick={() => setRunning(!running)}
-            >
+            <button className="timer-btn" onClick={() => setRunning(!running)}>
               {running ? "STOP" : "START"}
             </button>
-            <button className="timer-btn" onClick={handleLap}>LAP</button>
+            <button className="timer-btn" onClick={handleLap}>
+              LAP
+            </button>
           </div>
         </div>
 
@@ -66,7 +73,7 @@ function StudyPage() {
             {laps.map((lap, i) => (
               <div className="record-item" key={i}>
                 <span>{i + 1}Lap</span>
-                <span>{Math.floor(lap / 1000)}s</span>
+                <span>{formatTime(lap)}</span>
               </div>
             ))}
           </div>

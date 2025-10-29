@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../../../../styles/profile/Tabs.css";
 import { Search } from "lucide-react";
-import WriteTab from "../../profile/tabs/WriteTab";
+import WriteTab from ".//WriteTab";
 
 function FaqQnaTab({ setActiveTab }) {
   const [activeSubTab, setActiveSubTab] = useState("faq");

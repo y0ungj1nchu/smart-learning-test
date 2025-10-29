@@ -19,11 +19,12 @@ import {
 
 // 날짜 포맷팅 함수
 function pad(n) { return n.toString().padStart(2, "0"); }
-function ymd(d) {
-  const y = d.getFullYear();
-  const m = pad(d.getMonth() + 1);
-  const day = pad(d.getDate());
-  return `${y}-${m}-${day}`;
+function ymd(date) {
+  const localDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const y = localDate.getUTCFullYear();
+  const m = pad(localDate.getUTCMonth() + 1);
+  const d = pad(localDate.getUTCDate());
+  return `${y}년 ${m}월 ${d}일`;
 }
 const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -71,7 +72,10 @@ export default function CalendarPage() {
   const grid = useMemo(() => {
     const y = current.getFullYear();
     const m = current.getMonth();
-    return Array.from({ length: 42 }, (_, i) => new Date(y, m, 1 - new Date(y, m, 1).getDay() + i));
+    return Array.from(
+      { length: 42 },
+      (_, i) => new Date(y, m, 1 - new Date(y, m, 1).getDay() + i)
+    );
   }, [current]);
 
   const monthLabel = useMemo(() => `${current.getFullYear()}년 ${current.getMonth() + 1}월`, [current]);

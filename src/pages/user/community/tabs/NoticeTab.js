@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import "../../../../styles/profile/Tabs.css";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import WriteTab from "../../profile/tabs/WriteTab";
-import NoticeDetail from "../../profile/tabs/NoticeDetail";
+import WriteTab from "./WriteTab";
+import NoticeDetail from "./NoticeDetail";
 
 function NoticeTab({ setActiveTab }) {
   const [search, setSearch] = useState("");
