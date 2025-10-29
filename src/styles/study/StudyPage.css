@@ -1,6 +1,5 @@
-/* 전체 레이아웃 */
 .study-container {
-  background-color: #fff7cc;
+  background-color: #ffeeB5;
   min-height: calc(100vh - 200px);
   display: flex;
   justify-content: center;
@@ -10,7 +9,6 @@
   font-family: "Pretendard", sans-serif;
 }
 
-/* 타이머 영역 */
 .timer-box {
   display: flex;
   flex-direction: column;
@@ -18,7 +16,6 @@
   gap: 24px;
 }
 
-/* 원형 타이머 (게이지 애니메이션 버전) */
 .timer-circle {
   position: relative;
   width: 260px;
@@ -29,7 +26,7 @@
   justify-content: center;
   align-items: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: background 0.1s linear;
+  transition: background 0.5s linear;
 }
 
 .timer-inner {
@@ -49,7 +46,6 @@
   color: #000;
 }
 
-/* 버튼 공통 */
 .timer-btns {
   display: flex;
   gap: 20px;
@@ -71,12 +67,11 @@
   background: #fff9d1;
 }
 
-/* 기록 영역 */
 .record-box {
   background: #fff7b5;
   border-radius: 24px;
   padding: 40px 30px;
-  width: 280px;
+  width: 300px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -87,13 +82,7 @@
   border-radius: 20px;
   font-weight: 800;
   font-size: 20px;
-  margin-bottom: 20px;
-}
-
-.record-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  margin-bottom: 25px;
 }
 
 .record-item {
@@ -102,24 +91,8 @@
   align-items: center;
   background: #fff;
   border-radius: 20px;
-  padding: 10px 16px;
-  font-size: 16px;
+  padding: 15px 18px;
+  font-size: 17px;
   font-weight: 600;
-}
-
-.reset-btn {
-  display: block;
-  background: #fff;
-  border: 2px solid #ffd400;
-  border-radius: 40px;
-  padding: 8px 22px;
-  margin: 24px auto 0;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.reset-btn:hover {
-  background: #fff9d1;
+  margin-bottom: 15px;
 }

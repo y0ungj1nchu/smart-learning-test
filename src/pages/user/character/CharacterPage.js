@@ -2,14 +2,28 @@ import React, { useState } from "react";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import "../../../styles/character/CharacterPage.css";
-import tree from "../../../assets/tree.png";
-import appleTree from "../../../assets/appleTree.png";
+import snoopy1 from "../../../assets/snoopy1.png";
+import snoopy2 from "../../../assets/snoopy2.png";
+import snoopy3 from "../../../assets/snoopy3.png";
+import snoopy4 from "../../../assets/snoopy4.png";
+import snoopy5 from "../../../assets/snoopy5.png";
+import lockIcon from "../../../assets/lock.png";
+
+const characterList = [
+  { id: 1, name: "스누피1", img: snoopy1, minLevel: 1 },
+  { id: 2, name: "스누피2", img: snoopy2, minLevel: 2 },
+  { id: 3, name: "스누피3", img: snoopy3, minLevel: 3 },
+  { id: 4, name: "스누피4", img: snoopy4, minLevel: 4 },
+  { id: 5, name: "스누피5", img: snoopy5, minLevel: 5 },
+];
 
 function CharacterPage() {
-  const [mode, setMode] = useState("view"); // view | rename | change
+  const [mode, setMode] = useState("view"); 
   const [name, setName] = useState("사과");
   const [newName, setNewName] = useState("");
   const [character, setCharacter] = useState("tree");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [userLevel, setUserLevel] = useState(1); 
 
   const handleNameChange = () => {
     if (!newName.trim()) return;
@@ -18,17 +32,35 @@ function CharacterPage() {
     setNewName("");
   };
 
-  const handleCharacterChange = (type) => {
-    setCharacter(type);
+  const handleCharacterChange = (imgName, minLevel) => {
+    if (userLevel < minLevel) return; 
+    setCharacter(imgName);
     setMode("view");
   };
 
-  const renderCharacterImage = () =>
-    character === "appleTree" ? (
-      <img src={appleTree} alt="사과나무" className="character-img" />
-    ) : (
-      <img src={tree} alt="트리" className="character-img" />
+  const renderCharacterImage = () => {
+    const selected =
+      characterList.find((c) => c.img === character) || characterList[0];
+    return <img src={selected.img} alt={selected.name} className="character-img" />;
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) =>
+      (prev - 1 + characterList.length) % characterList.length
     );
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % characterList.length);
+  };
+
+  const getVisibleCharacters = () => {
+    const first = currentIndex;
+    const second = (currentIndex + 1) % characterList.length;
+    return [characterList[first], characterList[second]];
+  };
+
+  const visibleCharacters = getVisibleCharacters();
 
   return (
     <>
@@ -48,7 +80,7 @@ function CharacterPage() {
               </div>
               <div className="info-row">
                 <span className="label">레벨</span>
-                <span className="value">1 level</span>
+                <span className="value">{userLevel} level</span>
               </div>
               <div className="btn-group">
                 <button onClick={() => setMode("rename")} className="yellow-btn">
@@ -92,27 +124,72 @@ function CharacterPage() {
           {mode === "change" && (
             <div className="character-card">
               <h2 className="character-title">캐릭터 변경</h2>
-              <div className="character-select-box">
-                <div className="character-option">
-                  <img src={appleTree} alt="사과나무" className="select-img" />
-                  <p>사과나무 키우기</p>
-                  <button
-                    className="yellow-btn"
-                    onClick={() => handleCharacterChange("appleTree")}
-                  >
-                    선택
-                  </button>
+
+              <div className="carousel-wrapper">
+                <button className="arrow-btn left" onClick={handlePrev}>
+                  &lt;
+                </button>
+
+                <div className="character-carousel">
+                  {visibleCharacters.map((char) => {
+                    const locked = userLevel < char.minLevel;
+                    const isSelected = character === char.img;
+                    return (
+                      <div
+                        key={char.id}
+                        className={`character-option ${
+                          isSelected ? "selected" : ""
+                        } ${locked ? "locked" : ""}`}
+                        onClick={() =>
+                          !locked && handleCharacterChange(char.img, char.minLevel)
+                        }
+                      >
+                        <div className="character-image-container">
+                          <img
+                            src={char.img}
+                            alt={char.name}
+                            className="select-img"
+                          />
+                          {locked && (
+                            <img
+                              src={lockIcon}
+                              alt="잠금"
+                              className="lock-icon"
+                            />
+                          )}
+                        </div>
+                        <p>
+                          {char.name}
+                          {locked && (
+                            <span className="locked-text">
+                              {" "}
+                              (Lv.{char.minLevel})
+                            </span>
+                          )}
+                        </p>
+                        <button
+                          className="yellow-btn"
+                          disabled={locked}
+                          onClick={() =>
+                            handleCharacterChange(char.img, char.minLevel)
+                          }
+                        >
+                          {locked ? "잠김" : "선택"}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="character-option">
-                  <img src={tree} alt="트리" className="select-img" />
-                  <p>트리 꾸미기</p>
-                  <button
-                    className="yellow-btn"
-                    onClick={() => handleCharacterChange("tree")}
-                  >
-                    선택
-                  </button>
-                </div>
+
+                <button className="arrow-btn right" onClick={handleNext}>
+                  &gt;
+                </button>
+              </div>
+
+              <div className="btn-group">
+                <button onClick={() => setMode("view")} className="gray-btn">
+                  취소
+                </button>
               </div>
             </div>
           )}
