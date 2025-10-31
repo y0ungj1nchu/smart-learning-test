@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useMemo } from "react";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -8,7 +9,25 @@ export default function WordQuizPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const wordList = location.state?.wordList || [];
+  // 배열 섞기 함수
+  function shuffle(array) {
+    const result = [...array];
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+
+  // 한 게임당 한 번만 보기 섞기 (useMemo로 고정)
+  const wordList = useMemo(() => {
+    const rawList = location.state?.wordList || [];
+    return rawList.map((q) => ({
+      ...q,
+      options: shuffle(q.options),  //보기 랜덤 순서
+    }));
+  }, [location.state?.wordList]);
+
   const origin = location.state?.origin || null;
 
   const [currentIndex, setCurrentIndex] = useState(0);

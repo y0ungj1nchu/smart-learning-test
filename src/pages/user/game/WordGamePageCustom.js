@@ -133,7 +133,8 @@ export default function WordGamePageCustom() {
             value={customName}
             onChange={(e) => setCustomName(e.target.value)}
             style={{
-              width: "260px",
+              width: "180px",
+              height: "30px",
               padding: "10px 12px",
               borderRadius: "8px",
               border: "2px solid #ffd400",
