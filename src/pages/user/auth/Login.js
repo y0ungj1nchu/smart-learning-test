@@ -8,7 +8,13 @@ import naverLogo from "../../../assets/naver.png";
 import googleLogo from "../../../assets/google.png";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
-import { loginUser } from "../../../utils/api";
+
+// --- 수정된 부분 ---
+// 1. api.js에서 loginUser 함수를 가져옵니다.
+// (경로는 실제 api.js 위치에 맞게 조정하세요.)
+import { loginUser } from "../../../utils/api"; 
+// ------------------
+
 
 function Login() {
   const navigate = useNavigate();
@@ -38,6 +44,7 @@ function Login() {
       setError(err.message || "로그인에 실패했습니다.");
     }
   };
+  // ------------------
 
   return (
     <>
@@ -54,10 +61,10 @@ function Login() {
             <div className="input-group">
               <img src={userIcon} alt="user" className="input-icon" />
               <input
-                type="email"
-                placeholder="이메일"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text" // 백엔드는 email을 받지만, UI상 '아이디'로 두어도 api.js가 변환해줍니다.
+                placeholder="아이디 (이메일)"
+                value={id}
+                onChange={(e) => setId(e.target.value)}
                 required
               />
             </div>
@@ -75,6 +82,7 @@ function Login() {
             <button type="submit" className="login-btn">로그인</button>
           </form>
 
+          {/* 7. 에러 메시지가 API로부터 동적으로 표시됩니다. */}
           {error && <p className="error-msg">{error}</p>}
 
           {/* 오른쪽 정렬 */}

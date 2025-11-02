@@ -45,6 +45,7 @@ function Register() {
       setError(err.message || "회원가입 중 오류가 발생했습니다.");
     }
   };
+  // ------------------
 
   return (
     <>
@@ -57,7 +58,7 @@ function Register() {
           <form onSubmit={handleRegister}>
             <input
               type="text"
-              placeholder="이름"
+              placeholder="이름 (닉네임)" // 6. '이름'이 닉네임으로 사용됨
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -103,6 +104,7 @@ function Register() {
               />
             </div>
 
+            {/* 7. API 에러 메시지가 이 곳에 표시됩니다. */}
             {error && <p className="error-msg">{error}</p>}
 
             {/* 소셜 로그인 */}
