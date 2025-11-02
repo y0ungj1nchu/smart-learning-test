@@ -19,3 +19,28 @@
   padding: 50px 60px;
   background: transparent;
 }
+/* 탭 버튼 전체 영역 */
+.faq-tabs {
+  display: flex;
+  justify-content: center;   /* 수평 가운데 정렬 */
+  align-items: center;       /* 수직 가운데 정렬 */
+  gap: 30px;                 /* 버튼 간격 */
+  margin-bottom: 25px;
+}
+
+/* 탭 버튼 기본 스타일 */
+.faq-tabs button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  font-weight: 600;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* 활성화 탭 */
+.faq-tabs button.active {
+  color: #000;
+  border-bottom: 3px solid #000;
+}

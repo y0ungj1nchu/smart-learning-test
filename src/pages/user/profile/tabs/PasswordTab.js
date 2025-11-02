@@ -1,53 +1,57 @@
 import React, { useState, useEffect } from "react";
 import "../../../../styles/profile/Tabs.css";
 
+// --- 수정된 부분 ---
+import { updatePassword } from "../../../../utils/api";
+// ------------------
+
 function PasswordTab({ onBack }) {
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
-  const [savedPw, setSavedPw] = useState("1234"); //기본 비밀번호
+  
+  // --- 수정된 부분 (localStorage 로직 삭제) ---
+  // const [savedPw, setSavedPw] = useState("1234");
+  // useEffect(() => { ... });
+  // ------------------------------------
 
-  // localStorage에서 기존 비밀번호 불러오기
-  useEffect(() => {
-    const storedPw = localStorage.getItem("password");
-    if (storedPw) {
-      setSavedPw(storedPw);
-    }
-  }, []);
-
-  const handleSubmit = (e) => {
+  // --- 수정된 부분 (API 호출) ---
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 1. 모든 입력 필드 확인
     if (!currentPw || !newPw || !confirmPw) {
       alert("모든 항목을 입력해주세요");
       return;
     }
 
-    // 현재 비밀번호 일치 여부
-    if (currentPw !== savedPw) {
-      alert("현재 비밀번호가 일치하지 않습니다");
-      return;
-    }
+    // (삭제) 현재 비밀번호 일치 여부 (백엔드가 검증)
+    // if (currentPw !== savedPw) { ... }
 
-    // 새 비밀번호와 확인 비밀번호 일치 여부
     if (newPw !== confirmPw) {
       alert("새 비밀번호가 일치하지 않습니다");
       return;
     }
 
-    // 조건이 모두 맞으면 변경
-    localStorage.setItem("password", newPw);
-    alert("비밀번호가 성공적으로 변경되었습니다");
+    try {
+      // API 호출
+      const data = await updatePassword(currentPw, newPw);
+      
+      alert(data.message || "비밀번호가 성공적으로 변경되었습니다");
+      
+      // 입력 초기화
+      setCurrentPw("");
+      setNewPw("");
+      setConfirmPw("");
 
-    // 입력 초기화
-    setCurrentPw("");
-    setNewPw("");
-    setConfirmPw("");
+      // 프로필 화면으로 복귀
+      onBack();
 
-    // 프로필 화면으로 복귀
-    onBack();
+    } catch (error) {
+      // (예: "현재 비밀번호가 일치하지 않습니다.")
+      alert(error.message || "비밀번호 변경에 실패했습니다.");
+    }
   };
+  // ---------------------------
 
   return (
     <div className="tab-inner password-main">

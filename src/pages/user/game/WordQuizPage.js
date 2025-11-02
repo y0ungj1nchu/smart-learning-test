@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useMemo } from "react";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -8,10 +9,31 @@ export default function WordQuizPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const wordList = location.state?.wordList || [];
+  // 배열 섞기 함수
+  function shuffle(array) {
+    const result = [...array];
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+
+  // 한 게임당 한 번만 보기 섞기 (useMemo로 고정)
+  const wordList = useMemo(() => {
+    const rawList = location.state?.wordList || [];
+    return rawList.map((q) => ({
+      ...q,
+      options: shuffle(q.options),  //보기 랜덤 순서
+    }));
+  }, [location.state?.wordList]);
+
+  const origin = location.state?.origin || null;
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [autoNext, setAutoNext] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const current = wordList[currentIndex];
   const selectedAnswer = answers.find((a) => a.word === current.word)?.selected;
@@ -25,41 +47,36 @@ export default function WordQuizPage() {
     ];
     setAnswers(updated);
 
-    // 결과확인 빼고 자동 이동
+    // 마지막 문제 제외 나머지 자동으로
     if (currentIndex < wordList.length - 1) {
       setAutoNext(true);
     }
   };
 
-  // 정답 선택 시 2초 후 자동으로 이동
+  // 자동 이동 타이머
   useEffect(() => {
     if (autoNext) {
       const timer = setTimeout(() => {
         setCurrentIndex((prev) => prev + 1);
         setAutoNext(false);
-      }, 2000);
+      }, 1500);
       return () => clearTimeout(timer);
     }
   }, [autoNext]);
-  
-  // 이전 문제
-  const handlePrev = () => {
-    if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
-  };
 
-  // 다음 문제 (수동 이동)
-  const handleNext = () => {
-    const answered = answers.find((a) => a.word === current.word);
-    if (!answered) {
-      alert("먼저 정답을 선택해주세요!");
+  // 결과 페이지로 이동
+  const handleResultClick = () => {
+    if (answers.length < wordList.length) {
+      setShowModal(true);
       return;
     }
 
-    if (currentIndex < wordList.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      navigate("/user/game/result", { state: { results: answers } });
-    }
+    navigate("/user/game/result", {
+      state: {
+        results: answers,
+        origin: origin,
+      },
+    });
   };
 
   return (
@@ -75,7 +92,7 @@ export default function WordQuizPage() {
 
           <h3 className="wordgame-question">{current.word}</h3>
 
-          {/* 뜻 버튼들 */}
+          {/* 보기 버튼 */}
           <div className="wordgame-options">
             {current.options.map((opt) => (
               <button
@@ -97,26 +114,28 @@ export default function WordQuizPage() {
             ))}
           </div>
 
-          {/* 이전 / 다음 버튼 */}
-          <div className="wordgame-nav">
-            <button
-              className="wordgame-nav-btn"
-              onClick={handlePrev}
-              disabled={currentIndex === 0}
-            >
-              ◀ 이전
-            </button>
+          {/* 마지막 문제일 때만 결과 확인 버튼 */}
+          {currentIndex === wordList.length - 1 && (
+            <div className="wordgame-result-btns">
+              <button className="wordgame-nav-btn" onClick={handleResultClick}>
+                결과 확인
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
 
-            <button
-              className="wordgame-nav-btn"
-              onClick={handleNext}
-              disabled={!selectedAnswer} // 정답 선택 전 비활성화
-            >
-              {currentIndex === wordList.length - 1 ? "결과 확인" : "다음 ▶"}
+      {/* 모달창 */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <p>문제를 풀고 결과를 확인하세요!</p>
+            <button className="modal-btn" onClick={() => setShowModal(false)}>
+              확인
             </button>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

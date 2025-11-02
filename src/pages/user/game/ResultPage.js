@@ -2,24 +2,30 @@ import React from "react";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import { useLocation, useNavigate } from "react-router-dom";
-import reIcon from "../../../assets/re.png";
-import noIcon from "../../../assets/no.png";
 import "../../../styles/game/WordGame.css";
 
 export default function ResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const results = location.state?.results || [];
 
+  const results = location.state?.results || [];
+  const origin = location.state?.origin || null; // ← 추가된 부분
   const correctCount = results.filter((r) => r.isCorrect).length;
 
   const handleRetry = () => {
-    navigate("/user/game/word");
+    if (origin === "preset") {
+      navigate("/user/game/word");
+    } else if (origin === "custom") {
+      navigate("/user/game/upload");
+    } else {
+      navigate("/user/game");
+    }
   };
 
   const handleExit = () => {
-    navigate("/user/game");
+    navigate("/user/game"); // 게임 선택 페이지로
   };
+
 
   return (
     <>
@@ -50,11 +56,15 @@ export default function ResultPage() {
             </tbody>
           </table>
 
-        <div className="wordgame-result-btns">
-          <button className="wordgame-nav-btn" onClick={handleRetry}>다시 풀기</button>
-          <button className="wordgame-nav-btn" onClick={handleExit}>게임 종료</button>
+          <div className="wordgame-result-btns">
+            <button className="wordgame-nav-btn" onClick={handleRetry}>
+              다시 풀기
+            </button>
+            <button className="wordgame-nav-btn" onClick={handleExit}>
+              게임 종료
+            </button>
+          </div>
         </div>
-      </div>
       </div>
     </>
   );

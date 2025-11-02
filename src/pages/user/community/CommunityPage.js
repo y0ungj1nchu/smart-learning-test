@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "../../../styles/community/Community.css";
-import "../../../styles/profile/Tabs.css";
+import "../../../styles/community/Tabs.css";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import FaqQnaTab from "./tabs/FaqQnaTab";

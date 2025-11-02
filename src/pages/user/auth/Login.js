@@ -8,36 +8,34 @@ import naverLogo from "../../../assets/naver.png";
 import googleLogo from "../../../assets/google.png";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
-import { loginUser } from "../../../util/api";
+import { loginUser } from "../../../utils/api";
 
 function Login() {
   const navigate = useNavigate();
-  //const [id, setId] = useState("");
-  const [email, setEmail] = useState("");
+  const [id, setId] = useState(""); // api.js에서 email로 변환해줍니다.
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  //const dummyUser = { id: "testuser", password: "1234" };
-
+  // --- 수정된 부분 ---
+  // 2. 더미 데이터(dummyUser) 비교 로직을 삭제합니다.
+  // 3. handleLogin 함수를 API를 호출하는 비동기 함수로 변경합니다.
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
+    setError(""); // 이전 에러 메시지 초기화
+
     try {
-      // 백엔드 로그인 API 호출
-      const response = await loginUser({ email, password });
+      // 4. api.js의 loginUser 함수 호출 (id가 email로 매핑됨)
+      const data = await loginUser({ id, password });
 
-      // 응답에서 토큰과 사용자 정보 저장
-      localStorage.setItem('authToken', response.token);
-      localStorage.setItem('userInfo', JSON.stringify(response.user)); // 필요 시 사용자 정보도 저장
-      localStorage.setItem('isLoggedIn', 'true'); // 즉각적인 UI 업데이트를 위해 유지
+      // 5. 성공 시, 단순 'true'가 아닌 백엔드에서 받은 'token'을 저장합니다.
+      localStorage.setItem("isLoggedIn", "true"); // 기존 UI 상태 유지를 위해 저장
+      localStorage.setItem("authToken", data.token); // API 인증을 위한 토큰 저장
 
-      navigate("/home/after"); // 성공 시 리다이렉트
-    } catch (apiError) {
-      // API 에러 메시지 표시
-      setError(apiError.message || "로그인 중 오류가 발생했습니다.");
-      localStorage.removeItem('authToken'); // 실패 시 토큰 제거
-      localStorage.removeItem('userInfo');
-      localStorage.removeItem('isLoggedIn');
+      navigate("/home/after"); // 로그인 후 메인 페이지로 이동
+
+    } catch (err) {
+      // 6. 백엔드에서 보낸 에러 메시지를 상태에 저장하여 사용자에게 표시
+      setError(err.message || "로그인에 실패했습니다.");
     }
   };
 
