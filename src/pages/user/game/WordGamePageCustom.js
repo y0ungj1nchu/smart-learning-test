@@ -164,6 +164,13 @@ export default function WordGamePageCustom() {
           >
             등록하기
           </button>
+          
+          {/* 다운로드 받기 버튼*/}
+          <button
+            className="wordgame-nav-btn"
+          >
+            다운로드 받기
+          </button>
         </div>
 
         {/* 사용자가 등록한 세트 목록만 */}
