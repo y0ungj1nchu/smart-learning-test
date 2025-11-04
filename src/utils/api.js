@@ -149,6 +149,23 @@ export const getMyProfile = () => request('/user/me');
 export const updateNickname = (newNickname) => request('/user/nickname', 'PUT', { newNickname });
 
 /**
+ * 사용자의 "캐릭터 닉네임"을 변경합니다. (Characters.characterName)
+ * @param {string} characterName - 새 캐릭터 닉네임
+ */
+export const updateCharacterName = (characterName) => {
+  return request('/user/character/name', 'PUT', { characterName });
+};
+
+/**
+ * 사용자의 "캐릭터 이미지"를 변경합니다. (Characters.characterImage)
+ * @param {string} characterImage - 새 캐릭터 이미지 이름 (예: "snoopy2")
+ */
+export const updateCharacterImage = (characterImage) => {
+  return request('/user/character/image', 'PUT', { characterImage });
+};
+// ----------------------------
+
+/**
  * 사용자의 비밀번호를 변경합니다.
  * @param {string} currentPassword - 현재 비밀번호
  * @param {string} newPassword - 새 비밀번호
@@ -308,3 +325,34 @@ export const getWordsForSet = (id) => request(`/words/wordsets/${id}`);
  * @param {number} id - 삭제할 단어장(WordSet)의 ID
  */
 export const deleteWordSet = (id) => request(`/words/wordsets/${id}`, 'DELETE');
+
+// =================================================================
+// FAQ API
+// =================================================================
+
+/**
+ * FAQ 목록을 조회합니다.
+ */
+export const getFaqs = () => {
+  // (참고: request 함수는 기본적으로 /api (proxy)로 요청을 보냅니다)
+  return request('/faq', 'GET');
+};
+
+// =================================================================
+// Inquiry (1:1 문의) API
+// =================================================================
+
+/**
+ * 내가 작성한 1:1 문의 목록을 조회합니다.
+ */
+export const getMyInquiries = () => {
+  return request('/inquiry', 'GET');
+};
+
+/**
+ * 새 1:1 문의를 작성합니다.
+ * @param {object} data - { title: string, content: string }
+ */
+export const createInquiry = (data) => {
+  return request('/inquiry', 'POST', data);
+};
