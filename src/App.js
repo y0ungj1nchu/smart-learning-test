@@ -68,7 +68,7 @@ function App() {
           <Route path="/user/study" element={<StudyPage/>} />
 
           {/* 기본 루트 → 로그인 전 메인 리다이렉트 */}
-          <Route path="/user/profile/notice-detail" element={<NoticeDetail />} />
+          <Route path="/user/community/notice-detail" element={<NoticeDetail />} />
           <Route path="*" element={<MainBeforeLogin />} />
       
         </Routes>

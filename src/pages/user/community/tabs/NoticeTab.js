@@ -2,99 +2,73 @@ import React, { useState, useEffect } from "react";
 import "../../../../styles/community/Tabs.css";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import WriteTab from "./WriteTab";
-import NoticeDetail from "./NoticeDetail";
 
-function NoticeTab({ setActiveTab }) {
+function NoticeTab() {
   const [search, setSearch] = useState("");
-  const [isWriting, setIsWriting] = useState(false);
-  const [selectedNotice, setSelectedNotice] = useState(null);
   const [noticeList, setNoticeList] = useState([
-    { id: 1, title: "업데이트 공지", time: "14:20", content: "업데이트 되었으니 확인 바랍니다." },
-    { id: 2, title: "점검 안내", time: "10:15", content: "내일 10시부터 점검이 예정되어 있습니다." },
+    {
+      id: 1,
+      title: "업데이트 공지",
+      time: "2025-11-03 14:20",
+      content: "업데이트가 완료되었습니다. 새로운 기능을 확인해 주세요!",
+    },
+    {
+      id: 2,
+      title: "점검 안내",
+      time: "2025-11-02 10:15",
+      content: "내일 오전 10시부터 시스템 점검이 예정되어 있습니다.",
+    },
   ]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const saved = localStorage.getItem("noticeList");
-    if (saved) setNoticeList(JSON.parse(saved));
-  }, []);
-
-  useEffect(() => {
     localStorage.setItem("noticeList", JSON.stringify(noticeList));
   }, [noticeList]);
 
-  const handleSearch = (e) => setSearch(e.target.value);
-
-  const handleAddNotice = (newPost) => {
-    const now = new Date();
-    const time = `${String(now.getHours()).padStart(2, "0")}:${String(
-      now.getMinutes()
-    ).padStart(2, "0")}`;
-    const newItem = {
-      id: Date.now(),
-      title: newPost.title,
-      time,
-      content: newPost.content,
-    };
-    setNoticeList([newItem, ...noticeList]);
-    setIsWriting(false);
+  // 검색 버튼 클릭 시 필터링
+  const handleSearchClick = () => {
+    const saved = JSON.parse(localStorage.getItem("noticeList")) || noticeList;
+    if (!search.trim()) {
+      setNoticeList(saved);
+      return;
+    }
+    const filtered = saved.filter(
+      (item) =>
+        item.title.toLowerCase().includes(search.toLowerCase()) ||
+        item.content.toLowerCase().includes(search.toLowerCase())
+    );
+    setNoticeList(filtered);
   };
 
+  // 상세 페이지 이동
   const handleViewNotice = (item) => {
-    navigate("/user/profile/notice-detail", { state: item });
+    navigate("/user/community/notice-detail", { state: { item, noticeList } });
   };
 
-  const handleBackToList = () => {
-    setSelectedNotice(null);
-  };
-
-  // 글쓰기
-  if (isWriting) {
-    return (
-      <WriteTab onBack={() => setIsWriting(false)} onSubmit={handleAddNotice} />
-    );
-  }
-
-  // 글 클릭 → 상세 보기 모드
-  if (selectedNotice) {
-    return (
-      <NoticeDetail
-        title={selectedNotice.title}
-        content={selectedNotice.content}
-        time={selectedNotice.time}
-        onBack={handleBackToList}
-      />
-    );
-  }
-
-  // 최신시간이 위로 오도록 정렬
-  const sortedList = [...noticeList].sort((a, b) => {
-    return new Date(`1970/01/01 ${b.time}`) - new Date(`1970/01/01 ${a.time}`);
-  });
-
-  // 정렬된 리스트 기준으로 필터링
-  const filteredList = sortedList.filter((item) =>
-    item.title.toLowerCase().includes(search.toLowerCase())
-  );
+  // 최신순 정렬
+  const sortedList = [...noticeList]
+    .sort((a, b) => new Date(b.time) - new Date(a.time))
+    .map((item, index, arr) => ({ ...item, no: arr.length - index }));
 
   return (
-    <div className="notice-tab">
+    <div className="tab-inner notice-tab">
       <h2>공지사항</h2>
 
+      {/* 검색창 */}
       <div className="search-box">
         <input
           type="text"
           placeholder="검색하세요."
           value={search}
-          onChange={handleSearch}
+          onChange={(e) => setSearch(e.target.value)}
         />
-        <button className="search-btn">
+        <button className="search-btn" onClick={handleSearchClick}>
           <Search size={18} />
         </button>
       </div>
 
+      {/* FAQ/QnA와 동일한 표 구조 */}
       <table className="table">
         <thead>
           <tr>
@@ -104,25 +78,19 @@ function NoticeTab({ setActiveTab }) {
           </tr>
         </thead>
         <tbody>
-          {filteredList.map((item) => (
+          {sortedList.map((item) => (
             <tr
               key={item.id}
               style={{ cursor: "pointer" }}
               onClick={() => handleViewNotice(item)}
             >
-              <td>{item.id}</td>
+              <td>{item.no}</td>
               <td>{item.title}</td>
               <td>{item.time}</td>
             </tr>
           ))}
         </tbody>
       </table>
-
-      <div className="btn-right">
-        <button className="common-btn" onClick={() => setIsWriting(true)}>
-          글쓰기
-        </button>
-      </div>
     </div>
   );
 }

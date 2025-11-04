@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "../../../styles/community/Community.css";
 import "../../../styles/community/Tabs.css";
 import Header1 from "../../../components/common/Header1";
@@ -7,7 +8,14 @@ import FaqQnaTab from "./tabs/FaqQnaTab";
 import NoticeTab from "./tabs/NoticeTab";
 
 function CommunityPage() {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("faq");
+
+  useEffect(() => {
+    if (location.state?.defaultTab === "notice") {
+      setActiveTab("notice");
+    }
+  }, [location.state]);
 
   const renderContent = () => {
     switch (activeTab) {
