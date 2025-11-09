@@ -1,201 +1,176 @@
-import React, { useState, useEffect, Fragment } from "react"; // (수정) Fragment 추가
+import React, { useState, useEffect } from "react";
 import "../../../../styles/community/Tabs.css";
 import { Search } from "lucide-react";
-import WriteTab from ".//WriteTab"; 
-
-import { getFaqs, getMyInquiries, createInquiry } from "../../../../utils/api";
-
-const formatDateTime = (isoString) => {
-  if (!isoString) return "";
-  const date = new Date(isoString);
-  return date.toLocaleString('ko-KR', {
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hour12: false,
-  });
-};
+import WriteTab from "./WriteTab";
 
 function FaqQnaTab() {
   const [activeSubTab, setActiveSubTab] = useState("faq");
   const [search, setSearch] = useState("");
   const [isWriting, setIsWriting] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [editPost, setEditPost] = useState(null);
 
-  const [faqList, setFaqList] = useState([]);
-  const [qnaList, setQnaList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // FAQ (검색만 가능)
+  const [faqList, setFaqList] = useState([
+    { id: 1, title: "비밀번호 변경 방법은?", content: "프로필 설정에서 변경 가능합니다.", time: "09:40" },
+    { id: 2, title: "회원탈퇴는 어떻게 하나요?", content: "마이페이지에서 탈퇴 요청이 가능합니다.", time: "11:15" },
+  ]);
+  const [originalFaqList, setOriginalFaqList] = useState(faqList);
 
-  // --- 1. (추가) 현재 클릭해서 열어볼 Q&A 항목 ID ---
-  const [selectedInquiryId, setSelectedInquiryId] = useState(null);
+  // QnA (글쓰기/수정/삭제 가능)
+  const [qnaList, setQnaList] = useState([
+    { id: 1, title: "첫번째 문의", content: "테스트", time: "13:10" },
+  ]);
+  const [originalQnaList, setOriginalQnaList] = useState(qnaList);
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        if (activeSubTab === "faq") {
-          // FAQ 탭이면, Q&A 상세 내용을 닫음
-          setSelectedInquiryId(null); 
-          const faqData = await getFaqs();
-          setFaqList(faqData);
-        } else {
-          // Q&A 탭이면, Q&A 목록을 불러옴
-          const qnaData = await getMyInquiries();
-          setQnaList(qnaData);
-        }
-      } catch (error) {
-        console.error("데이터 로드 실패:", error);
-        alert("데이터를 불러오는 데 실패했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadData();
-  }, [activeSubTab]); 
+    if (originalFaqList.length === 0) setOriginalFaqList(faqList);
+    if (originalQnaList.length === 0) setOriginalQnaList(qnaList);
+  }, []);
 
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value);
-  };
-
-  const handleAddQna = async (newPost) => {
-    if (!newPost.title || !newPost.content) {
-        alert("제목과 내용을 모두 입력해야 합니다.");
+  // 검색 버튼 클릭 시 필터링
+  const handleSearchClick = () => {
+    if (activeSubTab === "faq") {
+      if (!search.trim()) {
+        setFaqList(originalFaqList);
         return;
-    }
-    try {
-      await createInquiry({ title: newPost.title, content: newPost.content });
-      alert("문의가 등록되었습니다.");
-      
-      const qnaData = await getMyInquiries(); // 목록 새로고침
-      setQnaList(qnaData);
-      setIsWriting(false); // 목록으로 복귀
-      
-    } catch (error) {
-        alert("문의 등록에 실패했습니다: " + error.message);
+      }
+      const filtered = originalFaqList.filter(
+        (item) =>
+          item.title.toLowerCase().includes(search.toLowerCase()) ||
+          (item.content && item.content.toLowerCase().includes(search.toLowerCase()))
+      );
+      setFaqList(filtered);
+    } else {
+      if (!search.trim()) {
+        setQnaList(originalQnaList);
+        return;
+      }
+      const filtered = originalQnaList.filter(
+        (item) =>
+          item.title.toLowerCase().includes(search.toLowerCase()) ||
+          (item.content && item.content.toLowerCase().includes(search.toLowerCase()))
+      );
+      setQnaList(filtered);
     }
   };
 
+  const handleAddFaq = (newPost) => {
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+      now.getDate()
+    ).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(
+      now.getMinutes()
+    ).padStart(2, "0")}`;
+
+    const newItem = {
+      id: Date.now(),
+      title: newPost.title,
+      content: newPost.content,
+      time: dateStr
+    };
+
+    const updated = [newItem, ...faqList];
+    setFaqList(updated);
+    setOriginalFaqList(updated);
+    setIsWriting(false);
+  };
+  
+  // QnA 글 등록
+  const handleAddQna = (newPost) => {
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+    now.getDate()
+  ).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(
+    now.getMinutes()
+  ).padStart(2, "0")}`;
+
+    const newItem = {
+      id: Date.now(),
+      title: newPost.title,
+      content: newPost.content,
+      time: dateStr,
+    };
+
+    const updated = [newItem, ...qnaList];
+    setQnaList(updated);
+    setOriginalQnaList(updated);
+    setIsWriting(false);
+  };
+
+  // QnA 수정 완료
+  const handleEditSubmit = (updatedPost) => {
+    const updatedList = qnaList.map((post) =>
+      post.id === updatedPost.id ? updatedPost : post
+    );
+    setQnaList(updatedList);
+    setOriginalQnaList(updatedList);
+    setEditPost(null);
+    setSelectedPost(null);
+  };
+
+  // 삭제
+  const handleDelete = (postId) => {
+    if (window.confirm("정말 삭제하시겠습니까?")) {
+      const updated = qnaList.filter((post) => post.id !== postId);
+      setQnaList(updated);
+      setOriginalQnaList(updated);
+      setSelectedPost(null);
+      alert("삭제되었습니다.");
+    }
+  };
+
+  // 보기/수정/글쓰기 전환
+  const handleViewPost = (item) => setSelectedPost(item);
   const handleBackToList = () => {
     setSelectedPost(null);
     setEditPost(null);
     setIsWriting(false);
   };
 
-  // --- 2. (추가) Q&A 항목 클릭(토글) 핸들러 ---
-  const handleInquiryClick = (id) => {
-    // 이미 열려있으면 닫고, 닫혀있으면 연다.
-    if (selectedInquiryId === id) {
-      setSelectedInquiryId(null);
-    } else {
-      setSelectedInquiryId(id);
-    }
-  };
+  // 글쓰기 모드
+  if (isWriting) return <WriteTab onBack={handleBackToList} onSubmit={handleAddQna} />;
 
-  // 검색 필터링
-  const filteredFaqList = faqList.filter(
-    (item) =>
-      item.question.toLowerCase().includes(search.toLowerCase()) ||
-      item.category.toLowerCase().includes(search.toLowerCase())
-  );
-  const filteredQnaList = qnaList.filter(
-    (item) =>
-      item.title.toLowerCase().includes(search.toLowerCase())
-  );
+  // 수정 모드
+  if (editPost)
+    return <WriteTab onBack={handleBackToList} onSubmit={handleEditSubmit} editPost={editPost} />;
 
-  // FAQ 테이블
-  const renderFaqTable = (list) => (
-    <table className="table">
-      <thead>
-        <tr>
-          <th style={{width: "15%"}}>카테고리</th>
-          <th>제목 (질문)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {list.length === 0 ? (
-          <tr><td colSpan="2">검색 결과가 없습니다.</td></tr>
-        ) : (
-          list.map((item) => (
-            // (참고: FAQ도 Q&A처럼 클릭 시 답변을 보여줄 수 있습니다)
-            <React.Fragment key={item.id}>
-              <tr className="clickable-row" onClick={() => handleInquiryClick(item.id)}>
-                <td>{item.category}</td>
-                <td className="table-title">{item.question}</td>
-              </tr>
-              {/* FAQ 내용/답변이 펼쳐지는 부분 */}
-              {selectedInquiryId === item.id && (
-                <tr className="detail-row">
-                  <td colSpan="2">
-                    <div className="inquiry-content">
-                      <p>{item.answer}</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </React.Fragment>
-          ))
-        )}
-      </tbody>
-    </table>
-  );
+  // 상세 보기 모드 (흰 배경, 수정/삭제 버튼)
+  if (selectedPost) {
+    return (
+      <div className="tab-inner faq-tab">
+        <div className="write-form">
+          <h2>{selectedPost.title}</h2>
+          <hr />
+          <p style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>{selectedPost.content}</p>
+          <p style={{ color: "#777", marginTop: "10px" }}>작성시간: {selectedPost.time}</p>
+        </div>
 
-  // --- 3. (수정) Q&A 테이블 (내용 보기 기능 추가) ---
-  const renderQnaTable = (list) => (
-    <table className="table">
-      <thead>
-        <tr>
-          <th style={{width: "10%"}}>상태</th>
-          <th>제목</th>
-          <th style={{width: "25%"}}>작성시간</th>
-        </tr>
-      </thead>
-      <tbody>
-        {list.length === 0 ? (
-          <tr><td colSpan="3">작성한 문의가 없거나 검색 결과가 없습니다.</td></tr>
-        ) : (
-          list.map((item) => (
-            // Fragment를 사용해 1개의 항목당 2개의 row(제목, 내용)를 묶음
-            <Fragment key={item.id}>
-              {/* 1. 제목 행 (클릭 가능) */}
-              <tr 
-                className="clickable-row" 
-                onClick={() => handleInquiryClick(item.id)}
-              >
-                <td>{item.status === 'pending' ? '답변대기' : '답변완료'}</td>
-                <td className="table-title">{item.title}</td>
-                <td>{formatDateTime(item.createdAt)}</td>
-              </tr>
-              
-              {/* 2. 내용 행 (클릭된 ID와 일치할 때만 보임) */}
-              {selectedInquiryId === item.id && (
-                <tr className="detail-row">
-                  <td colSpan="3">
-                    <div className="inquiry-content">
-                      <strong>[문의 내용]</strong>
-                      {/* (참고: whiteSpace: 'pre-wrap' CSS가 필요) */}
-                      <p>{item.content}</p>
-                      
-                      <hr />
-                      
-                      <strong>[관리자 답변]</strong>
-                      <p>
-                        {item.status === 'answered' && item.answer 
-                          ? item.answer 
-                          : '답변 대기 중입니다.'}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </Fragment>
-          ))
-        )}
-      </tbody>
-    </table>
-  );
-
-
-  if (isWriting) {
-    return <WriteTab onBack={handleBackToList} onSubmit={handleAddQna} />;
+        <div className="btn-right" style={{ gap: "10px" }}>
+          <button className="common-btn" onClick={() => setEditPost(selectedPost)}>
+            수정
+          </button>
+          <button className="cancel-btn" onClick={() => handleDelete(selectedPost.id)}>
+            삭제
+          </button>
+          <button className="cancel-btn" onClick={handleBackToList}>
+            목록으로
+          </button>
+        </div>
+      </div>
+    );
   }
+
+  // 최신순 정렬
+  const sortedFaq = [...faqList]
+    .sort((a, b) => new Date(b.time) - new Date(a.time)) 
+    .map((item, index, arr) => ({ ...item, no: arr.length - index }));
+
+  const sortedQna = [...qnaList]
+    .sort((a, b) => new Date(b.time) - new Date(a.time))
+    .map((item, index, arr) => ({ ...item, no: arr.length - index }));
+
+  const listToShow = activeSubTab === "faq" ? sortedFaq : sortedQna;
 
   return (
     <div className="tab-inner faq-tab">
@@ -221,7 +196,7 @@ function FaqQnaTab() {
           type="text"
           placeholder="검색하세요."
           value={search}
-          onChange={handleSearchChange}
+          onChange={(e) => setSearch(e.target.value)}
         />
         <button className="search-btn" onClick={handleSearchClick}>
           <Search size={18} />
@@ -240,15 +215,31 @@ function FaqQnaTab() {
         </button>
       </div>
 
-      {loading ? (
-        <p>데이터를 불러오는 중입니다...</p>
-      ) : activeSubTab === "faq" ? (
-        renderFaqTable(filteredFaqList)
-      ) : (
-        renderQnaTable(filteredQnaList)
-      )}
+      {/* 테이블 */}
+      <table className="table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>제목</th>
+            <th>작성시간</th>
+          </tr>
+        </thead>
+        <tbody>
+          {listToShow.map((item) => (
+            <tr
+              key={item.id}
+              style={{ cursor: activeSubTab === "qna" ? "pointer" : "default" }}
+              onClick={() => activeSubTab === "qna" && handleViewPost(item)}
+            >
+              <td>{item.no}</td>
+              <td>{item.title}</td>
+              <td>{item.time}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-      {/* Q&A 탭에만 글쓰기 버튼 노출 */}
+      {/* QnA 글쓰기 버튼 */}
       {activeSubTab === "qna" && (
         <div className="btn-right">
           <button className="common-btn" onClick={() => setIsWriting(true)}>
