@@ -166,6 +166,16 @@ export default function WordGamePageCustom() {
         </div>
 
         {/* ... (단어장 목록 JSX 생략) ... */}
+          <div>
+          {/* 다운로드 받기 버튼*/}
+          <button
+            className="wordgame-nav-btn"
+          >
+            다운로드 받기
+          </button>
+        </div>
+
+        {/* 사용자가 등록한 세트 목록만 */}
         <section style={{ width: "100%", maxWidth: "800px" }}>
           <div className="wordgame-folder-container">
             {userSets.length === 0 ? (

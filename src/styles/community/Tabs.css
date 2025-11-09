@@ -14,10 +14,10 @@
 /* FAQ / Q&A 탭 전환 */
 .faq-tabs {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
+  align-items: center;
   gap: 30px;
   margin-bottom: 25px;
-  padding-left: 20px;
 }
 
 .faq-tabs button {
@@ -205,4 +205,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.reset-btn {
+  background: #FFD400;
+  border: none;
+  padding: 7px 10px;
+  margin-left: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.reset-btn:hover {
+  background: #FFD400;
 }

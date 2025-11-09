@@ -1,30 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../../../styles/community/Tabs.css";
 
-function WriteTab({ onBack, onSubmit }) {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+function WriteTab({ onBack, onSubmit, editPost }) {
+  const [title, setTitle] = useState(editPost ? editPost.title : "");
+  const [content, setContent] = useState(editPost ? editPost.content : "");
+
+  useEffect(() => {
+    if (editPost) {
+      setTitle(editPost.title);
+      setContent(editPost.content);
+    }
+  }, [editPost]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (!title || !content) {
-      alert("제목과 내용을 모두 입력해주세요");
+      alert("제목과 내용을 모두 입력해주세요.");
       return;
     }
 
-    // 부모(FaqQnaTab)로 전달
-    if (onSubmit) {
+    // 등록 / 수정
+    if (editPost) {
+      // 수정 모드
+      onSubmit({ ...editPost, title, content });
+      alert("수정되었습니다.");
+    } else {
+      // 새 글 작성
       onSubmit({ title, content });
+      alert("등록되었습니다.");
     }
 
-    alert("등록되었습니다");
+    // 입력 초기화 후 뒤로
     setTitle("");
     setContent("");
+    onBack();
   };
 
   return (
     <div className="tab-inner write-tab">
-      <h2>글쓰기</h2>
+      <h2>{editPost ? "글 수정" : "글쓰기"}</h2>
 
       <form onSubmit={handleSubmit} className="write-form">
         <div className="write-row">
@@ -49,7 +64,10 @@ function WriteTab({ onBack, onSubmit }) {
         </div>
 
         <div className="write-btns">
-          <button type="submit" className="common-btn">등록</button>
+          {/* 등록 / 수정 버튼 구분 */}
+          <button type="submit" className="common-btn">
+            {editPost ? "수정" : "등록"}
+          </button>
           <button
             type="button"
             className="cancel-btn"
