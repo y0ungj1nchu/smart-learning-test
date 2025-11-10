@@ -161,51 +161,6 @@
   background: #ddd;
 }
 
-/* 클릭 가능한 행(row)에 마우스 커서 변경 */
-.table .clickable-row {
-  cursor: pointer;
-}
-.table .clickable-row:hover {
-  background-color: #f9f9f9;
-}
-
-/* 상세 내용이 보이는 행(row) */
-.table .detail-row {
-  background-color: #fafafa;
-}
-
-/* 상세 내용(질문/답변)이 담긴 div */
-.inquiry-content {
-  padding: 20px;
-  text-align: left;
-  line-height: 1.6;
-}
-
-/* <p> 태그가 줄바꿈(Enter)을 인식하도록 함 */
-.inquiry-content p {
-  white-space: pre-wrap; /* (중요) 줄바꿈을 표시합니다 */
-  margin-top: 8px;
-  margin-bottom: 16px;
-  color: #333;
-}
-
-.inquiry-content strong {
-  color: #555;
-}
-
-.inquiry-content hr {
-  border: 0;
-  border-top: 1px solid #eee;
-  margin: 16px 0;
-}
-
-/* 테이블 제목(td)이 너무 길어지지 않도록 */
-.table .table-title {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .reset-btn {
   background: #FFD400;
   border: none;
