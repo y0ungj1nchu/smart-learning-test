@@ -68,6 +68,7 @@
 
 /* 캐릭터 카드 */
 .character-box {
+  position: relative; /* 자식 요소(.character-level)를 절대 위치로 지정하기 위함 */
   height: 120px;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -75,8 +76,25 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 10px;
-  font-size: 14px;
-  color: #888;
+  overflow: hidden; /* 이미지가 박스를 벗어나지 않도록 */
+}
+
+.character-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* 이미지 비율을 유지하면서 박스에 맞춤 */
+}
+
+.character-level {
+  position: absolute;
+  bottom: 5px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .character-name {
