@@ -1,4 +1,4 @@
-
+// src/pages/user/game/WordQuizPage.js
 import React, { useState, useEffect, useMemo } from "react";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
@@ -9,7 +9,7 @@ export default function WordQuizPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 배열 섞기 함수
+  // 배열 셔플
   function shuffle(array) {
     const result = [...array];
     for (let i = result.length - 1; i > 0; i--) {
@@ -19,12 +19,12 @@ export default function WordQuizPage() {
     return result;
   }
 
-  // 한 게임당 한 번만 보기 섞기 (useMemo로 고정)
+  // 보기 순서 랜덤 고정
   const wordList = useMemo(() => {
     const rawList = location.state?.wordList || [];
     return rawList.map((q) => ({
       ...q,
-      options: shuffle(q.options),  //보기 랜덤 순서
+      options: shuffle(q.options),
     }));
   }, [location.state?.wordList]);
 
@@ -38,7 +38,7 @@ export default function WordQuizPage() {
   const current = wordList[currentIndex];
   const selectedAnswer = answers.find((a) => a.word === current.word)?.selected;
 
-  // 보기 선택 시
+  // 보기 선택 처리
   const handleSelectOption = (option) => {
     const isCorrect = option === current.correct;
     const updated = [
@@ -47,24 +47,23 @@ export default function WordQuizPage() {
     ];
     setAnswers(updated);
 
-    // 마지막 문제 제외 나머지 자동으로
     if (currentIndex < wordList.length - 1) {
       setAutoNext(true);
     }
   };
 
-  // 자동 이동 타이머
+  // 자동 다음 문제 이동
   useEffect(() => {
     if (autoNext) {
       const timer = setTimeout(() => {
         setCurrentIndex((prev) => prev + 1);
         setAutoNext(false);
-      }, 1500);
+      }, 1200);
       return () => clearTimeout(timer);
     }
   }, [autoNext]);
 
-  // 결과 페이지로 이동
+  // 결과 페이지
   const handleResultClick = () => {
     if (answers.length < wordList.length) {
       setShowModal(true);
@@ -74,7 +73,7 @@ export default function WordQuizPage() {
     navigate("/user/game/result", {
       state: {
         results: answers,
-        origin: origin,
+        origin,
       },
     });
   };
@@ -92,7 +91,6 @@ export default function WordQuizPage() {
 
           <h3 className="wordgame-question">{current.word}</h3>
 
-          {/* 보기 버튼 */}
           <div className="wordgame-options">
             {current.options.map((opt) => (
               <button
@@ -114,7 +112,6 @@ export default function WordQuizPage() {
             ))}
           </div>
 
-          {/* 마지막 문제일 때만 결과 확인 버튼 */}
           {currentIndex === wordList.length - 1 && (
             <div className="wordgame-result-btns">
               <button className="wordgame-nav-btn" onClick={handleResultClick}>
@@ -125,11 +122,10 @@ export default function WordQuizPage() {
         </div>
       </div>
 
-      {/* 모달창 */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <p>문제를 풀고 결과를 확인하세요!</p>
+            <p>문제를 전부 풀어야 합니다!</p>
             <button className="modal-btn" onClick={() => setShowModal(false)}>
               확인
             </button>
