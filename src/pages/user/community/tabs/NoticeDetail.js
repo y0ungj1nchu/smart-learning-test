@@ -1,99 +1,81 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../../../../styles/community/Tabs.css";
-import Header1 from "../../../../components/common/Header1";
-import Header2 from "../../../../components/common/Header2";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { getNotices, getNoticeById } from "../../../../utils/api";
 
 function NoticeDetail() {
-  const location = useLocation();
   const navigate = useNavigate();
-  const { item, noticeList } = location.state || {};
+  const { id } = useParams();
 
-  if (!item) {
-    navigate("/user/community", { state: { defaultTab: "notice" } });
-    return null;
-  }
+  const [item, setItem] = useState(null);
+  const [noticeList, setNoticeList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const list = await getNotices();
+        const sorted = list.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setNoticeList(sorted);
+
+        const detail = await getNoticeById(id);
+        setItem(detail);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [id]);
+
+  if (loading) return <p style={{ padding: 20 }}>로딩 중...</p>;
+  if (!item) return <p style={{ padding: 20 }}>공지를 찾을 수 없습니다.</p>;
 
   const index = noticeList.findIndex((n) => n.id === item.id);
 
-  // 이전글
   const handlePrev = () => {
-    if (index === noticeList.length - 1) {
-      alert("이전글이 없습니다.");
-      return;
-    }
-    navigate("/user/community/notice-detail", {
-      state: { item: noticeList[index + 1], noticeList },
-    });
+    if (index === noticeList.length - 1) return alert("이전글이 없습니다.");
+    const prev = noticeList[index + 1];
+    navigate(`/user/community/notice-detail/${prev.id}`);
   };
 
-  // 다음글
   const handleNext = () => {
-    if (index === 0) {
-      alert("다음글이 없습니다.");
-      return;
-    }
-    navigate("/user/community/notice-detail", {
-      state: { item: noticeList[index - 1], noticeList },
-    });
+    if (index === 0) return alert("다음글이 없습니다.");
+    const next = noticeList[index - 1];
+    navigate(`/user/community/notice-detail/${next.id}`);
   };
 
   return (
-    <>
-      {/* 상단 헤더 */}
-      <Header1 isLoggedIn={true} />
-      <Header2 isLoggedIn={true} />
+    <div className="tab-inner">
+      <div className="faq-item-box">
 
-      {/* 전체 커뮤니티 구조 유지 */}
-      <div className="community-wrapper">
-        {/* 사이드바 */}
-        <div className="community-sidebar-container">
-          <div className="profile-sidebar">
-            <p className="sidebar-title">커뮤니티</p>
-            <ul>
-              <li onClick={() => navigate("/user/community")}>FAQ & 1:1 문의</li>
-              <li className="active" onClick={() => navigate("/user/community", { state: { defaultTab: "notice" } })}>
-                공지사항
-              </li>
-            </ul>
-          </div>
+        <h2 className="faq-detail-title">{item.title}</h2>
+        <hr />
+
+        <p className="faq-detail-content">{item.content}</p>
+
+        <p className="faq-detail-time">
+          작성시간: {new Date(item.createdAt).toLocaleString()}
+        </p>
+
+        <div className="btn-right">
+          <button className="common-btn small-btn" onClick={handlePrev}>
+            {"< 이전글"}
+          </button>
+          <button className="common-btn small-btn" onClick={handleNext}>
+            {"다음글 >"}
+          </button>
+          <button
+            className="cancel-btn small-btn"
+            onClick={() => navigate("/user/community/notice")}
+          >
+            목록으로
+          </button>
         </div>
 
-        {/* 오른쪽 내용 */}
-        <div className="community-main-content">
-          <div className="tab-inner notice-tab">
-            <div className="write-form">
-              <h2>{item.title}</h2>
-              <hr />
-              <p style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>{item.content}</p>
-              <p style={{ color: "#777", marginTop: "10px" }}>작성시간: {item.time}</p>
-            </div>
-
-            {/* 버튼 영역 */}
-            <div className="btn-right" style={{ gap: "6px", marginTop: "12px" }}>
-              <button
-                className="common-btn small-btn"
-                onClick={handlePrev}
-              >
-                {"< 이전글"}
-              </button>
-              <button
-                className="common-btn small-btn"
-                onClick={handleNext}
-              >
-                {"다음글 >"}
-              </button>
-              <button
-                className="cancel-btn small-btn"
-                onClick={() => navigate("/user/community", { state: { defaultTab: "notice" } })}
-              >
-                목록으로
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -1,55 +1,45 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React from "react";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import "../../../styles/community/Community.css";
 import "../../../styles/community/Tabs.css";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import FaqQnaTab from "./tabs/FaqQnaTab";
 import NoticeTab from "./tabs/NoticeTab";
+import NoticeDetail from "./tabs/NoticeDetail";
 
 function CommunityPage() {
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState("faq");
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (location.state?.defaultTab === "notice") {
-      setActiveTab("notice");
-    }
-  }, [location.state]);
+  const getActiveTab = () => {
+  if (location.pathname.includes("notice-detail")) return "notice";
+  if (location.pathname.includes("notice")) return "notice";
+  return "faq";
+};
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case "faq":
-        return <FaqQnaTab />;
-      case "notice":
-        return <NoticeTab />;
-      default:
-        return <FaqQnaTab />;
-    }
-  };
+  const activeTab = getActiveTab();
 
   return (
     <>
-      {/* 상단 헤더 */}
       <Header1 isLoggedIn={true} />
       <Header2 isLoggedIn={true} />
 
-      {/* 전체 배경 + 영역 */}
       <div className="community-wrapper">
-        {/* 왼쪽 사이드바 */}
+        {/* SIDE BAR */}
         <div className="community-sidebar-container">
           <div className="profile-sidebar">
             <p className="sidebar-title">커뮤니티</p>
             <ul>
               <li
                 className={activeTab === "faq" ? "active" : ""}
-                onClick={() => setActiveTab("faq")}
+                onClick={() => navigate("/user/community")}
               >
                 FAQ & 1:1 문의
               </li>
               <li
                 className={activeTab === "notice" ? "active" : ""}
-                onClick={() => setActiveTab("notice")}
+                onClick={() => navigate("/user/community/notice")}
               >
                 공지사항
               </li>
@@ -57,8 +47,16 @@ function CommunityPage() {
           </div>
         </div>
 
-        {/* 오른쪽 탭 콘텐츠 */}
-        <div className="community-main-content">{renderContent()}</div>
+        {/* MAIN CONTENT (오른쪽 영역) */}
+        <div className="community-main-content">
+          <Routes>
+            <Route index element={<FaqQnaTab />} />
+            <Route path="notice" element={<NoticeTab />} />
+
+            {/* 🔥 NoticeDetail도 탭 내부에서 보이도록 */}
+            <Route path="notice-detail/:id" element={<NoticeDetail />} />
+          </Routes>
+        </div>
       </div>
     </>
   );

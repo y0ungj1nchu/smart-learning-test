@@ -24,11 +24,9 @@ function WriteTab({ onBack, onSubmit, editPost }) {
     if (editPost) {
       // 수정 모드
       onSubmit({ ...editPost, title, content });
-      alert("수정되었습니다.");
     } else {
       // 새 글 작성
       onSubmit({ title, content });
-      alert("등록되었습니다.");
     }
 
     // 입력 초기화 후 뒤로

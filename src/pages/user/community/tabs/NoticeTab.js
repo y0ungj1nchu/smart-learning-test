@@ -2,85 +2,56 @@ import React, { useState, useEffect } from "react";
 import "../../../../styles/community/Tabs.css";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import WriteTab from "./WriteTab";
-import NoticeDetail from "./NoticeDetail";
+import { getNotices, getMyProfile } from "../../../../utils/api";
 
-function NoticeTab({ setActiveTab }) {
+function NoticeTab() {
   const [search, setSearch] = useState("");
-  const [isWriting, setIsWriting] = useState(false);
-  const [selectedNotice, setSelectedNotice] = useState(null);
-  const [noticeList, setNoticeList] = useState([
-    { id: 1, title: "업데이트 공지", time: "14:20", content: "업데이트 되었으니 확인 바랍니다." },
-    { id: 2, title: "점검 안내", time: "10:15", content: "내일 10시부터 점검이 예정되어 있습니다." },
-  ]);
+  const [noticeList, setNoticeList] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const saved = localStorage.getItem("noticeList");
-    if (saved) setNoticeList(JSON.parse(saved));
+    const loadProfile = async () => {
+      try {
+        const data = await getMyProfile();
+        setIsAdmin(data.role === "ADMIN");
+      } catch {}
+    };
+    loadProfile();
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("noticeList", JSON.stringify(noticeList));
-  }, [noticeList]);
+    const fetchNotices = async () => {
+      try {
+        const data = await getNotices();
+        setNoticeList(data);
+      } catch (error) {
+        console.error("공지 불러오기 실패", error);
+      }
+    };
+    fetchNotices();
+  }, []);
 
   const handleSearch = (e) => setSearch(e.target.value);
 
-  const handleAddNotice = (newPost) => {
-    const now = new Date();
-    const time = `${String(now.getHours()).padStart(2, "0")}:${String(
-      now.getMinutes()
-    ).padStart(2, "0")}`;
-    const newItem = {
-      id: Date.now(),
-      title: newPost.title,
-      time,
-      content: newPost.content,
-    };
-    setNoticeList([newItem, ...noticeList]);
-    setIsWriting(false);
-  };
-
   const handleViewNotice = (item) => {
-    navigate("/user/profile/notice-detail", { state: item });
+    navigate(`/user/community/notice-detail/${item.id}`);
   };
 
-  const handleBackToList = () => {
-    setSelectedNotice(null);
-  };
+  const sortedList = [...noticeList]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map((item, index, arr) => ({
+      ...item,
+      no: arr.length - index,
+    }));
 
-  // 글쓰기
-  if (isWriting) {
-    return (
-      <WriteTab onBack={() => setIsWriting(false)} onSubmit={handleAddNotice} />
-    );
-  }
-
-  // 글 클릭 → 상세 보기 모드
-  if (selectedNotice) {
-    return (
-      <NoticeDetail
-        title={selectedNotice.title}
-        content={selectedNotice.content}
-        time={selectedNotice.time}
-        onBack={handleBackToList}
-      />
-    );
-  }
-
-  // 최신시간이 위로 오도록 정렬
-  const sortedList = [...noticeList].sort((a, b) => {
-    return new Date(`1970/01/01 ${b.time}`) - new Date(`1970/01/01 ${a.time}`);
-  });
-
-  // 정렬된 리스트 기준으로 필터링
   const filteredList = sortedList.filter((item) =>
     item.title.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div className="notice-tab">
+    <div className="community-tab">
       <h2>공지사항</h2>
 
       <div className="search-box">
@@ -90,9 +61,7 @@ function NoticeTab({ setActiveTab }) {
           value={search}
           onChange={handleSearch}
         />
-        <button className="search-btn">
-          <Search size={18} />
-        </button>
+        <button className="search-btn"><Search size={18} /></button>
       </div>
 
       <table className="table">
@@ -105,24 +74,25 @@ function NoticeTab({ setActiveTab }) {
         </thead>
         <tbody>
           {filteredList.map((item) => (
-            <tr
-              key={item.id}
-              style={{ cursor: "pointer" }}
-              onClick={() => handleViewNotice(item)}
-            >
-              <td>{item.id}</td>
+            <tr key={item.id} onClick={() => handleViewNotice(item)}>
+              <td>{item.no}</td>
               <td>{item.title}</td>
-              <td>{item.time}</td>
+              <td>{new Date(item.createdAt).toLocaleString()}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <div className="btn-right">
-        <button className="common-btn" onClick={() => setIsWriting(true)}>
-          글쓰기
-        </button>
-      </div>
+      {isAdmin && (
+        <div className="btn-right">
+          <button
+            className="common-btn"
+            onClick={() => navigate("/user/community/notice-write")}
+          >
+            글쓰기
+          </button>
+        </div>
+      )}
     </div>
   );
 }
