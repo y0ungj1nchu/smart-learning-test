@@ -354,7 +354,68 @@ export const getMyInquiries = () => {
  * @param {object} data - { title: string, content: string }
  */
 export const createInquiry = (data) => {
-  return request('/inquiry', 'POST', data);
+  return request('/inquiry', 'POST', data);
+};
+
+/**
+ * 1:1 문의를 수정합니다.
+ * @param {number} id - 수정할 문의의 ID
+ * @param {object} data - { title: string, content: string }
+ */
+export const updateInquiry = (id, data) => {
+  return request(`/inquiry/${id}`, 'PUT', data);
+};
+
+/**
+ * 1:1 문의를 삭제합니다.
+ * @param {number} id - 삭제할 문의의 ID
+ */
+export const deleteInquiry = (id) => {
+  return request(`/inquiry/${id}`, 'DELETE');
+};
+
+// =================================================================
+// Notice (공지사항) API
+// =================================================================
+
+/**
+ * 모든 공지사항 목록을 조회합니다.
+ */
+export const getNotices = () => { 
+  return request('/notice', 'GET');
+};
+
+/**
+ * 특정 공지사항 상세 정보를 조회합니다.
+ * @param {number} id - 조회할 공지사항의 ID
+ */
+export const getNoticeById = (id) => {
+  return request(`/notice/${id}`, 'GET');
+};
+
+/**
+ * 새 공지사항을 작성합니다. (관리자용)
+ * @param {object} data - { title: string, content: string }
+ */
+export const createNotice = (data) => {
+  return request('/notice', 'POST', data);
+};
+
+/**
+ * 공지사항을 수정합니다. (관리자용)
+ * @param {number} id - 수정할 공지사항의 ID
+ * @param {object} data - { title: string, content: string }
+ */
+export const updateNotice = (id, data) => {
+  return request(`/notice/${id}`, 'PUT', data);
+};
+
+/**
+ * 공지사항을 삭제합니다. (관리자용)
+ * @param {number} id - 삭제할 공지사항의 ID
+ */
+export const deleteNotice = (id) => {
+  return request(`/notice/${id}`, 'DELETE');
 };
 
 // =================================================================
