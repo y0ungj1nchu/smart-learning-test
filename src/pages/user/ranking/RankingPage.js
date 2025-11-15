@@ -1,9 +1,25 @@
 import React, { useState, useEffect } from "react";
-import Header1 from "../../../components/common/Header1"; // [cite: y0ungj1nchu/smart-learning-test/smart-learning-test-43d7c948f09963115e95bcb5084fd0a13d860918/src/components/common/Header1.js]
-import Header2 from "../../../components/common/Header2"; // [cite: y0ungj1nchu/smart-learning-test/smart-learning-test-43d7c948f09963115e95bcb5084fd0a13d860918/src/components/common/Header2.js]
-// import { sortedRanking } from "../../../data/rankingData"; // 임시 데이터 삭제
-import { getRanking } from "../../../utils/api"; // <-- 1. default import가 아닌 named import로 변경
-import "../../../styles/ranking/RankingPage.css"; // [cite: y0ungj1nchu/smart-learning-test/smart-learning-test-43d7c948f09963115e95bcb5084fd0a13d860918/src/styles/ranking/RankingPage.css]
+import Header1 from "../../../components/common/Header1";
+import Header2 from "../../../components/common/Header2";
+import { getRanking } from "../../../utils/api";
+import "../../../styles/ranking/RankingPage.css";
+
+// 이미지 import
+import basicUser from "../../../assets/basicUser.png";
+import snoopy1 from "../../../assets/snoopy1.png";
+import snoopy2 from "../../../assets/snoopy2.png";
+import snoopy3 from "../../../assets/snoopy3.png";
+import snoopy4 from "../../../assets/snoopy4.png";
+import snoopy5 from "../../../assets/snoopy5.png";
+
+// 이미지 이름을 import된 객체에 매핑
+const characterImages = {
+  snoopy1,
+  snoopy2,
+  snoopy3,
+  snoopy4,
+  snoopy5,
+};
 
 function RankingPage() {
   const [rankings, setRankings] = useState([]);
@@ -16,9 +32,9 @@ function RankingPage() {
         setLoading(true);
         setError(null);
         
-        const data = await getRanking(); // <-- 2. 'api.get' 대신 'getRanking()' 함수 호출
+        const data = await getRanking();
         
-        setRankings(data); // (response.data가 아닌 data 바로 사용)
+        setRankings(data);
       } catch (err) {
         console.error("랭킹 API 호출 오류:", err);
         setError("랭킹을 불러오는 중 오류가 발생했습니다.");
@@ -83,17 +99,13 @@ function RankingPage() {
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>
-                    {/* (characterImage가 존재하는지 확인) */}
-                    {user.characterImage && (
-                      <img
-                        /* (참고) 이미지가 public/images 폴더 안에 
-                          snoopy1.png, snoopy2.png 처럼 저장되어 있어야 합니다.
-                        */
-                        src={`/images/${user.characterImage}.png`}
-                        alt={user.characterNickname}
-                        style={{ width: "40px", height: "40px", borderRadius: '50%' }}
-                      />
-                    )}
+                    <img
+                      // user.characterImage (e.g., "snoopy1")를 키로 사용하여
+                      // 해당 이미지(snoopy1)를 찾고, 없으면 기본 이미지를 사용합니다.
+                      src={characterImages[user.characterImage] || basicUser}
+                      alt={user.characterNickname}
+                      style={{ width: "40px", height: "40px", borderRadius: '50%' }}
+                    />
                   </td>
                   <td>
                     {user.characterNickname} ({user.userNickname})
