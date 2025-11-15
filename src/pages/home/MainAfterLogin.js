@@ -1,14 +1,29 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom"; // useNavigate 임포트
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import "../../styles/home/MainAfterLogin.css";
 import Header1 from "../../components/common/Header1";
 import Header2 from "../../components/common/Header2";
-import Footer from "../../components/common/Footer"; // Footer 임포트
+import Footer from "../../components/common/Footer";
 
-// --- 🔥 1. API (프로필, 캘린더) + 더미 랭킹 임포트 ---
-import { getMyProfile, getCalendarData } from "../../utils/api";
-import { sortedRanking } from "../../data/rankingData"; // 랭킹은 더미 데이터 사용
-// ---------------------------------------------
+// --- API Imports ---
+import { getMyProfile, getCalendarData, getRanking } from "../../utils/api";
+
+// --- Image Imports ---
+import basicUser from "../../assets/basicUser.png";
+import snoopy1 from "../../assets/snoopy1.png";
+import snoopy2 from "../../assets/snoopy2.png";
+import snoopy3 from "../../assets/snoopy3.png";
+import snoopy4 from "../../assets/snoopy4.png";
+import snoopy5 from "../../assets/snoopy5.png";
+
+// --- Image Mapping ---
+const characterImages = {
+  snoopy1,
+  snoopy2,
+  snoopy3,
+  snoopy4,
+  snoopy5,
+};
 
 // (날짜 함수 - YYYY-MM-DD 형식)
 function pad(n) { return n.toString().padStart(2, "0"); }
@@ -21,53 +36,58 @@ function ymd(date) {
 }
 
 function MainAfterLogin() {
-  const navigate = useNavigate(); // Link 대신 navigate 사용을 위해 추가
-  
   const [todayTodos, setTodayTodos] = useState([]);
-  const [todayDiary, setTodayDiary] = useState(null); // 🔥 일기 상태 추가
-  
-  // --- 🔥 2. 랭킹은 API가 아닌 useState로 관리 ---
   const [ranking, setRanking] = useState([]);
-  const [characterName, setCharacterName] = useState("캐릭터"); 
+  const [characterName, setCharacterName] = useState("캐릭터");
   const [characterLevel, setCharacterLevel] = useState(1);
-  // ---------------------------------------
+  const [characterImage, setCharacterImage] = useState(null); // 캐릭터 이미지 상태
 
-  // --- 🔥 3. API 및 더미 데이터 호출 ---
   useEffect(() => {
     // 1. 프로필 정보 (캐릭터) 불러오기
     const fetchProfile = async () => {
       try {
-        const data = await getMyProfile();
-        setCharacterName(data.nickname);
-        setCharacterLevel(data.level);
+        const profileData = await getMyProfile();
+        setCharacterName(profileData.characterNickname || profileData.nickname);
+        setCharacterLevel(profileData.level);
+        
+        // characterImage가 유효한 문자열인지 확인
+        if (profileData.characterImage && typeof profileData.characterImage === 'string') {
+          setCharacterImage(profileData.characterImage);
+        } else {
+          setCharacterImage(null); // 유효하지 않으면 null로 설정
+        }
       } catch (error) {
-        console.error("메인 닉네임 로드 실패:", error);
+        console.error("프로필 정보 로드 실패:", error);
       }
     };
 
-    // 2. 캘린더 (오늘 할 일 + 일기) 불러오기
-    const loadCalendar = async () => {
+    // 2. 캘린더 (오늘 할 일) 불러오기
+    const fetchCalendar = async () => {
       try {
         const todayStr = ymd(new Date());
-        const data = await getCalendarData(todayStr); 
-        setTodayTodos(data.todos || []);
-        setTodayDiary(data.diary || null); // 🔥 오늘 일기 상태 설정
+        const calendarData = await getCalendarData(todayStr);
+        setTodayTodos(calendarData.todos || []);
       } catch (error) {
-        console.error("메인 캘린더 로드 실패:", error);
+        console.error("캘린더 정보 로드 실패:", error);
       }
     };
 
-    // 3. 랭킹 (더미 데이터 사용)
-    const loadRanking = () => {
-        setRanking(sortedRanking.slice(0, 5)); // 더미 데이터 사용
+    // 3. 랭킹 불러오기
+    const fetchRanking = async () => {
+      try {
+        const rankingData = await getRanking();
+        setRanking(rankingData.slice(0, 5)); // 상위 5개만 표시
+      } catch (error) {
+        console.error("랭킹 정보 로드 실패:", error);
+        // 에러 발생 시 더미 데이터 대신 빈 배열 유지
+        setRanking([]);
+      }
     };
 
-    fetchProfile();   // API 호출
-    loadCalendar();   // API 호출
-    loadRanking();    // 더미 데이터 사용
-    
+    fetchProfile();
+    fetchCalendar();
+    fetchRanking();
   }, []);
-  // ------------------------------------
 
   return (
     <>
@@ -80,7 +100,7 @@ function MainAfterLogin() {
           <p className="card-title">캘린더</p>
           <div className="card">
             <h3>오늘의 할 일</h3>
-            <p className="date">{new Date().toLocaleDateString("ko-KR")}</p> 
+            <p className="date">{new Date().toLocaleDateString("ko-KR")}</p>
             
             {todayTodos.length === 0 ? (
               <ul>
@@ -105,10 +125,15 @@ function MainAfterLogin() {
         <div className="card-group">
           <p className="card-title">캐릭터</p>
           <div className="card">
-            {/* --- 🔥 4. 캐릭터 데이터 바인딩 --- */}
-            <div className="character-box">캐릭터 이미지 (Lv.{characterLevel})</div>
+            <div className="character-box">
+              <img
+                src={characterImage ? characterImages[characterImage] : basicUser}
+                alt="캐릭터"
+                className="character-image"
+              />
+              <span className="character-level">Lv.{characterLevel}</span>
+            </div>
             <p className="character-name">{characterName}</p>
-            {/* ------------------------------- */}
           </div>
         </div>
 
@@ -119,7 +144,6 @@ function MainAfterLogin() {
             <h3>주간 순위</h3>
             <p className="date">{new Date().toLocaleDateString("ko-KR")}</p>
             
-            {/* --- 🔥 5. 랭킹 데이터 바인딩 (더미) --- */}
             {ranking.length === 0 ? (
               <ul>
                 <li>순위 데이터가 없습니다.</li>
@@ -127,14 +151,12 @@ function MainAfterLogin() {
             ) : (
               <ol>
                 {ranking.map((user, i) => (
-                  // (더미 데이터는 id가 없으므로 key=i 사용)
-                  <li key={i}> 
-                    {i + 1}. {user.nickname}  —  Lv.{user.level}
+                  <li key={user.userId || i}>
+                    {i + 1}. {user.characterNickname || user.nickname} — Lv.{user.level}
                   </li>
                 ))}
               </ol>
             )}
-            {/* ----------------------------------- */}
             <Link to="/user/ranking" className="more-link">
               바로가기 →
             </Link>
