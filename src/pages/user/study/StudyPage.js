@@ -4,6 +4,27 @@ import Header2 from "../../../components/common/Header2";
 import "../../../styles/study/StudyPage.css";
 import { startStudySession, stopStudySession, getStudySummary, getCurrentStudySession } from "../../../utils/api";
 
+// Normalize seconds from API (handles seconds/ms and alt fields)
+const normalizeSec = (v) => {
+  if (v == null) return 0;
+  const n = Number(v);
+  return n > 7 * 24 * 3600 * 10 ? Math.floor(n / 1000) : Math.floor(n);
+};
+
+// Day/Week boundary helpers
+const startOfTodayMs = () => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+};
+const startOfWeekMs = () => {
+  const d = new Date();
+  const day = (d.getDay() + 6) % 7; // Mon=0 ... Sun=6
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - day);
+  return d.getTime();
+};
+
 function StudyPage() {
   const [time, setTime] = useState(0); 
   const [running, setRunning] = useState(false);
@@ -13,6 +34,10 @@ function StudyPage() {
   
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
+  const boundaryRef = useRef({
+    dayStart: startOfTodayMs(),
+    weekStart: startOfWeekMs(),
+  });
 
   // --- 🔥 수정된 부분 (페이지 로드 시 상태 복원) ---
   useEffect(() => {
@@ -20,8 +45,10 @@ function StudyPage() {
     const fetchStudySummary = async () => {
       try {
         const data = await getStudySummary();
-        setTodayStudy(data.todayStudy || 0);
-        setWeekStudy(data.weekStudy || 0);
+        const today = normalizeSec(data?.todaySeconds ?? data?.todayStudy);
+        const week = normalizeSec(data?.weekSeconds ?? data?.weekStudy);
+        setTodayStudy(today);
+        setWeekStudy(week);
       } catch (error) {
         console.error("학습 요약 불러오기 실패:", error);
       }
@@ -45,6 +72,18 @@ function StudyPage() {
           
           startTimeRef.current = startTimeMs; // 타이머 기준 시간 설정
           setTime(elapsedTime);               // 화면 시간 복원
+
+          // 서버 요약 값이 진행 중 세션의 경과를 포함했을 가능성 방지: 베이스 보정
+          const now = Date.now();
+          const elapsedSec = Math.floor((now - startTimeMs) / 1000);
+          let addToday = elapsedSec;
+          let addWeek = elapsedSec;
+          const todayOffset = Math.ceil((startOfTodayMs() - startTimeMs) / 1000);
+          if (todayOffset > 0) addToday = Math.max(0, elapsedSec - todayOffset);
+          const weekOffset = Math.ceil((startOfWeekMs() - startTimeMs) / 1000);
+          if (weekOffset > 0) addWeek = Math.max(0, elapsedSec - weekOffset);
+          setTodayStudy((prev) => Math.max(0, normalizeSec(prev) - addToday));
+          setWeekStudy((prev) => Math.max(0, normalizeSec(prev) - addWeek));
         }
       } catch (error) {
         console.error("진행 중인 세션 확인 실패:", error);
@@ -61,8 +100,21 @@ function StudyPage() {
   useEffect(() => {
     if (running) {
       timerRef.current = setInterval(() => {
-        const elapsedTime = Date.now() - startTimeRef.current;
+        const now = Date.now();
+        const elapsedTime = now - startTimeRef.current;
         setTime(elapsedTime);
+
+        // Reset base totals when day/week boundary rolls over
+        const ds = startOfTodayMs();
+        const ws = startOfWeekMs();
+        if (boundaryRef.current.dayStart !== ds) {
+          setTodayStudy(0);
+          boundaryRef.current.dayStart = ds;
+        }
+        if (boundaryRef.current.weekStart !== ws) {
+          setWeekStudy(0);
+          boundaryRef.current.weekStart = ws;
+        }
       }, 100); 
     } else {
       clearInterval(timerRef.current);
@@ -83,8 +135,8 @@ function StudyPage() {
         
         // 요약 정보 즉시 갱신
         const summaryData = await getStudySummary();
-        setTodayStudy(summaryData.todayStudy || 0);
-        setWeekStudy(summaryData.weekStudy || 0);
+        setTodayStudy(normalizeSec(summaryData?.todaySeconds ?? summaryData?.todayStudy));
+        setWeekStudy(normalizeSec(summaryData?.weekSeconds ?? summaryData?.weekStudy));
         
       } catch (error) {
         alert(error.message || "기록 중지에 실패했습니다.");
@@ -143,6 +195,19 @@ function StudyPage() {
                              ${Math.round(g1 + (g2 - g1) * progressRatio)}, 
                              ${Math.round(b1 + (b2 - b1) * progressRatio)})`;
 
+  // Live today/week accumulation while running (exclude pre-boundary portion)
+  const elapsedSec = Math.floor(time / 1000);
+  let addToday = elapsedSec;
+  let addWeek = elapsedSec;
+  if (running && startTimeRef.current) {
+    const todayOffset = Math.ceil((startOfTodayMs() - startTimeRef.current) / 1000);
+    if (todayOffset > 0) addToday = Math.max(0, elapsedSec - todayOffset);
+    const weekOffset = Math.ceil((startOfWeekMs() - startTimeRef.current) / 1000);
+    if (weekOffset > 0) addWeek = Math.max(0, elapsedSec - weekOffset);
+  }
+  const liveToday = todayStudy + addToday;
+  const liveWeek = weekStudy + addWeek;
+
   return (
     <>
       <Header1 isLoggedIn={true} />
@@ -171,11 +236,11 @@ function StudyPage() {
           <div className="record-title">공부 기록</div>
           <div className="record-item">
             <span>이번 주 공부 시간</span>
-            <span>{formatTime(weekStudy)}</span>
+            <span>{formatTime(liveWeek)}</span>
           </div>
           <div className="record-item">
             <span>오늘의 공부 시간</span>
-            <span>{formatTime(todayStudy)}</span>
+            <span>{formatTime(liveToday)}</span>
           </div>
         </div>
       </div>
