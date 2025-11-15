@@ -66,7 +66,7 @@ function App() {
           <Route path="/user/calendar" element={<CalendarPage />} />
 
           {/* 커뮤니티 페이지 */}
-          <Route path="/user/community" element={<Community />} />
+          <Route path="/user/community/*" element={<Community />} />
 
           {/* 캐릭터 페이지 */}
           <Route path="/user/character" element={<CharacterPage/>} />
@@ -85,7 +85,7 @@ function App() {
           <Route path="/user/study" element={<StudyPage/>} />
 
           {/* (기존 코드 유지) */}
-          <Route path="/user/profile/notice-detail" element={<NoticeDetail />} />
+          
       
         </Routes>
       </Router>
