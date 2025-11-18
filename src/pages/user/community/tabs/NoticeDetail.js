@@ -1,79 +1,66 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import "../../../../styles/community/Tabs.css";
-import { useNavigate, useParams } from "react-router-dom";
-import { getNotices, getNoticeById } from "../../../../utils/api";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 function NoticeDetail() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
 
-  const [item, setItem] = useState(null);
-  const [noticeList, setNoticeList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { item, noticeList } = location.state || {};
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const list = await getNotices();
-        const sorted = list.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-        setNoticeList(sorted);
+  if (!item || !noticeList) {
+    navigate("/user/community/notice");
+    return null;
+  }
 
-        const detail = await getNoticeById(id);
-        setItem(detail);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, [id]);
-
-  if (loading) return <p style={{ padding: 20 }}>로딩 중...</p>;
-  if (!item) return <p style={{ padding: 20 }}>공지를 찾을 수 없습니다.</p>;
-
-  const index = noticeList.findIndex((n) => n.id === item.id);
+  const index = noticeList.findIndex((n) => n.id === Number(id));
 
   const handlePrev = () => {
     if (index === noticeList.length - 1) return alert("이전글이 없습니다.");
     const prev = noticeList[index + 1];
-    navigate(`/user/community/notice-detail/${prev.id}`);
+    navigate(`/user/community/notice-detail/${prev.id}`, {
+      state: { item: prev, noticeList },
+    });
   };
 
   const handleNext = () => {
     if (index === 0) return alert("다음글이 없습니다.");
     const next = noticeList[index - 1];
-    navigate(`/user/community/notice-detail/${next.id}`);
+    navigate(`/user/community/notice-detail/${next.id}`, {
+      state: { item: next, noticeList },
+    });
   };
 
   return (
-    <div className="tab-inner">
-      <div className="faq-item-box">
-
-        <h2 className="faq-detail-title">{item.title}</h2>
+    <div className="tab-inner notice-tab">
+      {/* FAQ와 완전히 동일한 디자인 */}
+      <div className="write-form">
+        <h2>{item.title}</h2>
         <hr />
 
-        <p className="faq-detail-content">{item.content}</p>
-
-        <p className="faq-detail-time">
-          작성시간: {new Date(item.createdAt).toLocaleString()}
+        <p style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
+          {item.content}
         </p>
 
-        <div className="btn-right">
-          <button className="common-btn small-btn" onClick={handlePrev}>
-            {"< 이전글"}
-          </button>
-          <button className="common-btn small-btn" onClick={handleNext}>
-            {"다음글 >"}
-          </button>
-          <button
-            className="cancel-btn small-btn"
-            onClick={() => navigate("/user/community/notice")}
-          >
-            목록으로
-          </button>
-        </div>
+        <p style={{ color: "#777", marginTop: "10px" }}>
+          작성시간: {new Date(item.createdAt).toLocaleString()}
+        </p>
+      </div>
 
+      <div className="btn-right" style={{ gap: "8px", marginTop: "20px" }}>
+        <button className="common-btn small-btn" onClick={handlePrev}>
+          {"< 이전글"}
+        </button>
+        <button className="common-btn small-btn" onClick={handleNext}>
+          {"다음글 >"}
+        </button>
+        <button
+          className="cancel-btn small-btn"
+          onClick={() => navigate("/user/community/notice")}
+        >
+          목록으로
+        </button>
       </div>
     </div>
   );

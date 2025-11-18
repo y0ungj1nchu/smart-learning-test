@@ -2,56 +2,41 @@ import React, { useState, useEffect } from "react";
 import "../../../../styles/community/Tabs.css";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getNotices, getMyProfile } from "../../../../utils/api";
+import { getNotices } from "../../../../utils/api";
 
 function NoticeTab() {
   const [search, setSearch] = useState("");
   const [noticeList, setNoticeList] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
-
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const data = await getMyProfile();
-        setIsAdmin(data.role === "ADMIN");
-      } catch {}
-    };
-    loadProfile();
-  }, []);
-
-  useEffect(() => {
-    const fetchNotices = async () => {
+    const fetchData = async () => {
       try {
         const data = await getNotices();
         setNoticeList(data);
-      } catch (error) {
-        console.error("공지 불러오기 실패", error);
+      } catch (err) {
+        console.error("공지 불러오기 실패:", err);
       }
     };
-    fetchNotices();
+    fetchData();
   }, []);
 
-  const handleSearch = (e) => setSearch(e.target.value);
-
-  const handleViewNotice = (item) => {
-    navigate(`/user/community/notice-detail/${item.id}`);
-  };
-
-  const sortedList = [...noticeList]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .map((item, index, arr) => ({
-      ...item,
-      no: arr.length - index,
-    }));
-
-  const filteredList = sortedList.filter((item) =>
+  const filtered = noticeList.filter((item) =>
     item.title.toLowerCase().includes(search.toLowerCase())
   );
 
+  const sorted = [...filtered].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  );
+
+  // 번호 생성
+  const numberedList = sorted.map((item, index) => ({
+    ...item,
+    no: sorted.length - index,
+  }));
+
   return (
-    <div className="community-tab">
+    <div className="tab-inner notice-tab">
       <h2>공지사항</h2>
 
       <div className="search-box">
@@ -59,9 +44,11 @@ function NoticeTab() {
           type="text"
           placeholder="검색하세요."
           value={search}
-          onChange={handleSearch}
+          onChange={(e) => setSearch(e.target.value)}
         />
-        <button className="search-btn"><Search size={18} /></button>
+        <button className="search-btn">
+          <Search size={18} />
+        </button>
       </div>
 
       <table className="table">
@@ -72,27 +59,36 @@ function NoticeTab() {
             <th>작성시간</th>
           </tr>
         </thead>
+
         <tbody>
-          {filteredList.map((item) => (
-            <tr key={item.id} onClick={() => handleViewNotice(item)}>
+          {numberedList.map((item) => (
+            <tr
+              key={item.id}
+              style={{ cursor: "pointer" }}
+              onClick={() =>
+                navigate(`/user/community/notice-detail/${item.id}`, {
+                  state: {
+                    item,
+                    noticeList: numberedList,
+                  },
+                })
+              }
+            >
               <td>{item.no}</td>
               <td>{item.title}</td>
               <td>{new Date(item.createdAt).toLocaleString()}</td>
             </tr>
           ))}
+
+          {numberedList.length === 0 && (
+            <tr>
+              <td colSpan={3} style={{ padding: 16, textAlign: "center" }}>
+                공지사항이 없습니다.
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
-
-      {isAdmin && (
-        <div className="btn-right">
-          <button
-            className="common-btn"
-            onClick={() => navigate("/user/community/notice-write")}
-          >
-            글쓰기
-          </button>
-        </div>
-      )}
     </div>
   );
 }
