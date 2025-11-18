@@ -67,6 +67,7 @@ function App() {
 
           {/* 커뮤니티 페이지 */}
           <Route path="/user/community/*" element={<Community />} />
+          <Route path="/user/community/notice-detail" element={<NoticeDetail />} />
 
           {/* 캐릭터 페이지 */}
           <Route path="/user/character" element={<CharacterPage/>} />
