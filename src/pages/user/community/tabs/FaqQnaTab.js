@@ -37,7 +37,7 @@ function FaqQnaTab() {
         id: faq.id,
         title: faq.question,
         content: faq.answer,
-        createdAt: faq.createdAt, // ✅ created_at 말고 createdAt
+        createdAt: faq.createdAt,
       }));
 
       setFaqList(mappedFaqs);
@@ -60,7 +60,7 @@ function FaqQnaTab() {
         id: qna.id,
         title: qna.title,
         content: qna.content,
-        createdAt: qna.createdAt, // ✅ created_at → createdAt
+        createdAt: qna.createdAt,
       }));
 
       setQnaList(mappedQnas);
@@ -215,12 +215,6 @@ function FaqQnaTab() {
                 className="common-btn"
                 onClick={() => setEditPost(selectedPost)}
               >
-                수정
-              </button>
-              <button
-                className="cancel-btn"
-                onClick={() => handleDelete(selectedPost.id)}
-              >
                 삭제
               </button>
             </>
@@ -315,7 +309,7 @@ function FaqQnaTab() {
           {listToShow.map((item) => (
             <tr
               key={item.id}
-              style={{ cursor: "pointer" }} // ✅ FAQ/QnA 모두 클릭 가능
+              style={{ cursor: "pointer" }}
               onClick={() => handleViewPost(item)}
             >
               <td>{item.no}</td>
