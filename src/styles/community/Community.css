@@ -44,3 +44,10 @@
   color: #000;
   border-bottom: 3px solid #000;
 }
+
+/* 이전글, 다음글, 목록으로 버튼 크기 조정 */
+.small-btn {
+  padding: 6px 14px;
+  font-size: 14px;
+  border-radius: 6px;
+}

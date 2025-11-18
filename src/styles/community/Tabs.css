@@ -9,6 +9,7 @@
   font-weight: 800;
   margin-bottom: 25px;
   color: #333;
+  text-align: left;
 }
 
 /* FAQ / Q&A 탭 전환 */
@@ -35,42 +36,54 @@
   border-bottom: 2px solid #000;
 }
 
-/* 검색창 */
+/* 검색창 (공지/FAQ/QnA 통일) */
 .search-box {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   margin-bottom: 20px;
+  gap: 6px;
 }
 
 .search-box input {
-  width: 250px;
-  padding: 8px 10px;
-  border-radius: 4px;
+  width: 260px;
+  padding: 9px 12px;
+  border-radius: 6px;
   border: 1px solid #ccc;
+  font-size: 14px;
 }
 
 .search-btn {
   background: #FFD400;
   border: none;
-  padding: 7px 10px;
-  margin-left: 5px;
-  border-radius: 4px;
+  color: #333;
+  padding: 8px 14px;
+  border-radius: 6px;
   cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+.search-btn:hover {
+  background: #e6c200;
 }
 
-/* 테이블 */
+/* 테이블 통일 */
 .table {
   width: 100%;
   background-color: #fff;
   border-collapse: collapse;
   text-align: center;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .table th,
 .table td {
   border: 1px solid #ddd;
-  padding: 12px 0;
+  padding: 14px 0;
+  font-size: 15px;
+  color: #333;
 }
 
 .table th {
@@ -83,6 +96,7 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 20px;
+  gap: 10px;
 }
 
 /* 글쓰기 탭 */
@@ -131,6 +145,7 @@
   gap: 10px;
 }
 
+/* 버튼 통일 */
 .common-btn {
   background: #FFD400;
   border: none;
@@ -140,10 +155,6 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s;
-}
-
-.common-btn:hover {
-  background: #e6c200;
 }
 
 .cancel-btn {
@@ -157,19 +168,13 @@
   transition: background 0.2s;
 }
 
-.cancel-btn:hover {
-  background: #ddd;
-}
-
+/* 공통 리셋 버튼 */
 .reset-btn {
   background: #FFD400;
   border: none;
-  padding: 7px 10px;
-  margin-left: 5px;
-  border-radius: 4px;
+  padding: 8px 14px;
+  border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
 }
-.reset-btn:hover {
-  background: #FFD400;
-}
+
