@@ -9,6 +9,7 @@ function NoticeTab() {
   const [noticeList, setNoticeList] = useState([]);
   const navigate = useNavigate();
 
+  // 공지 불러오기 (백엔드 API)
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -21,10 +22,12 @@ function NoticeTab() {
     fetchData();
   }, []);
 
+  // 검색 적용
   const filtered = noticeList.filter((item) =>
     item.title.toLowerCase().includes(search.toLowerCase())
   );
 
+  // 최신순 정렬
   const sorted = [...filtered].sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
   );
@@ -39,6 +42,7 @@ function NoticeTab() {
     <div className="tab-inner notice-tab">
       <h2>공지사항</h2>
 
+      {/* 검색창 */}
       <div className="search-box">
         <input
           type="text"
@@ -51,6 +55,7 @@ function NoticeTab() {
         </button>
       </div>
 
+      {/* 목록 */}
       <table className="table">
         <thead>
           <tr>

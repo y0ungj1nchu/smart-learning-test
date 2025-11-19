@@ -20,39 +20,52 @@ export default function WordGamePageCustom() {
 
   const [setTitle, setSetTitle] = useState("");
   const [file, setFile] = useState(null);
-  const fileInputRef = useRef();
+  const fileInputRef = useRef(null);
 
-  // CSV 선택
+  // CSV 파일 선택
   const handleFileChange = (e) => {
-    setFile(e.target.files[0] || null);
+    const selected = e.target.files?.[0] || null;
+    setFile(selected);
   };
 
-  // 업로드 → 단어장 등록
+  // 업로드 → 단어장 등록 (백엔드 연결)
   const handleUpload = async () => {
-    if (!setTitle.trim()) return alert("세트 이름을 입력하세요.");
-    if (!file) return alert("CSV 파일을 선택하세요.");
+    if (!setTitle.trim()) {
+      alert("세트 이름을 입력하세요.");
+      return;
+    }
+    if (!file) {
+      alert("CSV 파일을 선택하세요.");
+      return;
+    }
 
     try {
-      const data = await uploadWordSet(setTitle, file);
+      const data = await uploadWordSet(setTitle.trim(), file);
 
-      addUserSet(data.newSet.id, data.newSet.setTitle); // setName → setTitle로 통일
+      // 백엔드가 반환한 newSet 정보 사용
+      // newSet: { id, setTitle, createdAt, ... }
+      addUserSet(data.newSet.id, data.newSet.setTitle);
 
       alert("단어장이 등록되었습니다!");
 
+      // 입력값 초기화
       setSetTitle("");
       setFile(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     } catch (error) {
-      alert(error.message);
+      console.error("단어장 업로드 실패:", error);
+      alert(error.message || "단어장 업로드 중 오류가 발생했습니다.");
     }
   };
 
-  // 템플릿 다운로드
+  // CSV 템플릿 다운로드 (백엔드에서 내려주는 템플릿)
   const handleDownloadTemplate = () => {
     downloadWordTemplate();
   };
 
-  // 단어장 클릭 → 퀴즈 시작
+  // 단어장 클릭 → 퀴즈 시작 (백엔드에서 단어 가져오기)
   const startQuiz = async (setObj) => {
     try {
       const data = await getWordsForSet(setObj.id);
@@ -65,7 +78,8 @@ export default function WordGamePageCustom() {
         },
       });
     } catch (error) {
-      alert(error.message);
+      console.error("단어장 불러오기 실패:", error);
+      alert(error.message || "단어장을 불러오는 중 오류가 발생했습니다.");
     }
   };
 
@@ -105,7 +119,10 @@ export default function WordGamePageCustom() {
             등록하기
           </button>
 
-          <button className="wordgame-nav-btn" onClick={handleDownloadTemplate}>
+          <button
+            className="wordgame-nav-btn"
+            onClick={handleDownloadTemplate}
+          >
             템플릿 다운로드
           </button>
         </div>
@@ -121,6 +138,7 @@ export default function WordGamePageCustom() {
                   <div
                     className="wordgame-folder-left"
                     onClick={() => startQuiz(setObj)}
+                    style={{ cursor: "pointer" }}
                   >
                     <img src={folderIcon} alt="folder" />
                     <p>{setObj.setTitle}</p>
@@ -129,7 +147,7 @@ export default function WordGamePageCustom() {
                   <button
                     className="wordgame-delete-btn"
                     onClick={(e) => {
-                      e.stopPropagation();
+                      e.stopPropagation(); // 폴더 클릭 이벤트 막기
                       deleteUserSet(setObj.id);
                     }}
                   >

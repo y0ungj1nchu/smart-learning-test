@@ -61,6 +61,14 @@ export default function WordGamePageBasic() {
         { word: "improve", correct: "향상시키다", options: ["향상시키다", "유지하다", "변경하다", "포기하다"] },
       ],
     },
+    {
+      name: "산성비 test",
+      wordList: [
+        { word: "acid",     correct: "산",    options: ["산","염기","중성","수용액"] },
+        { word: "rain",     correct: "비",    options: ["비","눈","안개","이슬"] },
+        { word: "erosion",  correct: "침식",  options: ["침식","증발","응결","응집"] },
+      ],
+    },
   ];
 
   const startPreset = (preset) => {

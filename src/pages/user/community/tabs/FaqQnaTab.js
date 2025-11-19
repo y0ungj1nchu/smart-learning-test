@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../../../../styles/community/Tabs.css";
 import { Search } from "lucide-react";
 import WriteTab from "./WriteTab";
+
 import {
   getFaqs,
   getMyInquiries,
@@ -17,11 +18,10 @@ function FaqQnaTab() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [editPost, setEditPost] = useState(null);
 
-  // FAQ (검색만 가능)
+  // FAQ / QNA 리스트
   const [faqList, setFaqList] = useState([]);
   const [originalFaqList, setOriginalFaqList] = useState([]);
 
-  // QnA (글쓰기/수정/삭제 가능)
   const [qnaList, setQnaList] = useState([]);
   const [originalQnaList, setOriginalQnaList] = useState([]);
 
@@ -32,16 +32,15 @@ function FaqQnaTab() {
     try {
       const faqs = await getFaqs();
 
-      // DB 컬럼: createdAt (camelCase)
-      const mappedFaqs = faqs.map((faq) => ({
+      const mapped = faqs.map((faq) => ({
         id: faq.id,
         title: faq.question,
         content: faq.answer,
         createdAt: faq.createdAt,
       }));
 
-      setFaqList(mappedFaqs);
-      setOriginalFaqList(mappedFaqs);
+      setFaqList(mapped);
+      setOriginalFaqList(mapped);
     } catch (error) {
       console.error("FAQ 목록 조회 실패:", error);
       alert("FAQ 목록을 불러오는 데 실패했습니다.");
@@ -55,29 +54,29 @@ function FaqQnaTab() {
     try {
       const qnas = await getMyInquiries();
 
-      // DB 컬럼: createdAt (camelCase)
-      const mappedQnas = qnas.map((qna) => ({
+      const mapped = qnas.map((qna) => ({
         id: qna.id,
         title: qna.title,
         content: qna.content,
         createdAt: qna.createdAt,
       }));
 
-      setQnaList(mappedQnas);
-      setOriginalQnaList(mappedQnas);
+      setQnaList(mapped);
+      setOriginalQnaList(mapped);
     } catch (error) {
       console.error("Q&A 목록 조회 실패:", error);
       alert("Q&A 목록을 불러오는 데 실패했습니다.");
     }
   };
 
+  // 첫 로딩 시 FAQ/QNA 불러오기
   useEffect(() => {
     fetchFaqs();
     fetchQnas();
   }, []);
 
   // =========================
-  // 검색 버튼 클릭 시 필터링
+  // 검색
   // =========================
   const handleSearchClick = () => {
     const keyword = search.trim().toLowerCase();
@@ -107,15 +106,27 @@ function FaqQnaTab() {
     }
   };
 
+  // 검색어 공백 → 자동 복원
+  useEffect(() => {
+    if (!search.trim()) {
+      setFaqList(originalFaqList);
+      setQnaList(originalQnaList);
+    }
+  }, [search, originalFaqList, originalQnaList]);
+
   // =========================
-  // QnA 글 등록
+  // QNA 등록
   // =========================
   const handleAddQna = async (newPost) => {
     try {
-      await createInquiry({ title: newPost.title, content: newPost.content });
+      await createInquiry({
+        title: newPost.title,
+        content: newPost.content,
+      });
+
       alert("문의가 등록되었습니다.");
       setIsWriting(false);
-      fetchQnas(); // 목록 새로고침
+      fetchQnas();
     } catch (error) {
       console.error(error);
       alert("문의 등록에 실패했습니다.");
@@ -123,7 +134,7 @@ function FaqQnaTab() {
   };
 
   // =========================
-  // QnA 수정 완료
+  // QNA 수정
   // =========================
   const handleEditSubmit = async (updatedPost) => {
     try {
@@ -131,10 +142,11 @@ function FaqQnaTab() {
         title: updatedPost.title,
         content: updatedPost.content,
       });
+
       alert("문의가 수정되었습니다.");
       setEditPost(null);
       setSelectedPost(null);
-      fetchQnas(); // 목록 새로고침
+      fetchQnas();
     } catch (error) {
       console.error(error);
       alert("문의 수정에 실패했습니다.");
@@ -142,25 +154,22 @@ function FaqQnaTab() {
   };
 
   // =========================
-  // QnA 삭제
+  // QNA 삭제
   // =========================
   const handleDelete = async (postId) => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      try {
-        await deleteInquiry(postId);
-        alert("삭제되었습니다.");
-        setSelectedPost(null);
-        fetchQnas(); // 목록 새로고침
-      } catch (error) {
-        console.error(error);
-        alert("삭제에 실패했습니다.");
-      }
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+
+    try {
+      await deleteInquiry(postId);
+      alert("삭제되었습니다.");
+      setSelectedPost(null);
+      fetchQnas();
+    } catch (error) {
+      console.error(error);
+      alert("삭제 실패");
     }
   };
 
-  // =========================
-  // 보기/수정/글쓰기 전환
-  // =========================
   const handleViewPost = (item) => setSelectedPost(item);
 
   const handleBackToList = () => {
@@ -175,9 +184,7 @@ function FaqQnaTab() {
   if (isWriting)
     return <WriteTab onBack={handleBackToList} onSubmit={handleAddQna} />;
 
-  // =========================
   // 수정 모드
-  // =========================
   if (editPost)
     return (
       <WriteTab
@@ -187,9 +194,7 @@ function FaqQnaTab() {
       />
     );
 
-  // =========================
   // 상세 보기 모드
-  // =========================
   if (selectedPost) {
     return (
       <div className="tab-inner faq-tab">
@@ -208,19 +213,24 @@ function FaqQnaTab() {
         </div>
 
         <div className="btn-right" style={{ gap: "10px" }}>
-          {/* ✅ QnA일 때만 수정/삭제 버튼 노출 */}
+          {/* QNA일 때만 수정/삭제표시 */}
           {activeSubTab === "qna" && (
             <>
               <button
                 className="common-btn"
                 onClick={() => setEditPost(selectedPost)}
               >
+                수정
+              </button>
+              <button
+                className="common-btn"
+                onClick={() => handleDelete(selectedPost.id)}
+              >
                 삭제
               </button>
             </>
           )}
 
-          {/* ✅ FAQ/QnA 공통: 목록으로 버튼 */}
           <button className="cancel-btn" onClick={handleBackToList}>
             목록으로
           </button>
@@ -229,22 +239,17 @@ function FaqQnaTab() {
     );
   }
 
-  // =========================
-  // 최신순 정렬 + No 생성
-  // =========================
+  // 리스트 정렬
   const sortedFaq = [...faqList]
-  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-  .map((item, index) => ({ ...item, no: index + 1 }));
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map((item, idx) => ({ ...item, no: idx + 1 }));
 
   const sortedQna = [...qnaList]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .map((item, index, arr) => ({ ...item, no: arr.length - index }));
+    .map((item, idx) => ({ ...item, no: idx + 1 }));
 
   const listToShow = activeSubTab === "faq" ? sortedFaq : sortedQna;
 
-  // =========================
-  // 메인 렌더
-  // =========================
   return (
     <div className="tab-inner faq-tab">
       <h2>{activeSubTab === "faq" ? "자주 묻는 질문" : "1:1 문의"}</h2>
@@ -284,7 +289,7 @@ function FaqQnaTab() {
         </button>
       </div>
 
-      {/* 테이블 */}
+      {/* 목록 테이블 */}
       <table className="table">
         <thead>
           <tr>
@@ -295,11 +300,7 @@ function FaqQnaTab() {
         </thead>
         <tbody>
           {listToShow.map((item) => (
-            <tr
-              key={item.id}
-              style={{ cursor: "pointer" }}
-              onClick={() => handleViewPost(item)}
-            >
+            <tr key={item.id} style={{ cursor: "pointer" }} onClick={() => handleViewPost(item)}>
               <td>{item.no}</td>
               <td>{item.title}</td>
               <td>
@@ -312,7 +313,6 @@ function FaqQnaTab() {
         </tbody>
       </table>
 
-      {/* QnA 글쓰기 버튼 */}
       {activeSubTab === "qna" && (
         <div className="btn-right">
           <button className="common-btn" onClick={() => setIsWriting(true)}>

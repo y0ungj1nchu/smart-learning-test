@@ -178,3 +178,160 @@
   font-weight: bold;
 }
 
+/* 관리자 수정/삭제 버튼 통일 */
+.action-btn {
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* 수정 버튼 */
+.edit-btn {
+  background: #FFD400;
+  color: #333;
+  border: none;
+}
+.edit-btn:hover {
+  background: #e6c200;
+}
+
+/* 삭제 버튼 */
+.delete-btn {
+  background: #eee;
+  color: #333;
+  border: none;
+}
+.delete-btn:hover {
+  background: #ddd;
+}
+
+.table td.action-cell {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+/* 문의 개수 표시 박스 */
+.qna-stats-box {
+  display: flex;
+  justify-content: flex-start;
+  gap: 20px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.qna-total {
+  color: #333;
+}
+
+.qna-unanswered {
+  color: #d9534f;
+}
+
+/* 답변 상태 색상 */
+.status-pending {
+  color: #d9534f;
+  font-weight: bold;
+}
+
+.status-complete {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+/* 사용자 문의 본문 */
+.qna-content {
+  margin: 15px 0;
+  padding: 15px;
+  background: #f8f8f8;
+  border-radius: 8px;
+  line-height: 1.5;
+}
+/* 리자 문의 통계 박스 */
+.qna-stats-box {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.qna-tag {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.qna-tag span {
+  margin-left: 6px;
+}
+
+.qna-tag.total {
+  background: #ffffff;
+  border: 1px solid #ccc;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  color: #333;
+}
+
+.qna-tag.unanswered {
+  background: #ffe0e0;
+  color: #b30000;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+/* 미답변 필터 버튼 */
+.filter-btn {
+  background: #ffd400;
+  border: none;
+  padding: 7px 14px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.filter-btn:hover {
+  background: #e6c200;
+}
+
+/* 답변 상태 색상 */
+.status-pending {
+  color: #d9534f;
+  font-weight: bold;
+}
+
+.status-complete {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+/* 답변 입력 박스 디자인 */
+.answer-label {
+  font-weight: bold;
+  font-size: 15px;
+  margin-bottom: 5px;
+  display: block;
+  color: #333;
+}
+
+.answer-textarea {
+  width: 100%;
+  height: 180px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  margin-bottom: 15px;
+}
+
+.answer-textarea:focus {
+  border-color: #ffd400;
+  box-shadow: 0 0 3px #ffe880;
+}

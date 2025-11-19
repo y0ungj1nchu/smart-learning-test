@@ -69,11 +69,13 @@ export default function WordQuizPage() {
       setShowModal(true);
       return;
     }
-
+    const acidList = wordList.map(({ word, correct }) => ({ word, correct }));
+    
     navigate("/user/game/result", {
       state: {
         results: answers,
-        origin,
+        origin: origin,
+        wordList: acidList,
       },
     });
   };

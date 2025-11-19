@@ -1,0 +1,263 @@
+.admin-game-bg {
+  background-color: #FFEEB5;
+  min-height: 100vh;
+  padding: 40px;
+  font-family: "Pretendard", sans-serif;
+}
+
+.admin-title {
+  font-size: 26px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* 검색 */
+.search-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 260px;
+  padding: 10px;
+  border: 2px solid #ffd400;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.search-btn {
+  background: #ffd400;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  transition: 0.2s;
+}
+
+.search-btn:hover {
+  background: #ffe46a;
+}
+
+/* 스탯 */
+.admin-stats {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: #fff;
+  border: 2px solid #ffd400;
+  padding: 20px;
+  border-radius: 12px;
+  width: 200px;
+  text-align: center;
+}
+
+.stat-card.clickable {
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.stat-card.clickable:hover {
+  background: #fff8d6;
+}
+
+/* 중복 박스 */
+.duplicate-box {
+  background: white;
+  width: 700px;
+  margin: 0 auto 30px auto;
+  border-radius: 12px;
+  border: 2px solid #ffd400;
+  padding: 20px;
+  text-align: center;
+}
+
+.duplicate-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.duplicate-close-btn {
+  position: absolute;
+  right: 0;
+}
+
+/* 세트 추가 */
+.add-set-section {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 26px;
+}
+
+.input-set {
+  width: 260px;
+  padding: 10px;
+  border: 2px solid #ffd400;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.yellow-btn {
+  background: #ffd400;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.2s;
+}
+
+.yellow-btn:hover {
+  background: #ffe46a;
+}
+
+.yellow-btn.small {
+  padding: 6px 10px;
+}
+
+/* 세트 목록 */
+.set-list-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 30px;
+}
+
+.page-btn {
+  background: #ffd400;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.default-set-list {
+  display: flex;
+  gap: 24px;
+  width: 80%;
+}
+
+.scrollable {
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.default-set-card {
+  background: white;
+  padding: 20px;
+  width: 240px;
+  border: 2px solid #ffd400;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.default-set-card.selected {
+  background: #fff9d6;
+}
+
+/* 단어 구성 */
+.word-manager-section {
+  width: 720px;
+  background: white;
+  margin: 40px auto;
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid #ffd400;
+  position: relative;
+}
+
+.manager-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.manager-header h3 {
+  flex: 1;
+  text-align: center;
+}
+
+.manager-header .close-btn {
+  position: absolute;
+  right: 0;
+}
+
+.word-add-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.word-input {
+  width: 200px;
+  padding: 10px;
+  border: 2px solid #ffd400;
+  border-radius: 8px;
+}
+
+/* 단어 테이블 */
+.word-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.word-table th,
+.word-table td {
+  border: 2px solid #ffd400;
+  padding: 10px;
+  text-align: center;
+}
+
+.small-btn.red {
+  background: #ffd400;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* 수정/삭제 버튼 간격 */
+.word-btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* 영단어/뜻 열 너비 확대 */
+.wide-col-table td:nth-child(1),
+.wide-col-table th:nth-child(1) {
+  width: 35%;
+}
+.wide-col-table td:nth-child(2),
+.wide-col-table th:nth-child(2) {
+  width: 35%;
+}
+
+/* duplicate title 가운데 정렬 */
+.duplicate-title {
+  text-align: center;
+  margin-bottom: 14px;
+}

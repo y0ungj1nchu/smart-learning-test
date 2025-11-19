@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import "../../../../styles/profile/Tabs.css";
+import "../../../styles/profile/Tabs.css";
 import { Bell } from "lucide-react";
 
-function SettingTab() {
+function AdminSettingTab() {
   const [isAllowed, setIsAllowed] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState("#9CA2AE");
 
@@ -17,17 +17,18 @@ function SettingTab() {
 
   const handleThemeSelect = (color) => {
     setSelectedTheme(color);
-    document.body.style.backgroundColor = color + "20";
+    document.body.style.backgroundColor = color + "20";  
   };
 
   return (
     <div className="tab-inner setting-tab">
-      <h3>알림 설정</h3>
+      <h3>관리자 알림 설정</h3>
+
       <div className="setting-card">
         <div className="setting-item">
           <div className="setting-label">
             <Bell size={18} />
-            <span>알림 수신 동의</span>
+            <span>관리자 알림 수신 동의</span>
           </div>
 
           <div
@@ -41,6 +42,7 @@ function SettingTab() {
 
       {/* 테마 색 변경 */}
       <h3>테마 색 변경</h3>
+
       <div className="theme-card">
         <div className="theme-grid">
           {themes.map((color, idx) => (
@@ -59,4 +61,4 @@ function SettingTab() {
   );
 }
 
-export default SettingTab;
+export default AdminSettingTab;
