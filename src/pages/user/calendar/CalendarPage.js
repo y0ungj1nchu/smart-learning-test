@@ -116,7 +116,7 @@ export default function CalendarPage() {
       const todoData = {
         title: todoTitle.trim(),
         dueDate: ymd(selected),
-        memo: todoMemo.trim() // --- 🔥 1. memo 필드 추가 ---
+        memo: todoMemo.trim()
       };
 
       if (editingTodo) { 
@@ -155,7 +155,7 @@ export default function CalendarPage() {
   const handleOpenEditTodo = (todoItem) => {
     setEditingTodo(todoItem);
     setTodoTitle(todoItem.title);
-    setTodoMemo(todoItem.memo || ""); // --- 🔥 2. memo 상태 설정 ---
+    setTodoMemo(todoItem.memo || "");
     setShowTodoModal(true);
   };
 

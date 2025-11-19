@@ -126,13 +126,6 @@ export const loginUser = (credentials) => {
     return request('/auth/login', 'POST', dataToSend);
 };
 
-// ----------------------------------------------------------------
-// (누락된 기능) 아이디/비밀번호 찾기 API (routes/auth.js에 추가 필요)
-// ----------------------------------------------------------------
-// export const findUserEmail = (email) => request('/auth/find-id', 'POST', { email });
-// export const resetUserPassword = (token, newPassword) => request('/auth/reset-password', 'POST', { token, newPassword });
-
-
 // ================================================================
 // 2. 사용자 정보 API (routes/user.js)
 // ================================================================

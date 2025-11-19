@@ -1,5 +1,4 @@
-// src/pages/user/game/WordGamePageCustom.js
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import folderIcon from "../../../assets/folder-open.png";
@@ -21,6 +20,7 @@ export default function WordGamePageCustom() {
 
   const [setTitle, setSetTitle] = useState("");
   const [file, setFile] = useState(null);
+  const fileInputRef = useRef();
 
   // CSV 선택
   const handleFileChange = (e) => {
@@ -35,12 +35,13 @@ export default function WordGamePageCustom() {
     try {
       const data = await uploadWordSet(setTitle, file);
 
-      // 백엔드가 반환한 newSet 정보 사용
-      addUserSet(data.newSet.id, data.newSet.setTitle);
+      addUserSet(data.newSet.id, data.newSet.setTitle); // setName → setTitle로 통일
 
       alert("단어장이 등록되었습니다!");
+
       setSetTitle("");
       setFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       alert(error.message);
     }
@@ -91,7 +92,13 @@ export default function WordGamePageCustom() {
               <span className="wordgame-plus-icon">+</span>
               <span>{file ? "선택 완료" : "CSV 파일 선택"}</span>
             </div>
-            <input type="file" accept=".csv" onChange={handleFileChange} hidden />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleFileChange}
+              hidden
+            />
           </label>
 
           <button className="wordgame-nav-btn" onClick={handleUpload}>
@@ -114,15 +121,17 @@ export default function WordGamePageCustom() {
                   <div
                     className="wordgame-folder-left"
                     onClick={() => startQuiz(setObj)}
-                    style={{ cursor: "pointer" }}
                   >
                     <img src={folderIcon} alt="folder" />
-                    <p>{setObj.setName}</p>
+                    <p>{setObj.setTitle}</p>
                   </div>
 
                   <button
                     className="wordgame-delete-btn"
-                    onClick={() => deleteUserSet(setObj.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteUserSet(setObj.id);
+                    }}
                   >
                     <img src={deleteIcon} alt="delete" />
                   </button>

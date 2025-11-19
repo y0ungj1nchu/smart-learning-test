@@ -282,18 +282,6 @@ function FaqQnaTab() {
         <button className="search-btn" onClick={handleSearchClick}>
           <Search size={18} />
         </button>
-
-        {/* 검색 초기화 버튼 */}
-        <button
-          className="reset-btn"
-          onClick={() => {
-            setSearch("");
-            setFaqList(originalFaqList);
-            setQnaList(originalQnaList);
-          }}
-        >
-          전체보기
-        </button>
       </div>
 
       {/* 테이블 */}
