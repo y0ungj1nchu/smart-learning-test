@@ -253,71 +253,79 @@ export const getStudySummary = () => request('/study/summary');
 export const getCurrentStudySession = () => request('/study/current');
 
 // ================================================================
-// 5. 단어 게임 API (routes/words.js)
+// 5. 단어 게임 API (리뉴얼된 routes/words.js 기준)
 // ================================================================
 
 /**
- * CSV 단어장 템플릿 파일을 다운로드합니다. (JSON을 반환하지 않음)
- */
-export const downloadWordTemplate = async () => {
-    const token = getToken();
-    try {
-        const response = await fetch(`${API_BASE_URL}/words/template`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        if (!response.ok) throw new Error('템플릿 다운로드 실패');
-        
-        // CSV 파일 다운로드 처리
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'word_template.csv';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
+ * XLSX 단어장 템플릿 파일 다운로드 (.xlsx)
+ */
+export const downloadTemplateAPI = async () => {
+  const token = getToken();
 
-    } catch (error) {
-         console.error('템플릿 다운로드 API 오류:', error);
-         alert(error.message);
-    }
+  try {
+    const response = await fetch(`${API_BASE_URL}/words/template`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) throw new Error("템플릿 다운로드 실패");
+
+    // 📌 XLSX 파일 다운로드 처리
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "WordSetTemplate.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("템플릿 다운로드 API 오류:", error);
+    alert(error.message);
+  }
 };
 
+
 /**
- * CSV 파일과 제목을 FormData로 업로드하여 단어장을 생성합니다.
- * @param {string} setTitle - 단어장 제목
- * @param {File} file - 업로드할 .csv 파일
- */
-export const uploadWordSet = (setTitle, file) => {
-    const formData = new FormData();
-    formData.append('setTitle', setTitle);
-    formData.append('wordFile', file);
-    return requestWithFile('/words/upload', formData);
+ * XLSX 파일 업로드하여 단어장 생성
+ * @param {string} setTitle - 단어장 제목
+ * @param {File} file - 업로드할 .xlsx/.xls 파일
+ */
+export const uploadWordSetAPI = (setTitle, file) => {
+  const formData = new FormData();
+  formData.append("setTitle", setTitle);
+  formData.append("wordFile", file);  // 백엔드에서 req.file로 받음
+
+  return requestWithFile("/words/upload", formData);
 };
 
-/**
- * 사용자가 생성한 모든 단어장 목록을 조회합니다.
- */
-export const getWordsets = () => request('/words/wordsets');
 
 /**
- * 특정 단어장에 포함된 모든 단어(문제/정답) 목록을 조회합니다.
- * @param {number} id - 단어장(WordSet)의 ID
- */
-export const getWordsForSet = (id) => request(`/words/wordsets/${id}`);
+ * 사용자 단어장 목록 조회
+ */
+export const fetchWordSetsAPI = () => {
+  return request("/words/wordsets");
+};
 
 
-// ----------------------------------------------------------------
-//  단어장 삭제 (routes/words.js에 추가 필요)
-// ----------------------------------------------------------------
 /**
- * 특정 단어장을 삭제합니다.
- * @param {number} id - 삭제할 단어장(WordSet)의 ID
- */
-export const deleteWordSet = (id) => request(`/words/wordsets/${id}`, 'DELETE');
+ * 특정 단어장에 포함된 전체 단어(퀴즈 옵션 포함) 조회
+ * @param {number} wordSetId
+ */
+export const getWordsForSetAPI = (wordSetId) => {
+  return request(`/words/wordsets/${wordSetId}`);
+};
+
+
+/**
+ * 단어장 삭제
+ * @param {number} id
+ */
+export const deleteWordSetAPI = (id) => {
+  return request(`/words/wordsets/${id}`, "DELETE");
+};
 
 // =================================================================
 // FAQ API
