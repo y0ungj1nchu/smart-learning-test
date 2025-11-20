@@ -9,7 +9,7 @@ function NoticeTab() {
   const [noticeList, setNoticeList] = useState([]);
   const navigate = useNavigate();
 
-  // 공지 불러오기 (백엔드 API)
+  // 공지 불러오기
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -22,17 +22,17 @@ function NoticeTab() {
     fetchData();
   }, []);
 
-  // 검색 적용
+  // 검색
   const filtered = noticeList.filter((item) =>
     item.title.toLowerCase().includes(search.toLowerCase())
   );
 
-  // 최신순 정렬
+  // 최신순
   const sorted = [...filtered].sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
   );
 
-  // 번호 생성
+  // 번호 부여
   const numberedList = sorted.map((item, index) => ({
     ...item,
     no: sorted.length - index,
@@ -42,7 +42,7 @@ function NoticeTab() {
     <div className="tab-inner notice-tab">
       <h2>공지사항</h2>
 
-      {/* 검색창 */}
+      {/* 검색 */}
       <div className="search-box">
         <input
           type="text"
@@ -70,14 +70,7 @@ function NoticeTab() {
             <tr
               key={item.id}
               style={{ cursor: "pointer" }}
-              onClick={() =>
-                navigate(`/user/community/notice-detail/${item.id}`, {
-                  state: {
-                    item,
-                    noticeList: numberedList,
-                  },
-                })
-              }
+              onClick={() => navigate(`/user/community/notice-detail/${item.id}`)}
             >
               <td>{item.no}</td>
               <td>{item.title}</td>
