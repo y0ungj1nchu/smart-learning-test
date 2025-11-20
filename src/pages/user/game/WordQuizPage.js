@@ -1,34 +1,20 @@
-// src/pages/user/game/WordQuizPage.js
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../../../styles/game/WordGame.css";
 
+import { getWordsForSetAPI } from "../../../utils/api";
+
 export default function WordQuizPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 배열 셔플
-  function shuffle(array) {
-    const result = [...array];
-    for (let i = result.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [result[i], result[j]] = [result[j], result[i]];
-    }
-    return result;
-  }
+  const setId = location.state?.setId;
+  const setName = location.state?.setName;
 
-  // 보기 순서 랜덤 고정
-  const wordList = useMemo(() => {
-    const rawList = location.state?.wordList || [];
-    return rawList.map((q) => ({
-      ...q,
-      options: shuffle(q.options),
-    }));
-  }, [location.state?.wordList]);
-
-  const origin = location.state?.origin || null;
+  const [wordList, setWordList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
@@ -36,15 +22,68 @@ export default function WordQuizPage() {
   const [showModal, setShowModal] = useState(false);
 
   const current = wordList[currentIndex];
-  const selectedAnswer = answers.find((a) => a.word === current.word)?.selected;
+  const selectedAnswer = answers.find((a) => a.word === current?.word)?.selected;
 
-  // 보기 선택 처리
+  // ⭐ 배열 셔플 함수 (Fisher–Yates)
+  const shuffleArray = (arr) => {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  };
+
+  /* ---------------------------------------------------------
+     1) 단어장 로딩 (백엔드 API 호출)
+  --------------------------------------------------------- */
+  useEffect(() => {
+    if (!setId) {
+      alert("잘못된 접근입니다.");
+      navigate("/user/game/custom");
+      return;
+    }
+
+    const loadWords = async () => {
+      try {
+        const data = await getWordsForSetAPI(setId); // { setName, wordList }
+
+        // ⭐ 문제 순서 및 보기 순서 랜덤 셔플
+        const shuffledQuestions = shuffleArray(data.wordList).map((q) => ({
+          ...q,
+          options: shuffleArray(q.options),
+        }));
+
+        setWordList(shuffledQuestions);
+        setCurrentIndex(0);
+        setAnswers([]);
+        setAutoNext(false);
+        setShowModal(false);
+      } catch (err) {
+        console.error("단어 불러오기 실패:", err);
+        alert("단어장을 불러오는 중 오류 발생");
+        navigate("/user/game/custom");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadWords();
+  }, [setId, navigate]);
+
+  /* ---------------------------------------------------------
+     2) 보기 선택
+  --------------------------------------------------------- */
   const handleSelectOption = (option) => {
+    if (!current) return;
+
     const isCorrect = option === current.correct;
+
     const updated = [
       ...answers.filter((a) => a.word !== current.word),
       { word: current.word, selected: option, correct: current.correct, isCorrect },
     ];
+
     setAnswers(updated);
 
     if (currentIndex < wordList.length - 1) {
@@ -52,7 +91,9 @@ export default function WordQuizPage() {
     }
   };
 
-  // 자동 다음 문제 이동
+  /* ---------------------------------------------------------
+     3) 자동 다음 문제 이동
+  --------------------------------------------------------- */
   useEffect(() => {
     if (autoNext) {
       const timer = setTimeout(() => {
@@ -63,23 +104,42 @@ export default function WordQuizPage() {
     }
   }, [autoNext]);
 
-  // 결과 페이지
+  /* ---------------------------------------------------------
+     4) 결과 페이지로 이동
+  --------------------------------------------------------- */
   const handleResultClick = () => {
     if (answers.length < wordList.length) {
       setShowModal(true);
       return;
     }
-    const acidList = wordList.map(({ word, correct }) => ({ word, correct }));
-    
+
     navigate("/user/game/result", {
       state: {
         results: answers,
-        origin: origin,
-        wordList: acidList,
+        setName,
+        setId,   // ⭐ ResultPage에서 다시 풀기 / 산성비에 사용
       },
     });
   };
 
+  /* ---------------------------------------------------------
+     5) 로딩 중
+  --------------------------------------------------------- */
+  if (loading || !current) {
+    return (
+      <>
+        <Header1 isLoggedIn={true} />
+        <Header2 isLoggedIn={true} />
+        <div className="wordgame-page">
+          <div className="loading-box">불러오는 중...</div>
+        </div>
+      </>
+    );
+  }
+
+  /* ---------------------------------------------------------
+     6) UI 렌더링
+  --------------------------------------------------------- */
   return (
     <>
       <Header1 isLoggedIn={true} />

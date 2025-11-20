@@ -10,37 +10,39 @@ export default function ResultPage() {
 
   // WordQuizPage에서 넘어온 값들
   const results = location.state?.results || [];
-  const origin = location.state?.origin || null;
-  const wordList = location.state?.wordList || [];
+  const setName = location.state?.setName || "";
+  const setId = location.state?.setId;   // ⭐ 산성비 / 다시풀기에 둘 다 필요
 
   const correctCount = results.filter((r) => r.isCorrect).length;
 
-  // 다시 풀기
+  // ✅ 다시 풀기 → 같은 세트로 퀴즈 재시작
   const handleRetry = () => {
-    if (origin === "preset") {
-      navigate("/user/game/word");
-    } else if (origin === "custom") {
-      navigate("/user/game/upload");
-    } else {
-      navigate("/user/game");
+    if (!setId) {
+      alert("단어장 정보가 없습니다.");
+      navigate("/user/game/custom");
+      return;
     }
+
+    navigate("/user/game/quiz", {
+      state: { setId, setName },
+    });
   };
 
-  // 게임 종료 → 게임 메인으로 이동
-  const handleExit = () => {
-    navigate("/user/game");
-  };
-
-  // 산성비 게임으로 이동
+  // 산성비 모드 시작
   const handleAcidRain = () => {
-    if (wordList.length === 0) {
-      alert("산성비 모드로 전환할 단어가 없습니다.");
+    if (!setId) {
+      alert("단어장 정보가 없습니다.");
       return;
     }
 
     navigate("/user/game/acid-rain", {
-      state: { wordList, from: origin || "preset" },
+      state: { setId, setName },
     });
+  };
+
+  // 게임 종료 → 게임 메인
+  const handleExit = () => {
+    navigate("/user/game");
   };
 
   return (
@@ -85,15 +87,13 @@ export default function ResultPage() {
               다시 풀기
             </button>
 
+            <button className="wordgame-nav-btn" onClick={handleAcidRain}>
+              산성비 모드
+            </button>
+
             <button className="wordgame-nav-btn" onClick={handleExit}>
               게임 종료
             </button>
-
-            {wordList.length > 0 && (
-              <button className="wordgame-nav-btn" onClick={handleAcidRain}>
-                산성비
-              </button>
-            )}
           </div>
         </div>
       </div>

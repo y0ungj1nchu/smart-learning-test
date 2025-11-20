@@ -1,8 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+// src/pages/user/game/AcidRainPage.js
+import React, { useEffect, useRef, useState } from "react";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../../../styles/game/WordGame.css";
+
+import { getWordsForSetAPI } from "../../../utils/api";
 
 import timerIcon from "../../../assets/alarm.png";
 import heartIcon from "../../../assets/favorite.png";
@@ -21,7 +24,12 @@ const MAX_MISS = 6;
 export default function AcidRainPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const baseList = useMemo(() => state?.wordList || [], [state?.wordList]);
+
+  const setId = state?.setId;
+  const setName = state?.setName;
+
+  const [baseList, setBaseList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [seconds, setSeconds] = useState(LIMIT_SECONDS);
   const [miss, setMiss] = useState(0);
@@ -35,16 +43,44 @@ export default function AcidRainPage() {
   const spawnTimer = useRef(null);
   const raf = useRef(null);
 
-  const restartGame = () => {
-    setSeconds(LIMIT_SECONDS);
-    setMiss(0);
-    setDrops([]);
-    setInput("");
-    setResultText("");
-    setPlaying(true);
-  };
+  // ⭐ miss 중복 방지용 flag
+  const missedRef = useRef(false);
 
-  /* 타이머 */
+  /* -------------------------------------------------------
+     1) 단어장 로드(API)
+  ------------------------------------------------------- */
+  useEffect(() => {
+    if (!setId) {
+      alert("잘못된 접근입니다.");
+      navigate("/user/game/custom");
+      return;
+    }
+
+    const loadWords = async () => {
+      try {
+        const data = await getWordsForSetAPI(setId);
+
+        setBaseList(
+          data.wordList.map((w) => ({
+            word: w.word,
+            correct: w.correct,
+          }))
+        );
+      } catch (err) {
+        console.error("Error loading words:", err);
+        alert("단어 로딩 실패");
+        navigate("/user/game/custom");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadWords();
+  }, [setId, navigate]);
+
+  /* -------------------------------------------------------
+     2) 타이머
+  ------------------------------------------------------- */
   useEffect(() => {
     if (!playing) return;
 
@@ -54,11 +90,8 @@ export default function AcidRainPage() {
           clearInterval(timer);
           setPlaying(false);
 
-          if (miss < MAX_MISS) {
-            setResultText("GAME CLEAR");
-          } else {
-            setResultText("GAME OUT");
-          }
+          if (miss < MAX_MISS) setResultText("GAME CLEAR");
+          else setResultText("GAME OUT");
 
           return 0;
         }
@@ -69,17 +102,22 @@ export default function AcidRainPage() {
     return () => clearInterval(timer);
   }, [playing, miss]);
 
-  /*  단어 생성 */
+  /* -------------------------------------------------------
+     3) 단어 스폰
+  ------------------------------------------------------- */
   useEffect(() => {
-    if (!playing) return;
+    if (!playing || baseList.length === 0) return;
 
     spawnTimer.current = setInterval(() => {
+      // 새 단어 등장 → miss 중복 방지 초기화
+      missedRef.current = false;
+
       setDrops((prev) => {
         if (prev.length > 0) return prev;
 
-        if (baseList.length === 0) return prev;
+        const index = Math.floor(Math.random() * baseList.length);
+        const rand = baseList[index];
 
-        const rand = baseList[Math.floor(Math.random() * baseList.length)];
         const x = Math.random() * (GAME_WIDTH - 80);
         const speed = MIN_SPEED + Math.random() * (MAX_SPEED - MIN_SPEED);
 
@@ -99,7 +137,9 @@ export default function AcidRainPage() {
     return () => clearInterval(spawnTimer.current);
   }, [playing, baseList]);
 
-  /* 단어 낙하 + miss 처리 */
+  /* -------------------------------------------------------
+     4) 낙하 + MISS 처리
+  ------------------------------------------------------- */
   useEffect(() => {
     if (!playing) return;
 
@@ -110,19 +150,22 @@ export default function AcidRainPage() {
         const d = prev[0];
         const newY = d.y + d.speed;
 
+        // 바닥 도달
         if (newY > GAME_HEIGHT - 30) {
-          setMiss((prevMiss) => {
-            const newMiss = prevMiss + 1 >= MAX_MISS ? MAX_MISS : prevMiss + 1;
+          if (!missedRef.current) {
+            missedRef.current = true; // ⭐ 즉시 막음 (핵심)
 
-            if (newMiss >= MAX_MISS) {
-              setPlaying(false);
-              setResultText("GAME OUT");
-            }
+            setMiss((prev) => {
+              const nm = Math.min(prev + 1, MAX_MISS);
+              if (nm >= MAX_MISS) {
+                setPlaying(false);
+                setResultText("GAME OUT");
+              }
+              return nm;
+            });
+          }
 
-            return newMiss;
-          });
-
-          return [];
+          return []; // 단어 제거
         }
 
         return [{ ...d, y: newY }];
@@ -135,7 +178,9 @@ export default function AcidRainPage() {
     return () => cancelAnimationFrame(raf.current);
   }, [playing]);
 
-  /* 정답 처리 */
+  /* -------------------------------------------------------
+     5) 정답 입력 처리
+  ------------------------------------------------------- */
   const onSubmit = (e) => {
     e.preventDefault();
     const answer = input.trim();
@@ -144,22 +189,41 @@ export default function AcidRainPage() {
     setDrops((prev) => {
       if (prev.length === 0) return prev;
 
+      // 맞춘 경우 → drop 제거
       if (prev[0].correct === answer) {
         return [];
       }
+
       return prev;
     });
 
     setInput("");
   };
 
+  /* -------------------------------------------------------
+     6) 로딩 화면
+  ------------------------------------------------------- */
+  if (loading) {
+    return (
+      <>
+        <Header1 isLoggedIn={true} />
+        <Header2 isLoggedIn={true} />
+        <div className="wordgame-page">
+          <div className="loading-box">단어 불러오는 중...</div>
+        </div>
+      </>
+    );
+  }
+
+  /* -------------------------------------------------------
+     7) UI 렌더링
+  ------------------------------------------------------- */
   return (
     <>
       <Header1 isLoggedIn={true} />
       <Header2 isLoggedIn={true} />
 
       <div className="wordgame-page">
-
         <div className="acid-container" style={{ width: GAME_WIDTH, height: GAME_HEIGHT }}>
 
           {/* HUD */}
@@ -168,10 +232,10 @@ export default function AcidRainPage() {
               <img src={timerIcon} className="hud-icon" alt="timer" /> {seconds}s
             </span>
             <span>
-              <img src={heartIcon} className="hud-icon" alt="heart" /> {Math.max(0, MAX_MISS - miss)}
+              <img src={heartIcon} className="hud-icon" alt="heart" /> {MAX_MISS - miss}
             </span>
             <span>
-              <img src={heartBrokenIcon} className="hud-icon" alt="broken" /> {Math.min(MAX_MISS, miss)}
+              <img src={heartBrokenIcon} className="hud-icon" alt="broken" /> {miss}
             </span>
           </div>
 
@@ -186,8 +250,8 @@ export default function AcidRainPage() {
             </div>
           ))}
 
-          {/* 결과 문구 */}
-          {resultText !== "" && (
+          {/* 결과 표시 */}
+          {resultText && (
             <div className="game-out-wrapper">
               <div className="game-out-text">{resultText}</div>
             </div>
@@ -203,34 +267,29 @@ export default function AcidRainPage() {
             onChange={(e) => setInput(e.target.value)}
             disabled={!playing}
           />
-          <button className="wordgame-nav-btn" disabled={!playing}>
-            확인
-          </button>
+          <button className="wordgame-nav-btn" disabled={!playing}>확인</button>
         </form>
 
         {/* 버튼 */}
         <div className="wordgame-result-btns">
-
-          <button className="wordgame-nav-btn" onClick={restartGame}>
+          <button
+            className="wordgame-nav-btn"
+            onClick={() => {
+              setSeconds(LIMIT_SECONDS);
+              setMiss(0);
+              setDrops([]);
+              setInput("");
+              setResultText("");
+              setPlaying(true);
+              missedRef.current = false;
+            }}
+          >
             재시작하기
           </button>
-
-          {playing && resultText === "" && (
-            <button className="wordgame-nav-btn" onClick={() => setPlaying(false)}>
-              일시정지
-            </button>
-          )}
-
-          {!playing && resultText === "" && (
-            <button className="wordgame-nav-btn" onClick={() => setPlaying(true)}>
-              다시 진행
-            </button>
-          )}
 
           <button className="wordgame-nav-btn" onClick={() => navigate("/user/game")}>
             나가기
           </button>
-
         </div>
       </div>
     </>
