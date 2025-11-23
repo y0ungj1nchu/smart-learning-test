@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "../../../styles/auth/Login.css";
 import lockIcon from "../../../assets/lock.png";
 import userIcon from "../../../assets/user.png";
@@ -9,16 +9,13 @@ import googleLogo from "../../../assets/google.png";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 
-// 🔥 백엔드 로그인 API
 import { loginUser } from "../../../utils/api";
 
 function Login() {
-  const navigate = useNavigate();
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // 🔥 최신 JWT 기반 로그인 로직
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -26,11 +23,25 @@ function Login() {
     try {
       const data = await loginUser({ id, password });
 
-      // 로그인 성공
-      localStorage.setItem("isLoggedIn", "true");
+      // 토큰 저장
       localStorage.setItem("authToken", data.token);
+      localStorage.setItem("isLoggedIn", "true");
 
-      navigate("/home/after");
+      // payload에서 role 파싱
+      const payload = JSON.parse(atob(data.token.split(".")[1]));
+      const role = payload.role;
+
+      // 저장
+      localStorage.setItem("role", role);
+      localStorage.setItem("userId", payload.id);
+
+      // 🔥 navigate 쓰지말고 바로 페이지 이동
+      if (role === "ADMIN") {
+        window.location.href = "/admin/main";
+      } else {
+        window.location.href = "/home/after";
+      }
+
     } catch (err) {
       setError(err.message || "로그인에 실패했습니다.");
     }
@@ -78,9 +89,7 @@ function Login() {
           {error && <p className="error-msg">{error}</p>}
 
           <div className="links">
-            <Link to="/user/auth/Register" className="register-link">
-              회원가입
-            </Link>
+            <Link to="/user/auth/Register" className="register-link">회원가입</Link>
             <div className="find-links">
               <Link to="/user/auth/FindId">아이디 찾기</Link>
               <span> | </span>
