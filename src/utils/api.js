@@ -57,6 +57,19 @@ const request = async (endpoint, method = 'GET', body = null) => {
   }
 };
 
+export const getUserRole = () => {
+  const token = localStorage.getItem("authToken");
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.role;         // 백엔드가 role을 넣어줘야 함
+  } catch (err) {
+    console.error("JWT 파싱 오류:", err);
+    return null;
+  }
+};
+
 /**
  * 파일(FormData) 업로드용 헬퍼 함수
  * 'Content-Type'을 'multipart/form-data'로 자동 설정 (JSON.stringify 안 함)
@@ -429,4 +442,26 @@ export const deleteNotice = (id) => {
 export const getRanking = () => {
   // 기본 'request' 헬퍼 함수를 사용합니다.
   return request('/ranking', 'GET');
+};
+
+export const getAdminDashboard = () => {
+  return request("/admin/dashboard", "GET");
+};
+
+export const fetchCharacterTemplates = () => {
+  return request("/characters", "GET");
+};
+// 관리자 캐릭터 목록
+export const fetchAdminCharacters = () => {
+  return request("/admin/characters", "GET");
+};
+
+// 관리자 캐릭터 등록
+export const createAdminCharacter = (formData) => {
+  return requestWithFile("/admin/characters", formData);
+};
+
+// 관리자 캐릭터 삭제
+export const deleteAdminCharacter = (id) => {
+  return request(`/admin/characters/${id}`, "DELETE");
 };
