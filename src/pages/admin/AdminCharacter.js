@@ -1,24 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AdminHeader1 from "../../components/common/AdminHeader1";
 import AdminHeader2 from "../../components/common/AdminHeader2";
 import Footer from "../../components/common/Footer";
 import "../../styles/admin/AdminCharacter.css";
 
-import snoopy1 from "../../assets/snoopy1.png";
-import snoopy2 from "../../assets/snoopy2.png";
-import snoopy3 from "../../assets/snoopy3.png";
-import snoopy4 from "../../assets/snoopy4.png";
-import snoopy5 from "../../assets/snoopy5.png";
+import {
+  fetchAdminCharacters,
+  createAdminCharacter,
+  deleteAdminCharacter,
+} from "../../utils/api";
 
 export default function AdminCharacter() {
-  const [characters, setCharacters] = useState([
-    { id: 1, name: "스누피1", level: 1, image: snoopy1 },
-    { id: 2, name: "스누피2", level: 2, image: snoopy2 },
-    { id: 3, name: "스누피3", level: 3, image: snoopy3 },
-    { id: 4, name: "스누피4", level: 4, image: snoopy4 },
-    { id: 5, name: "스누피5", level: 5, image: snoopy5 },
-  ]);
-
+  const [characters, setCharacters] = useState([]);
   const [newChar, setNewChar] = useState({
     name: "",
     level: "",
@@ -26,9 +19,20 @@ export default function AdminCharacter() {
     preview: "",
   });
 
+  // 🔥 DB에서 캐릭터 목록 로드
+  const loadCharacters = async () => {
+    const data = await fetchAdminCharacters();
+    setCharacters(data);
+  };
+
+  useEffect(() => {
+    loadCharacters();
+  }, []);
+
+  // 이미지 업로드
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file && file.type.includes("image")) {
+    if (file) {
       setNewChar({
         ...newChar,
         image: file,
@@ -37,28 +41,31 @@ export default function AdminCharacter() {
     }
   };
 
-  const handleAddCharacter = (e) => {
+  // 캐릭터 등록
+  const handleAddCharacter = async (e) => {
     e.preventDefault();
     if (!newChar.name || !newChar.level || !newChar.image) {
       alert("모든 정보를 입력해주세요.");
       return;
     }
 
-    const newCharacter = {
-      id: Date.now(),
-      name: newChar.name,
-      level: parseInt(newChar.level),
-      image: newChar.preview,
-    };
+    const formData = new FormData();
+    formData.append("name", newChar.name);
+    formData.append("level", newChar.level);
+    formData.append("image", newChar.image);
 
-    setCharacters([...characters, newCharacter]);
+    await createAdminCharacter(formData);
+    alert("캐릭터가 등록되었습니다.");
+
     setNewChar({ name: "", level: "", image: null, preview: "" });
+    loadCharacters();
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      setCharacters(characters.filter((c) => c.id !== id));
-    }
+  // 삭제
+  const handleDelete = async (id) => {
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    await deleteAdminCharacter(id);
+    loadCharacters();
   };
 
   return (
@@ -70,6 +77,7 @@ export default function AdminCharacter() {
         </div>
 
         <div className="adminChar-layout">
+          {/* 캐릭터 목록 */}
           <div className="adminChar-list-box">
             <h2 className="adminChar-title">등록된 캐릭터</h2>
 
@@ -79,7 +87,10 @@ export default function AdminCharacter() {
               <div className="adminChar-list">
                 {characters.map((char) => (
                   <div key={char.id} className="adminChar-card">
-                    <img src={char.image} alt={char.name} className="adminChar-img" />
+                    <img
+                        src={`http://localhost:3001/uploads/characters/${char.imagePath}`}
+                        className="adminChar-img"
+                      />
                     <div className="adminChar-info">
                       <h4>{char.name}</h4>
                       <p>Lv. {char.level}</p>
@@ -96,6 +107,7 @@ export default function AdminCharacter() {
             )}
           </div>
 
+          {/* 캐릭터 추가 */}
           <div className="adminChar-add-box">
             <h2 className="adminChar-title">새 캐릭터 추가</h2>
 
@@ -120,14 +132,13 @@ export default function AdminCharacter() {
                   onChange={(e) =>
                     setNewChar({ ...newChar, level: e.target.value })
                   }
-                  placeholder="숫자 입력"
                   min="1"
                 />
               </label>
 
               <label>
-                캐릭터 이미지 (PNG)
-                <input type="file" accept="image/png" onChange={handleImageUpload} />
+                캐릭터 이미지
+                <input type="file" onChange={handleImageUpload} />
               </label>
 
               {newChar.preview && (
