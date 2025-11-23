@@ -1,27 +1,47 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminHeader1 from "../../components/common/AdminHeader1";
 import AdminHeader2 from "../../components/common/AdminHeader2";
 import Footer from "../../components/common/Footer";
 import "../../styles/admin/MainAdmin.css";
+import { getAdminDashboard } from "../../utils/api";
 
 export default function MainAdmin() {
   const navigate = useNavigate();
 
-  const userStats = {
-    totalUsers: 1289,
-    todayLogin: 84,
-    newUsers: 12,
-  };
+  const [userStats, setUserStats] = useState({
+    totalUsers: 0,
+    todayLogin: 0,
+    newUsers: 0,
+  });
 
-  const [inquiries] = useState([
-    { id: 1, name: "차훈", title: "순공시간 초기화 관련 문의", date: "2025-10-20 14:22", answered: false },
-    { id: 2, name: "이승협", title: "캐릭터 레벨 오류 발생", date: "2025-10-20 13:40", answered: false },
-    { id: 3, name: "홍길동", title: "비밀번호 변경 요청", date: "2025-10-19 19:10", answered: true },
-  ]);
+  const [unanswered, setUnanswered] = useState([]);
+  const [answered, setAnswered] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const unanswered = inquiries.filter((q) => !q.answered);
-  const answered = inquiries.filter((q) => q.answered);
+  // 🔥 마운트 시 관리자 대시보드 데이터 가져오기
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        const data = await getAdminDashboard();
+
+        setUserStats(data.userStats || { totalUsers: 0, todayLogin: 0, newUsers: 0 });
+        if (data.inquiries) {
+          setUnanswered(data.inquiries.unanswered || []);
+          setAnswered(data.inquiries.answered || []);
+        }
+      } catch (err) {
+        console.error("관리자 대시보드 불러오기 실패:", err);
+        setError(err.message || "관리자 대시보드 불러오기 실패");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboard();
+  }, []);
 
   return (
     <>
@@ -34,20 +54,32 @@ export default function MainAdmin() {
         <div className="admin-left">
           <h2 className="section-title">👥 사용자 현황</h2>
 
-          <div className="stats-card">
-            <p className="stat-title">총 사용자 수</p>
-            <h3 className="stat-value">{userStats.totalUsers.toLocaleString()}명</h3>
-          </div>
+          {loading ? (
+            <p className="empty-text">로딩 중...</p>
+          ) : error ? (
+            <p className="empty-text" style={{ color: "red" }}>
+              {error}
+            </p>
+          ) : (
+            <>
+              <div className="stats-card">
+                <p className="stat-title">총 사용자 수</p>
+                <h3 className="stat-value">
+                  {userStats.totalUsers.toLocaleString()}명
+                </h3>
+              </div>
 
-          <div className="stats-card">
-            <p className="stat-title">오늘 로그인</p>
-            <h3 className="stat-value">{userStats.todayLogin}명</h3>
-          </div>
+              <div className="stats-card">
+                <p className="stat-title">오늘 로그인</p>
+                <h3 className="stat-value">{userStats.todayLogin}명</h3>
+              </div>
 
-          <div className="stats-card">
-            <p className="stat-title">오늘 신규 가입</p>
-            <h3 className="stat-value">{userStats.newUsers}명</h3>
-          </div>
+              <div className="stats-card">
+                <p className="stat-title">오늘 신규 가입</p>
+                <h3 className="stat-value">{userStats.newUsers}명</h3>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="admin-right">
@@ -55,7 +87,9 @@ export default function MainAdmin() {
             📬 미답변 문의 ({unanswered.length}건)
           </h2>
 
-          {unanswered.length === 0 ? (
+          {loading ? (
+            <p className="empty-text">로딩 중...</p>
+          ) : unanswered.length === 0 ? (
             <p className="empty-text">모든 문의가 처리되었습니다 🎉</p>
           ) : (
             <div className="timeline-container">
@@ -80,7 +114,9 @@ export default function MainAdmin() {
             ✅ 답변 완료된 문의 ({answered.length}건)
           </h2>
 
-          {answered.length === 0 ? (
+          {loading ? (
+            <p className="empty-text">로딩 중...</p>
+          ) : answered.length === 0 ? (
             <p className="empty-text">아직 답변 완료된 문의가 없습니다.</p>
           ) : (
             <div className="timeline-container">
