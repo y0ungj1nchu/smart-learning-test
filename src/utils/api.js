@@ -1,467 +1,286 @@
 /**
- * 갓생 제조기 - 프론트엔드 API 통신 모듈
- * 백엔드 서버(http://localhost:3001)와 통신을 담당합니다.
- */
+ * 갓생 제조기 - 프론트엔드 API 통신 모듈
+ * 백엔드 서버(http://localhost:3001)와 통신을 담당합니다.
+ */
 
-// 백엔드 서버 주소
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = "http://localhost:3001/api";
 
-/**
- * 로컬 스토리지에서 인증 토큰을 가져옵니다.
- * @returns {string | null} 저장된 JWT 토큰 또는 null
- */
-const getToken = () => {
-  return localStorage.getItem('authToken');
+/* -----------------------------------------------------
+   TOKEN 관리
+----------------------------------------------------- */
+const getToken = () => localStorage.getItem("authToken");
+
+/* -----------------------------------------------------
+   기본 JSON 요청 함수
+----------------------------------------------------- */
+const request = async (endpoint, method = "GET", body = null) => {
+  const headers = { "Content-Type": "application/json" };
+  const token = getToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const config = { method, headers };
+  if (body) config.body = JSON.stringify(body);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || `HTTP 에러 발생: ${response.status}`);
+    }
+    return data;
+  } catch (err) {
+    console.error(`API 요청 실패 → ${method} ${endpoint}`, err);
+    throw err;
+  }
 };
 
-/**
- * API 요청을 보내는 기본 헬퍼 함수 (JSON 데이터용)
- * @param {string} endpoint - '/api' 이후의 경로 (예: '/auth/login')
- * @param {string} method - 'GET', 'POST', 'PUT', 'DELETE' 등
- * @param {object} body - POST 또는 PUT 요청 시 보낼 JSON 객체
- * @returns {Promise<any>} 서버에서 받은 JSON 응답
- */
-const request = async (endpoint, method = 'GET', body = null) => {
-  const headers = {
-    'Content-Type': 'application/json',
-  };
-  const token = getToken();
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
+/* -----------------------------------------------------
+   multipart/form-data 요청 함수
+----------------------------------------------------- */
+const requestWithFile = async (endpoint, formData) => {
+  const token = getToken();
+  const headers = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const config = {
-    method,
-    headers,
-  };
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
 
-  if (body) {
-    config.body = JSON.stringify(body);
-  }
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || `파일 업로드 실패`);
+    }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    const data = await response.json();
-
-    if (!response.ok) {
-      // 서버가 4xx, 5xx 상태 코드를 반환한 경우
-      throw new Error(data.message || `HTTP 에러! 상태: ${response.status}`);
-    }
-    
-    return data; // 성공 시 파싱된 데이터 반환
-
-  } catch (error) {
-    console.error(`API 호출 실패: ${method} ${endpoint}`, error);
-    // 컴포넌트 레벨에서 에러를 처리(예: alert)할 수 있도록 다시 던짐
-    throw error;
-  }
+    return data;
+  } catch (err) {
+    console.error(`파일 업로드 실패 → ${endpoint}`, err);
+    throw err;
+  }
 };
 
+/* -----------------------------------------------------
+   JWT에서 role 얻기
+----------------------------------------------------- */
 export const getUserRole = () => {
   const token = localStorage.getItem("authToken");
   if (!token) return null;
 
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.role;         // 백엔드가 role을 넣어줘야 함
-  } catch (err) {
-    console.error("JWT 파싱 오류:", err);
+    return payload.role;
+  } catch {
     return null;
   }
 };
 
-/**
- * 파일(FormData) 업로드용 헬퍼 함수
- * 'Content-Type'을 'multipart/form-data'로 자동 설정 (JSON.stringify 안 함)
- * @param {string} endpoint - '/api' 이후의 경로
- * @param {FormData} formData - 'wordFile'과 'setTitle'이 포함된 FormData
- * @returns {Promise<any>} 서버에서 받은 JSON 응답
- */
-const requestWithFile = async (endpoint, formData) => {
-  const headers = {};
-  const token = getToken();
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers,
-      body: formData, // FormData는 stringify하지 않음
-    });
-    
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || `파일 업로드 실패: ${response.status}`);
-    }
-    
-    return data;
-
-  } catch (error) {
-    console.error(`파일 업로드 API 호출 실패: ${endpoint}`, error);
-    throw error;
-  }
+/* ========================================================================
+    1. 인증 API
+=========================================================================== */
+export const signupUser = (data) => {
+  return request("/auth/signup", "POST", {
+    email: data.email,
+    password: data.password,
+    nickname: data.name,
+  });
 };
 
-
-// ================================================================
-// 1. 인증 API (routes/auth.js)
-// ================================================================
-
-/**
- * 회원가입을 요청합니다.
- * (참고: 프론트엔드는 'name', 백엔드는 'nickname'을 사용하니 통일 필요)
- * @param {object} userData - { email, password, nickname }
- */
-export const signupUser = (userData) => {
-    // 프론트엔드(Register.js)의 'name'을 백엔드(auth.js)의 'nickname'으로 맞춰줌
-    const dataToSend = {
-        email: userData.email,
-        password: userData.password,
-        nickname: userData.name // 'name'을 'nickname'으로 매핑
-    };
-    return request('/auth/signup', 'POST', dataToSend);
+export const loginUser = (data) => {
+  return request("/auth/login", "POST", {
+    email: data.id,
+    password: data.password,
+  });
 };
 
-/**
- * 로그인을 요청합니다.
- * (참고: 프론트엔드(Login.js)는 'id', 백엔드는 'email'을 사용하니 통일 필요)
- * @param {object} credentials - { email, password }
- */
-export const loginUser = (credentials) => {
-    // 프론트엔드(Login.js)의 'id'를 백엔드(auth.js)의 'email'로 맞춰줌
-    const dataToSend = {
-        email: credentials.id, // 'id'를 'email'로 매핑
-        password: credentials.password
-    };
-    return request('/auth/login', 'POST', dataToSend);
-};
+/* ========================================================================
+    2. 사용자 정보 API
+=========================================================================== */
+export const getMyProfile = () => request("/user/me");
 
-// ================================================================
-// 2. 사용자 정보 API (routes/user.js)
-// ================================================================
+export const updateNickname = (nickname) =>
+  request("/user/nickname", "PUT", { newNickname: nickname });
 
-/**
- * 현재 로그인한 사용자의 프로필 정보(닉네임, 레벨, 경험치 등)를 가져옵니다.
- */
-export const getMyProfile = () => request('/user/me');
+export const updateCharacterName = (name) =>
+  request("/user/character/name", "PUT", { characterName: name });
 
-/**
- * 사용자의 닉네임을 변경합니다.
- * @param {string} newNickname - 새 닉네임
- */
-export const updateNickname = (newNickname) => request('/user/nickname', 'PUT', { newNickname });
+export const updateCharacterImage = (image) =>
+  request("/user/character/image", "PUT", { characterImage: image });
 
-/**
- * 사용자의 "캐릭터 닉네임"을 변경합니다. (Characters.characterName)
- * @param {string} characterName - 새 캐릭터 닉네임
- */
-export const updateCharacterName = (characterName) => {
-  return request('/user/character/name', 'PUT', { characterName });
-};
+export const updatePassword = (curr, next) =>
+  request("/user/password", "PUT", {
+    currentPassword: curr,
+    newPassword: next,
+  });
 
-/**
- * 사용자의 "캐릭터 이미지"를 변경합니다. (Characters.characterImage)
- * @param {string} characterImage - 새 캐릭터 이미지 이름 (예: "snoopy2")
- */
-export const updateCharacterImage = (characterImage) => {
-  return request('/user/character/image', 'PUT', { characterImage });
-};
-// ----------------------------
+/* ========================================================================
+    3. 캘린더(일기 + 할일)
+=========================================================================== */
 
-/**
- * 사용자의 비밀번호를 변경합니다.
- * @param {string} currentPassword - 현재 비밀번호
- * @param {string} newPassword - 새 비밀번호
- */
-export const updatePassword = (currentPassword, newPassword) => {
-  return request('/user/password', 'PUT', { currentPassword, newPassword });
-};
+// Todo
+export const addTodo = (data) => request("/todos", "POST", data);
+export const updateTodo = (id, data) =>
+  request(`/todos/${id}`, "PUT", data);
+export const toggleTodo = (id, isCompleted) =>
+  request(`/todos/${id}/toggle`, "PUT", { isCompleted });
+export const deleteTodoApi = (id) => request(`/todos/${id}`, "DELETE");
 
+// Diary
+export const addDiary = (data) => request("/diaries", "POST", data);
+export const updateDiary = (id, data) =>
+  request(`/diaries/${id}`, "PUT", data);
+export const deleteDiaryApi = (id) => request(`/diaries/${id}`, "DELETE");
 
-// ================================================================
-// 3. 캘린더 (일기 + 할 일) API (routes/diary.js, routes/todos.js)
-// ================================================================
+export const getCalendarData = (date) =>
+  request(`/diaries/date/${date}`, "GET");
 
-/**
- * 특정 날짜의 캘린더 데이터 (일기 1개 + 할 일 목록)를 조회합니다.
- * @param {string} date - 'YYYY-MM-DD' 형식의 날짜
- */
-export const getCalendarData = (date) => request(`/diaries/date/${date}`);
+/* ========================================================================
+    4. 순공시간(Study)
+=========================================================================== */
+export const startStudySession = () =>
+  request("/study/start", "POST");
 
-// --- 할 일 (Todo) ---
+export const stopStudySession = (logId) =>
+  request(`/study/stop/${logId}`, "PUT");
 
-/**
- * 새로운 할 일을 추가합니다.
- * @param {object} todoData - { title, dueDate }
- */
-export const addTodo = (todoData) => request('/todos', 'POST', todoData);
+export const getStudySummary = () => request("/study/summary");
+export const getCurrentStudySession = () => request("/study/current");
 
-/**
- * 할 일 내용을 수정합니다. (제목, 마감일)
- * @param {number} id - 수정할 Todo의 ID
- * @param {object} todoData - { title, dueDate }
- */
-export const updateTodo = (id, todoData) => request(`/todos/${id}`, 'PUT', todoData);
+/* ========================================================================
+    5. 단어 게임 — 사용자용 words.js 기반 API
+=========================================================================== */
 
-/**
- * 할 일 완료/미완료 상태를 토글합니다.
- * @param {number} id - 토글할 Todo의 ID
- * @param {boolean} isCompleted - 새 완료 상태 (true/false)
- */
-export const toggleTodo = (id, isCompleted) => request(`/todos/${id}/toggle`, 'PUT', { isCompleted });
-
-/**
- * 할 일을 삭제합니다.
- * @param {number} id - 삭제할 Todo의 ID
- */
-export const deleteTodoApi = (id) => request(`/todos/${id}`, 'DELETE');
-
-// --- 일기 (Diary) ---
-
-/**
- * 새로운 일기를 작성합니다.
- * @param {object} diaryData - { title, content, diaryDate }
- */
-export const addDiary = (diaryData) => request('/diaries', 'POST', diaryData);
-
-/**
- * 일기를 수정합니다.
- * @param {number} id - 수정할 Diary의 ID
- * @param {object} diaryData - { title, content }
- */
-export const updateDiary = (id, diaryData) => request(`/diaries/${id}`, 'PUT', diaryData);
-
-/**
- * 일기를 삭제합니다.
- * @param {number} id - 삭제할 Diary의 ID
- */
-export const deleteDiaryApi = (id) => request(`/diaries/${id}`, 'DELETE');
-
-
-// ================================================================
-// 4. 순공시간 API (routes/study.js)
-// ================================================================
-
-/**
- * 순공시간 측정을 시작합니다.
- * @returns {Promise<{logId: number, message: string}>}
- */
-export const startStudySession = () => request('/study/start', 'POST');
-
-/**
- * 순공시간 측정을 종료합니다.
- * @param {number} logId - 'start' 시 발급받은 로그 ID
- */
-export const stopStudySession = (logId) => request(`/study/stop/${logId}`, 'PUT');
-//  학습 기록 요약 조회
-// ----------------------------------------------------------------
-/**
-오늘 및 이번 주 학습 시간 요약을 가져옵니다.
- */
-export const getStudySummary = () => request('/study/summary');
-
-export const getCurrentStudySession = () => request('/study/current');
-
-// ================================================================
-// 5. 단어 게임 API (리뉴얼된 routes/words.js 기준)
-// ================================================================
-
-/**
- * XLSX 단어장 템플릿 파일 다운로드 (.xlsx)
- */
+// XLSX 템플릿 다운로드
 export const downloadTemplateAPI = async () => {
   const token = getToken();
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/words/template`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+  const res = await fetch(`${API_BASE_URL}/words/template`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
 
-    if (!response.ok) throw new Error("템플릿 다운로드 실패");
+  if (!res.ok) throw new Error("템플릿 다운로드 실패");
 
-    // 📌 XLSX 파일 다운로드 처리
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "WordSetTemplate.xlsx";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error("템플릿 다운로드 API 오류:", error);
-    alert(error.message);
-  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "WordSetTemplate.xlsx";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 };
 
-
-/**
- * XLSX 파일 업로드하여 단어장 생성
- * @param {string} setTitle - 단어장 제목
- * @param {File} file - 업로드할 .xlsx/.xls 파일
- */
-export const uploadWordSetAPI = (setTitle, file) => {
-  const formData = new FormData();
-  formData.append("setTitle", setTitle);
-  formData.append("wordFile", file);  // 백엔드에서 req.file로 받음
-
-  return requestWithFile("/words/upload", formData);
+// 사용자 업로드 단어장 업로드
+export const uploadWordSetAPI = (title, file) => {
+  const form = new FormData();
+  form.append("setTitle", title);
+  form.append("wordFile", file);
+  return requestWithFile("/words/upload", form);
 };
 
+// 사용자 업로드 단어장 목록
+export const fetchWordSetsAPI = () => request("/words/wordsets");
 
-/**
- * 사용자 단어장 목록 조회
- */
-export const fetchWordSetsAPI = () => {
-  return request("/words/wordsets");
+// 사용자 단어장 → 퀴즈 생성
+export const getWordsForSetAPI = (id) =>
+  request(`/words/wordsets/${id}`);
+
+// 사용자 업로드 단어장 삭제
+export const deleteWordSetAPI = (id) =>
+  request(`/words/wordsets/${id}`, "DELETE");
+
+/* ========================================================================
+    ★ 관리자 제공 단어장 — USER PAGE BASIC WORD GAME에서 사용하는 API ★
+=========================================================================== */
+
+// 관리자(ADMIN) 계정이 만든 단어장만 조회
+export const fetchAdminWordSetsAPI = () =>
+  request("/words/admin-sets", "GET");
+
+/* ========================================================================
+    6. FAQ API
+=========================================================================== */
+export const getFaqs = () => request("/faq");
+
+/* ========================================================================
+    7. 1:1 문의(Inquiry)
+=========================================================================== */
+export const getMyInquiries = () => request("/inquiry");
+export const createInquiry = (data) =>
+  request("/inquiry", "POST", data);
+export const updateInquiry = (id, data) =>
+  request(`/inquiry/${id}`, "PUT", data);
+export const deleteInquiry = (id) =>
+  request(`/inquiry/${id}`, "DELETE");
+
+/* ========================================================================
+    8. 공지사항(Notice)
+=========================================================================== */
+export const getNotices = () => request("/notice");
+export const getNoticeById = (id) => request(`/notice/${id}`);
+export const createNotice = (data) =>
+  request("/notice", "POST", data);
+export const updateNotice = (id, data) =>
+  request(`/notice/${id}`, "PUT", data);
+export const deleteNotice = (id) =>
+  request(`/notice/${id}`, "DELETE");
+
+/* ========================================================================
+    9. 랭킹
+=========================================================================== */
+export const getRanking = () => request("/ranking", "GET");
+export const getAdminDashboard = () => request("/admin/dashboard");
+
+/* ========================================================================
+    10. 관리자 캐릭터 관리
+=========================================================================== */
+export const fetchCharacterTemplates = () => request("/characters");
+export const fetchAdminCharacters = () => request("/admin/characters");
+export const createAdminCharacter = (formData) =>
+  requestWithFile("/admin/characters", formData);
+export const deleteAdminCharacter = (id) =>
+  request(`/admin/characters/${id}`, "DELETE");
+
+/* ========================================================================
+    11. 관리자 단어게임 API(admin/game)
+=========================================================================== */
+export const getAdminWordSets = () =>
+  request("/admin/game/sets", "GET");
+
+export const createAdminWordSet = (title) =>
+  request("/admin/game/sets", "POST", { title });
+
+export const deleteAdminWordSet = (id) =>
+  request(`/admin/game/sets/${id}`, "DELETE");
+
+export const getAdminWordsBySet = (setId) =>
+  request(`/admin/game/sets/${setId}/words`);
+
+export const addAdminWord = (wordSetId, question, answer) =>
+  request("/admin/game/word", "POST", {
+    wordSetId,
+    question,
+    answer,
+  });
+
+export const deleteAdminWord = (id) =>
+  request(`/admin/game/word/${id}`, "DELETE");
+
+export const updateAdminWord = (id, question, answer) =>
+  request(`/admin/game/word/${id}`, "PUT", {
+    question,
+    answer,
+  });
+
+export const uploadAdminWordExcel = (title, file) => {
+  const form = new FormData();
+  form.append("title", title);
+  form.append("file", file);
+  return requestWithFile("/admin/game/upload", form);
 };
 
-
-/**
- * 특정 단어장에 포함된 전체 단어(퀴즈 옵션 포함) 조회
- * @param {number} wordSetId
- */
-export const getWordsForSetAPI = (wordSetId) => {
-  return request(`/words/wordsets/${wordSetId}`);
-};
-
-
-/**
- * 단어장 삭제
- * @param {number} id
- */
-export const deleteWordSetAPI = (id) => {
-  return request(`/words/wordsets/${id}`, "DELETE");
-};
-
-// =================================================================
-// FAQ API
-// =================================================================
-
-/**
- * FAQ 목록을 조회합니다.
- */
-export const getFaqs = () => {
-  // (참고: request 함수는 기본적으로 /api (proxy)로 요청을 보냅니다)
-  return request('/faq', 'GET');
-};
-
-// =================================================================
-// Inquiry (1:1 문의) API
-// =================================================================
-
-/**
- * 내가 작성한 1:1 문의 목록을 조회합니다.
- */
-export const getMyInquiries = () => {
-  return request('/inquiry', 'GET');
-};
-
-/**
- * 새 1:1 문의를 작성합니다.
- * @param {object} data - { title: string, content: string }
- */
-export const createInquiry = (data) => {
-  return request('/inquiry', 'POST', data);
-};
-
-/**
- * 1:1 문의를 수정합니다.
- * @param {number} id - 수정할 문의의 ID
- * @param {object} data - { title: string, content: string }
- */
-export const updateInquiry = (id, data) => {
-  return request(`/inquiry/${id}`, 'PUT', data);
-};
-
-/**
- * 1:1 문의를 삭제합니다.
- * @param {number} id - 삭제할 문의의 ID
- */
-export const deleteInquiry = (id) => {
-  return request(`/inquiry/${id}`, 'DELETE');
-};
-
-// =================================================================
-// Notice (공지사항) API
-// =================================================================
-
-/**
- * 모든 공지사항 목록을 조회합니다.
- */
-export const getNotices = () => { 
-  return request('/notice', 'GET');
-};
-
-/**
- * 특정 공지사항 상세 정보를 조회합니다.
- * @param {number} id - 조회할 공지사항의 ID
- */
-export const getNoticeById = (id) => {
-  return request(`/notice/${id}`, 'GET');
-};
-
-/**
- * 새 공지사항을 작성합니다. (관리자용)
- * @param {object} data - { title: string, content: string }
- */
-export const createNotice = (data) => {
-  return request('/notice', 'POST', data);
-};
-
-/**
- * 공지사항을 수정합니다. (관리자용)
- * @param {number} id - 수정할 공지사항의 ID
- * @param {object} data - { title: string, content: string }
- */
-export const updateNotice = (id, data) => {
-  return request(`/notice/${id}`, 'PUT', data);
-};
-
-/**
- * 공지사항을 삭제합니다. (관리자용)
- * @param {number} id - 삭제할 공지사항의 ID
- */
-export const deleteNotice = (id) => {
-  return request(`/notice/${id}`, 'DELETE');
-};
-
-// =================================================================
-// 랭킹 API (신규 추가)
-// =================================================================
-
-/**
- * 랭킹 목록을 조회합니다. (c.userId, c.level, c.exp, u.nickname)
- */
-export const getRanking = () => {
-  // 기본 'request' 헬퍼 함수를 사용합니다.
-  return request('/ranking', 'GET');
-};
-
-export const getAdminDashboard = () => {
-  return request("/admin/dashboard", "GET");
-};
-
-export const fetchCharacterTemplates = () => {
-  return request("/characters", "GET");
-};
-// 관리자 캐릭터 목록
-export const fetchAdminCharacters = () => {
-  return request("/admin/characters", "GET");
-};
-
-// 관리자 캐릭터 등록
-export const createAdminCharacter = (formData) => {
-  return requestWithFile("/admin/characters", formData);
-};
-
-// 관리자 캐릭터 삭제
-export const deleteAdminCharacter = (id) => {
-  return request(`/admin/characters/${id}`, "DELETE");
-};
+export const getAdminWordSetQuiz = (setId) =>
+  request(`/words/admin-sets/${setId}`, "GET");
