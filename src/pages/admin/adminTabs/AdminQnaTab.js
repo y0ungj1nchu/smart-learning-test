@@ -1,85 +1,84 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../../styles/community/Tabs.css";
+import {
+  getAdminInquiries,
+  answerAdminInquiry,
+} from "../../../utils/api";
 
-function AdminQnaTab() {
+export default function AdminQnaTab() {
   const [showUnansweredOnly, setShowUnansweredOnly] = useState(false);
-
-  const [qnaList, setQnaList] = useState([
-    {
-      id: 1,
-      title: "로그인이 안됩니다",
-      content: "로그인이 자꾸 실패합니다.",
-      user: "user01",
-      time: "2025년 11월 3일 13:10",
-      answer: "",
-      answerTime: "",
-    },
-    {
-      id: 2,
-      title: "비밀번호 변경 문의",
-      content: "변경이 안돼요.",
-      user: "user02",
-      time: "2025년 11월 2일 10:20",
-      answer: "안녕하세요! 비밀번호 정책이 변경되었습니다.",
-      answerTime: "2025년 11월 2일 11:00",
-    },
-  ]);
-
+  const [qnaList, setQnaList] = useState([]);
   const [selected, setSelected] = useState(null);
   const [answerText, setAnswerText] = useState("");
 
-  // 미답변 개수
-  const unansweredCount = qnaList.filter((q) => !q.answer).length;
+  // -------------------------------
+  // 문의목록 로드
+  // -------------------------------
+  useEffect(() => {
+    loadInquiries();
+  }, []);
 
-  // 답변 등록 & 수정
-  const handleSendAnswer = () => {
-    if (!answerText.trim()) return alert("답변을 입력하세요.");
-
-    const now = new Date();
-    const formatted = `${now.getFullYear()}년 ${String(
-      now.getMonth() + 1
-    ).padStart(2, "0")}월 ${String(now.getDate()).padStart(2, "0")}일 ${String(
-      now.getHours()
-    ).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-
-    const updated = qnaList.map((q) =>
-      q.id === selected.id
-        ? { ...q, answer: answerText, answerTime: formatted }
-        : q
-    );
-
-    setQnaList(updated);
-    setSelected(null);
-    setAnswerText("");
+  const loadInquiries = async () => {
+    try {
+      const rows = await getAdminInquiries();
+      setQnaList(rows);
+    } catch (err) {
+      console.error(err);
+      alert("문의 목록을 불러오는 중 오류가 발생했습니다.");
+    }
   };
 
-  // 필터링 적용
+  // -------------------------------
+  // 미답변 필터링
+  // -------------------------------
   const filteredList = showUnansweredOnly
-    ? qnaList.filter((q) => !q.answer)
+    ? qnaList.filter((q) => q.status === "pending")
     : qnaList;
+
+  const unansweredCount = qnaList.filter((q) => q.status === "pending").length;
+
+  // -------------------------------
+  // 답변 등록
+  // -------------------------------
+  const handleSendAnswer = async () => {
+    if (!answerText.trim()) return alert("답변을 입력하세요.");
+
+    try {
+      await answerAdminInquiry(selected.id, answerText);
+
+      alert("답변이 등록되었습니다.");
+
+      setSelected(null);
+      setAnswerText("");
+      loadInquiries();
+    } catch (err) {
+      console.error(err);
+      alert("답변 저장 중 오류 발생");
+    }
+  };
 
   return (
     <div className="tab-inner admin-qna-tab">
       <h2>1:1 문의 답변</h2>
 
-      {/* 문의 통계 UI */}
+      {/* 문의 통계 */}
       <div className="qna-stats-box">
         <div className="qna-tag total">
-            총 문의 개수 <span>{qnaList.length}</span>
+          총 문의 개수 <span>{qnaList.length}</span>
         </div>
         <div className="qna-tag unanswered">
-            미답변 <span>{unansweredCount}</span>
+          미답변 <span>{unansweredCount}</span>
         </div>
 
         <button
-            className="filter-btn"
-            onClick={() => setShowUnansweredOnly((prev) => !prev)}
+          className="filter-btn"
+          onClick={() => setShowUnansweredOnly((prev) => !prev)}
         >
-            {showUnansweredOnly ? "전체 보기" : "미답변만 보기"}
+          {showUnansweredOnly ? "전체 보기" : "미답변만 보기"}
         </button>
-        </div>
+      </div>
 
-      {/* 문의 리스트 */}
+      {/* 목록 화면 */}
       {!selected && (
         <table className="table">
           <thead>
@@ -103,10 +102,10 @@ function AdminQnaTab() {
               >
                 <td>{idx + 1}</td>
                 <td>{q.title}</td>
-                <td>{q.user}</td>
-                <td>{q.time}</td>
-                <td className={q.answer ? "status-complete" : "status-pending"}>
-                  {q.answer ? "답변완료" : "미답변"}
+                <td>{q.nickname || q.userNickname}</td>
+                <td>{new Date(q.createdAt).toLocaleString()}</td>
+                <td className={q.status === "answered" ? "status-complete" : "status-pending"}>
+                  {q.status === "answered" ? "답변완료" : "미답변"}
                 </td>
               </tr>
             ))}
@@ -114,12 +113,10 @@ function AdminQnaTab() {
         </table>
       )}
 
-      {/* 답변 작성/수정 페이지 */}
+      {/* 답변 작성 화면 */}
       {selected && (
         <div className="write-form">
-          <h3>
-            [{selected.user}] {selected.title}
-          </h3>
+          <h3>[{selected.nickname}] {selected.title}</h3>
 
           <p className="qna-content">{selected.content}</p>
 
@@ -133,7 +130,7 @@ function AdminQnaTab() {
 
           <div className="btn-right">
             <button className="common-btn" onClick={handleSendAnswer}>
-              {selected.answer ? "답변 수정하기" : "답변 보내기"}
+              {selected.status === "answered" ? "답변 수정하기" : "답변 보내기"}
             </button>
             <button className="cancel-btn" onClick={() => setSelected(null)}>
               목록으로
@@ -144,5 +141,3 @@ function AdminQnaTab() {
     </div>
   );
 }
-
-export default AdminQnaTab;
