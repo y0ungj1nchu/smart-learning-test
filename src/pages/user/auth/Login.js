@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../../../styles/auth/Login.css";
 import lockIcon from "../../../assets/lock.png";
 import userIcon from "../../../assets/user.png";
@@ -12,6 +12,8 @@ import Header2 from "../../../components/common/Header2";
 import { loginUser } from "../../../utils/api";
 
 function Login() {
+  const navigate = useNavigate();   // 🔥 추가
+
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -35,11 +37,11 @@ function Login() {
       localStorage.setItem("role", role);
       localStorage.setItem("userId", payload.id);
 
-      // 🔥 navigate 쓰지말고 바로 페이지 이동
+      // 🔥 navigate로 페이지 이동 (window.location.href 제거)
       if (role === "ADMIN") {
-        window.location.href = "/admin/main";
+        navigate("/admin/main");
       } else {
-        window.location.href = "/home/after";
+        navigate("/home/after");
       }
 
     } catch (err) {
