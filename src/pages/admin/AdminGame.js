@@ -6,7 +6,6 @@ import AdminHeader2 from "../../components/common/AdminHeader2";
 import "../../styles/admin/AdminGame.css";
 import { Search } from "lucide-react";
 
-// ⚠️ 여기 함수들은 아래에 적어둔 utils/api.js 코드에 맞춰 import 하는 거야.
 import {
   getAdminWordSets,
   createAdminWordSet,
@@ -19,31 +18,34 @@ import {
 } from "../../utils/api";
 
 export default function AdminGame() {
-  // 🔹 DB에서 불러온 세트들 (WordSets + words 포함)
   const [sets, setSets] = useState([]);
 
   const [newSetName, setNewSetName] = useState("");
+
+  // 엑셀 업로드로 읽어온 단어들
+  const [uploadedWords, setUploadedWords] = useState([]);
+
   const [searchText, setSearchText] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
 
   const [selectedSet, setSelectedSet] = useState(null);
+
   const [newWord, setNewWord] = useState("");
   const [newCorrect, setNewCorrect] = useState("");
-  const [showDuplicates, setShowDuplicates] = useState(false);
 
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingWordId, setEditingWordId] = useState(null);
   const [editWord, setEditWord] = useState("");
   const [editCorrect, setEditCorrect] = useState("");
 
+  const [showDuplicates, setShowDuplicates] = useState(false);
   const [page, setPage] = useState(0);
   const ITEMS_PER_PAGE = 4;
-
   const [loading, setLoading] = useState(false);
 
-  // ============================
-  // 1) 세트 / 단어 불러오기
-  // ============================
+  // ======================================================
+  // 1) 세트 / 단어 로드
+  // ======================================================
   useEffect(() => {
     loadSets();
   }, []);
@@ -51,39 +53,29 @@ export default function AdminGame() {
   const loadSets = async () => {
     try {
       setLoading(true);
-      const setsFromApi = await getAdminWordSets(); // GET /admin-game/sets
+      const setsFromApi = await getAdminWordSets();
 
-      // 각 세트별 단어 목록도 같이 불러와서 붙여줌
       const setsWithWords = await Promise.all(
         setsFromApi.map(async (set) => {
           try {
-            const words = await getAdminWordsBySet(set.id); // GET /admin-game/sets/:id/words
-            return {
-              ...set,
-              title: set.setTitle, // 프론트에서 쓰기 편하게 title로 복사
-              words,
-            };
-          } catch (err) {
-            console.error("단어 목록 불러오기 실패:", err);
-            return {
-              ...set,
-              title: set.setTitle,
-              words: [],
-            };
+            const words = await getAdminWordsBySet(set.id);
+            return { ...set, title: set.setTitle, words };
+          } catch {
+            return { ...set, title: set.setTitle, words: [] };
           }
         })
       );
 
       setSets(setsWithWords);
     } catch (err) {
-      console.error("세트 목록 불러오기 실패:", err);
       alert("세트 목록을 불러오는 중 오류가 발생했습니다.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  // 선택된 세트의 단어만 새로고침
+  // 단일 세트 단어 새로고침
   const refreshSetWords = async (setId) => {
     try {
       const words = await getAdminWordsBySet(setId);
@@ -91,16 +83,15 @@ export default function AdminGame() {
         prev.map((s) => (s.id === setId ? { ...s, words } : s))
       );
     } catch (err) {
-      console.error("단어 목록 새로고침 실패:", err);
       alert("단어 목록을 새로고침하는 중 오류가 발생했습니다.");
     }
   };
 
   const currentSet = sets.find((s) => s.id === selectedSet);
 
-  // ============================
-  // 2) 검색 / 페이징
-  // ============================
+  // ======================================================
+  // 2) 검색 & 페이징
+  // ======================================================
   const filteredSets = useMemo(() => {
     if (!searchKeyword.trim()) return sets;
     return sets.filter((set) =>
@@ -112,25 +103,25 @@ export default function AdminGame() {
     page * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE + ITEMS_PER_PAGE
   );
-
   const maxPage = Math.max(0, Math.ceil(filteredSets.length / ITEMS_PER_PAGE) - 1);
 
-  // ============================
-  // 3) 중복 단어 계산 (모든 세트 기준)
-  // ============================
+  // ======================================================
+  // 3) 중복 단어 계산
+  // ======================================================
   const duplicateInfo = useMemo(() => {
     const map = {};
     sets.forEach((set) => {
       (set.words || []).forEach((w) => {
         const key = (w.question || "").trim();
         if (!key) return;
+
         if (!map[key]) map[key] = new Set();
-        map[key].add(set.title || set.setTitle || `세트#${set.id}`);
+        map[key].add(set.title);
       });
     });
 
     return Object.entries(map)
-      .filter(([_, setNames]) => setNames.size >= 2)
+      .filter(([_, v]) => v.size >= 2)
       .map(([question, setNames]) => ({
         question,
         sets: Array.from(setNames),
@@ -138,75 +129,94 @@ export default function AdminGame() {
   }, [sets]);
 
   const totalWordCount = useMemo(
-    () =>
-      sets.reduce((acc, set) => acc + ((set.words && set.words.length) || 0), 0),
+    () => sets.reduce((acc, s) => acc + ((s.words && s.words.length) || 0), 0),
     [sets]
   );
 
-  // ============================
-  // 4) 세트 추가
-  // ============================
+  // ======================================================
+  // 4) 세트 생성 (엑셀 업로드 단어 포함)
+  // ======================================================
   const createSet = async () => {
     if (!newSetName.trim()) return alert("세트 이름을 입력하세요.");
 
     try {
-      await createAdminWordSet(newSetName.trim()); // POST /admin-game/sets
+      // 1) 세트 생성
+      const result = await createAdminWordSet(newSetName.trim());
+      const setId = result.setId;
+
+      // 2) 업로드된 단어 있으면 저장
+      if (uploadedWords.length > 0) {
+        for (const w of uploadedWords) {
+          await addAdminWord(setId, w.word, w.correct);
+        }
+      }
+
+      alert("세트 생성 완료!");
+
       setNewSetName("");
+      setUploadedWords([]);
+
       await loadSets();
     } catch (err) {
-      console.error("세트 추가 실패:", err);
-      alert("세트를 추가하는 중 오류가 발생했습니다.");
+      console.error("세트 생성 실패:", err);
+      alert("세트 생성 중 오류가 발생했습니다.");
     }
   };
 
-  // ============================
-  // 5) 엑셀 업로드
-  // ============================
+  // ======================================================
+  // 5) 엑셀 업로드 (단어만 읽어오기)
+  // ======================================================
   const handleExcelUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const titleFromFileName = file.name.replace(/\.[^/.]+$/, "");
-
     try {
-      await uploadAdminWordExcel(titleFromFileName, file); // POST /admin-game/upload
-      await loadSets();
-      alert("엑셀 업로드 완료!");
+      const response = await uploadAdminWordExcel(file);
+
+      if (!response.words || response.words.length === 0) {
+        alert("엑셀에서 단어를 찾지 못했습니다.");
+        return;
+      }
+
+      setUploadedWords(response.words);
+
+      alert(
+        "엑셀 파일 분석 완료!\n세트 이름을 입력하고 [세트 추가]를 눌러 저장하세요."
+      );
     } catch (err) {
-      console.error("엑셀 업로드 실패:", err);
+      console.error(err);
       alert("엑셀 업로드 중 오류가 발생했습니다.");
     } finally {
-      // 같은 파일 다시 선택해도 onChange가 동작하도록 input 초기화
       e.target.value = "";
     }
   };
 
-  // ============================
+  // ======================================================
   // 6) 세트 삭제
-  // ============================
+  // ======================================================
   const deleteSet = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
 
     try {
-      await deleteAdminWordSet(id); // DELETE /admin-game/sets/:id
+      await deleteAdminWordSet(id);
       setSets((prev) => prev.filter((s) => s.id !== id));
+
       if (selectedSet === id) {
         setSelectedSet(null);
         setEditingIndex(null);
         setEditingWordId(null);
       }
     } catch (err) {
-      console.error("세트 삭제 실패:", err);
-      alert("세트를 삭제하는 중 오류가 발생했습니다.");
+      alert("세트 삭제 중 오류가 발생했습니다.");
+      console.error(err);
     }
   };
 
-  // ============================
+  // ======================================================
   // 7) 세트 선택
-  // ============================
+  // ======================================================
   const handleSetSelect = async (id) => {
     if (selectedSet === id) {
-      // 다시 클릭하면 접기
       setSelectedSet(null);
       setEditingIndex(null);
       setEditingWordId(null);
@@ -214,69 +224,62 @@ export default function AdminGame() {
     }
 
     setSelectedSet(id);
-    setEditingIndex(null);
-    setEditingWordId(null);
     await refreshSetWords(id);
   };
 
-  // ============================
+  // ======================================================
   // 8) 단어 추가
-  // ============================
+  // ======================================================
   const addWord = async () => {
     if (!selectedSet) return alert("먼저 세트를 선택하세요.");
     if (!newWord.trim() || !newCorrect.trim())
       return alert("영단어와 뜻을 모두 입력하세요.");
 
     try {
-      await addAdminWord(selectedSet, newWord.trim(), newCorrect.trim()); // POST /admin-game/word
+      await addAdminWord(selectedSet, newWord.trim(), newCorrect.trim());
       setNewWord("");
       setNewCorrect("");
       await refreshSetWords(selectedSet);
-    } catch (err) {
-      console.error("단어 추가 실패:", err);
-      alert("단어를 추가하는 중 오류가 발생했습니다.");
+    } catch {
+      alert("단어 추가 중 오류가 발생했습니다.");
     }
   };
 
-  // ============================
+  // ======================================================
   // 9) 단어 삭제
-  // ============================
+  // ======================================================
   const handleDeleteWord = async (wordId) => {
-    if (!selectedSet) return;
     if (!window.confirm("이 단어를 삭제하시겠습니까?")) return;
 
     try {
-      await deleteAdminWord(wordId); // DELETE /admin-game/word/:id
+      await deleteAdminWord(wordId);
       await refreshSetWords(selectedSet);
-    } catch (err) {
-      console.error("단어 삭제 실패:", err);
-      alert("단어를 삭제하는 중 오류가 발생했습니다.");
+    } catch {
+      alert("단어 삭제 오류 발생");
     }
   };
 
-  // ============================
+  // ======================================================
   // 10) 단어 수정 저장
-  // ============================
+  // ======================================================
   const saveEdit = async () => {
-    if (!selectedSet || editingWordId == null) return;
-
-    if (!editWord.trim() || !editCorrect.trim()) {
-      return alert("영단어와 뜻을 모두 입력하세요.");
-    }
+    if (!editingWordId) return;
+    if (!editWord.trim() || !editCorrect.trim())
+      return alert("단어와 뜻을 모두 입력하세요.");
 
     try {
-      await updateAdminWord(editingWordId, editWord.trim(), editCorrect.trim()); // PUT /admin-game/word/:id
+      await updateAdminWord(editingWordId, editWord.trim(), editCorrect.trim());
       setEditingIndex(null);
       setEditingWordId(null);
-      setEditWord("");
-      setEditCorrect("");
       await refreshSetWords(selectedSet);
-    } catch (err) {
-      console.error("단어 수정 실패:", err);
-      alert("단어를 수정하는 중 오류가 발생했습니다.");
+    } catch {
+      alert("단어 수정 오류 발생");
     }
   };
 
+  // ======================================================
+  // UI
+  // ======================================================
   return (
     <>
       <AdminHeader1 isLoggedIn={true} />
@@ -293,7 +296,9 @@ export default function AdminGame() {
             placeholder="세트 검색"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && setSearchKeyword(searchText)}
+            onKeyDown={(e) =>
+              e.key === "Enter" && setSearchKeyword(searchText)
+            }
           />
           <button
             className="search-btn"
@@ -319,16 +324,15 @@ export default function AdminGame() {
             className="stat-card clickable"
             onClick={() => setShowDuplicates(!showDuplicates)}
           >
-            <h3>겹친 단어 개수</h3>
+            <h3>겹치는 단어</h3>
             <p>{duplicateInfo.length}개</p>
           </div>
         </div>
 
-        {/* 중복 단어 상세 */}
+        {/* 중복 단어 표시 */}
         {showDuplicates && (
           <div className="duplicate-box">
             <h3 className="duplicate-title">중복 단어 상세</h3>
-
             <table className="word-table wide-col-table">
               <thead>
                 <tr>
@@ -337,8 +341,8 @@ export default function AdminGame() {
                 </tr>
               </thead>
               <tbody>
-                {duplicateInfo.map((item, idx) => (
-                  <tr key={idx}>
+                {duplicateInfo.map((item, i) => (
+                  <tr key={i}>
                     <td>{item.question}</td>
                     <td>{item.sets.join(", ")}</td>
                   </tr>
@@ -348,7 +352,7 @@ export default function AdminGame() {
           </div>
         )}
 
-        {/* 세트 추가 */}
+        {/* 세트 생성 + 엑셀 업로드 */}
         <div className="add-set-section">
           <input
             className="input-set"
@@ -358,7 +362,7 @@ export default function AdminGame() {
             onChange={(e) => setNewSetName(e.target.value)}
           />
 
-          <button className="yellow-btn" onClick={createSet} disabled={loading}>
+          <button className="yellow-btn" onClick={createSet}>
             세트 추가
           </button>
 
@@ -367,8 +371,8 @@ export default function AdminGame() {
             <input
               type="file"
               accept=".xls,.xlsx"
-              onChange={handleExcelUpload}
               hidden
+              onChange={handleExcelUpload}
             />
           </label>
         </div>
@@ -393,7 +397,7 @@ export default function AdminGame() {
                 onClick={() => handleSetSelect(set.id)}
               >
                 <h3>{set.title}</h3>
-                <p>{(set.words && set.words.length) || 0}개의 단어</p>
+                <p>{set.words.length}개의 단어</p>
 
                 <button
                   className="yellow-btn small delete-set-btn"
@@ -408,7 +412,7 @@ export default function AdminGame() {
             ))}
 
             {paginatedSets.length === 0 && (
-              <div style={{ padding: "20px", textAlign: "center" }}>
+              <div style={{ padding: 20, textAlign: "center" }}>
                 표시할 세트가 없습니다.
               </div>
             )}
@@ -423,33 +427,27 @@ export default function AdminGame() {
           </button>
         </div>
 
-        {/* 선택된 세트 단어 구성 */}
+        {/* 단어 구성 */}
         {selectedSet && currentSet && (
           <div className="word-manager-section">
             <div className="manager-header">
-              <h3>
-                {currentSet.title} — 단어 구성
-              </h3>
+              <h3>{currentSet.title} — 단어 구성</h3>
             </div>
 
             {/* 단어 추가 */}
             <div className="word-add-row">
               <input
                 className="word-input wide"
-                type="text"
                 placeholder="영단어"
                 value={newWord}
                 onChange={(e) => setNewWord(e.target.value)}
               />
-
               <input
                 className="word-input wide"
-                type="text"
                 placeholder="뜻"
                 value={newCorrect}
                 onChange={(e) => setNewCorrect(e.target.value)}
               />
-
               <button className="yellow-btn" onClick={addWord}>
                 추가
               </button>
@@ -463,9 +461,10 @@ export default function AdminGame() {
                   <th>관리</th>
                 </tr>
               </thead>
+
               <tbody>
-                {(currentSet.words || []).map((item, idx) => (
-                  <tr key={item.id ?? idx}>
+                {currentSet.words.map((item, idx) => (
+                  <tr key={item.id || idx}>
                     {editingIndex === idx ? (
                       <>
                         <td>
@@ -485,26 +484,24 @@ export default function AdminGame() {
                         </td>
 
                         <td>
-                          <div className="word-btn-row">
-                            <button
-                              className="yellow-btn small"
-                              onClick={saveEdit}
-                            >
-                              저장
-                            </button>
+                          <button
+                            className="yellow-btn small"
+                            onClick={saveEdit}
+                          >
+                            저장
+                          </button>
 
-                            <button
-                              className="small-btn red"
-                              onClick={() => {
-                                setEditingIndex(null);
-                                setEditingWordId(null);
-                                setEditWord("");
-                                setEditCorrect("");
-                              }}
-                            >
-                              취소
-                            </button>
-                          </div>
+                          <button
+                            className="small-btn red"
+                            onClick={() => {
+                              setEditingIndex(null);
+                              setEditingWordId(null);
+                              setEditWord("");
+                              setEditCorrect("");
+                            }}
+                          >
+                            취소
+                          </button>
                         </td>
                       </>
                     ) : (
@@ -512,33 +509,31 @@ export default function AdminGame() {
                         <td>{item.question}</td>
                         <td>{item.answer}</td>
                         <td>
-                          <div className="word-btn-row">
-                            <button
-                              className="yellow-btn small"
-                              onClick={() => {
-                                setEditingIndex(idx);
-                                setEditingWordId(item.id);
-                                setEditWord(item.question);
-                                setEditCorrect(item.answer);
-                              }}
-                            >
-                              수정
-                            </button>
+                          <button
+                            className="yellow-btn small"
+                            onClick={() => {
+                              setEditingIndex(idx);
+                              setEditingWordId(item.id);
+                              setEditWord(item.question);
+                              setEditCorrect(item.answer);
+                            }}
+                          >
+                            수정
+                          </button>
 
-                              <button
-                                className="small-btn red"
-                                onClick={() => handleDeleteWord(item.id)}
-                              >
-                                삭제
-                              </button>
-                          </div>
+                          <button
+                            className="small-btn red"
+                            onClick={() => handleDeleteWord(item.id)}
+                          >
+                            삭제
+                          </button>
                         </td>
                       </>
                     )}
                   </tr>
                 ))}
 
-                {(!currentSet.words || currentSet.words.length === 0) && (
+                {currentSet.words.length === 0 && (
                   <tr>
                     <td colSpan={3} style={{ textAlign: "center", padding: 16 }}>
                       등록된 단어가 없습니다.
