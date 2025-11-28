@@ -31,69 +31,25 @@ import AdminCharacter from "./pages/admin/AdminCharacter";
 import AdminGame from "./pages/admin/AdminGame";
 import AdminRanking from "./pages/admin/AdminRanking";
 
-// 🔥 관리자 라우트 보호
-function AdminRoute({ children }) {
-  const role = localStorage.getItem("role");
-  return role === "ADMIN" ? children : <Navigate to="/home/before" />;
-}
+const AdminRoute = ({ element }) =>
+  localStorage.getItem("role") === "ADMIN" ? element : <Navigate to="/home/before" replace />;
 
-function App() {
+export default function App() {
   return (
     <Router>
       <Routes>
 
+        {/* 메인 */}
         <Route path="/home/before" element={<MainBeforeLogin />} />
         <Route path="/home/after" element={<MainAfterLogin />} />
 
-        {/* 관리자 전용 */}
-        <Route
-          path="/admin/main"
-          element={
-            <AdminRoute>
-              <MainAdmin />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/profile"
-          element={
-            <AdminRoute>
-              <AdminProfilePage />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/community"
-          element={
-            <AdminRoute>
-              <AdminCommunity />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/character"
-          element={
-            <AdminRoute>
-              <AdminCharacter />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/game"
-          element={
-            <AdminRoute>
-              <AdminGame />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/ranking"
-          element={
-            <AdminRoute>
-              <AdminRanking />
-            </AdminRoute>
-          }
-        />
+        {/* 관리자 */}
+        <Route path="/admin/main" element={<AdminRoute element={<MainAdmin />} />} />
+        <Route path="/admin/profile" element={<AdminRoute element={<AdminProfilePage />} />} />
+        <Route path="/admin/community" element={<AdminRoute element={<AdminCommunity />} />} />
+        <Route path="/admin/character" element={<AdminRoute element={<AdminCharacter />} />} />
+        <Route path="/admin/game" element={<AdminRoute element={<AdminGame />} />} />
+        <Route path="/admin/ranking" element={<AdminRoute element={<AdminRanking />} />} />
 
         {/* 인증 */}
         <Route path="/user/auth/Login" element={<Login />} />
@@ -102,25 +58,27 @@ function App() {
         <Route path="/user/auth/FindPw" element={<FindPw />} />
         <Route path="/user/auth/EmailVerification" element={<EmailVerification />} />
 
-        {/* 사용자 기능 */}
+        {/* 사용자 */}
         <Route path="/user/profile/view" element={<ProfileView />} />
         <Route path="/user/calendar" element={<CalendarPage />} />
         <Route path="/user/community/*" element={<Community />} />
         <Route path="/user/character" element={<CharacterPage />} />
+
+        {/* 게임 */}
         <Route path="/user/game" element={<GamePage />} />
         <Route path="/user/game/word" element={<WordGamePageBasic />} />
         <Route path="/user/game/upload" element={<WordGamePageCustom />} />
         <Route path="/user/game/quiz" element={<WordQuizPage />} />
         <Route path="/user/game/result" element={<ResultPage />} />
         <Route path="/user/game/acid-rain" element={<AcidRainPage />} />
+
         <Route path="/user/ranking" element={<RankingPage />} />
         <Route path="/user/study" element={<StudyPage />} />
 
         {/* 기본 */}
-        <Route path="*" element={<MainBeforeLogin />} />
+        <Route path="*" element={<Navigate to="/home/before" replace />} />
+
       </Routes>
     </Router>
   );
 }
-
-export default App;
