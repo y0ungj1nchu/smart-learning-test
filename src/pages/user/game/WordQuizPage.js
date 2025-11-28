@@ -1,30 +1,37 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../../../styles/game/WordGame.css";
 
-import { getWordsForSetAPI } from "../../../utils/api";
+import { getWordsForSetAPI, getAdminWordSetQuiz } from "../../../utils/api";
 
 export default function WordQuizPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // 전달받은 값
   const setId = location.state?.setId;
   const setName = location.state?.setName;
+  const origin = location.state?.origin; // "admin" 또는 undefined
 
   const [wordList, setWordList] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
+
   const [autoNext, setAutoNext] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  const current = wordList[currentIndex];
-  const selectedAnswer = answers.find((a) => a.word === current?.word)?.selected;
+  const loadedRef = useRef(false);
+  const autoNextRef = useRef(false);
 
-  // ⭐ 배열 셔플 함수 (Fisher–Yates)
+  const current = wordList[currentIndex];
+  const selectedAnswer =
+    answers.find((a) => a.word === current?.word)?.selected;
+
+  // 배열 셔플
   const shuffleArray = (arr) => {
     const copy = [...arr];
     for (let i = copy.length - 1; i > 0; i--) {
@@ -35,73 +42,97 @@ export default function WordQuizPage() {
   };
 
   /* ---------------------------------------------------------
-     1) 단어장 로딩 (백엔드 API 호출)
+     1) 단어장 로딩 (관리자 / 사용자 자동 분기)
   --------------------------------------------------------- */
   useEffect(() => {
+    if (loadedRef.current) return; // StrictMode 2회 렌더링 방지
+    loadedRef.current = true;
+
     if (!setId) {
       alert("잘못된 접근입니다.");
-      navigate("/user/game/custom");
+      navigate("/user/game/word");
       return;
     }
 
     const loadWords = async () => {
       try {
-        const data = await getWordsForSetAPI(setId); // { setName, wordList }
+        let data;
 
-        // ⭐ 문제 순서 및 보기 순서 랜덤 셔플
-        const shuffledQuestions = shuffleArray(data.wordList).map((q) => ({
+        // (1) 관리자 제공 단어장 사용
+        if (origin === "admin") {
+          data = await getAdminWordSetQuiz(setId);
+        }
+        // (2) 사용자 업로드 단어장
+        else {
+          data = await getWordsForSetAPI(setId);
+        }
+
+        // 백엔드에서 오는 구조를 통일하기 위한 정규화
+        const normalized = data.wordList.map((w) => ({
+          word: w.word ?? w.question ?? "",
+          correct: w.correct ?? w.answer ?? "",
+          options: w.options ?? [],
+        }));
+
+        // 문제 순서 + 보기 순서 셔플
+        const shuffled = shuffleArray(normalized).map((q) => ({
           ...q,
           options: shuffleArray(q.options),
         }));
 
-        setWordList(shuffledQuestions);
-        setCurrentIndex(0);
-        setAnswers([]);
-        setAutoNext(false);
-        setShowModal(false);
+        setWordList(shuffled);
       } catch (err) {
-        console.error("단어 불러오기 실패:", err);
-        alert("단어장을 불러오는 중 오류 발생");
-        navigate("/user/game/custom");
+        console.error("단어장 로딩 실패:", err);
+        alert("단어장을 불러오는 중 오류 발생했습니다.");
+        navigate("/user/game/word");
       } finally {
         setLoading(false);
       }
     };
 
     loadWords();
-  }, [setId, navigate]);
+  }, [setId, origin, navigate]);
 
   /* ---------------------------------------------------------
-     2) 보기 선택
+     2) 옵션 선택
   --------------------------------------------------------- */
   const handleSelectOption = (option) => {
     if (!current) return;
 
-    const isCorrect = option === current.correct;
-
     const updated = [
       ...answers.filter((a) => a.word !== current.word),
-      { word: current.word, selected: option, correct: current.correct, isCorrect },
+      {
+        word: current.word,
+        selected: option,
+        correct: current.correct,
+        isCorrect: option === current.correct,
+      },
     ];
 
     setAnswers(updated);
 
+    // 자동 다음 문제 준비
     if (currentIndex < wordList.length - 1) {
       setAutoNext(true);
     }
   };
 
   /* ---------------------------------------------------------
-     3) 자동 다음 문제 이동
+     3) 자동으로 다음 문제로 이동
   --------------------------------------------------------- */
   useEffect(() => {
-    if (autoNext) {
-      const timer = setTimeout(() => {
-        setCurrentIndex((prev) => prev + 1);
-        setAutoNext(false);
-      }, 1200);
-      return () => clearTimeout(timer);
-    }
+    if (!autoNext) return;
+
+    if (autoNextRef.current) return;
+    autoNextRef.current = true;
+
+    const timer = setTimeout(() => {
+      setCurrentIndex((prev) => prev + 1);
+      setAutoNext(false);
+      autoNextRef.current = false;
+    }, 1200);
+
+    return () => clearTimeout(timer);
   }, [autoNext]);
 
   /* ---------------------------------------------------------
@@ -117,13 +148,13 @@ export default function WordQuizPage() {
       state: {
         results: answers,
         setName,
-        setId,   // ⭐ ResultPage에서 다시 풀기 / 산성비에 사용
+        setId,
       },
     });
   };
 
   /* ---------------------------------------------------------
-     5) 로딩 중
+     5) 로딩 화면
   --------------------------------------------------------- */
   if (loading || !current) {
     return (
@@ -138,7 +169,7 @@ export default function WordQuizPage() {
   }
 
   /* ---------------------------------------------------------
-     6) UI 렌더링
+     6) UI 렌더링 — 기존 UI와 100% 동일
   --------------------------------------------------------- */
   return (
     <>

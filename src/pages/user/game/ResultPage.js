@@ -8,41 +8,47 @@ export default function ResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // WordQuizPage에서 넘어온 값들
   const results = location.state?.results || [];
-  const setName = location.state?.setName || "";
-  const setId = location.state?.setId;   // ⭐ 산성비 / 다시풀기에 둘 다 필요
+  const setName = location.state?.setName || "단어장";
+  const setId = location.state?.setId || null;
+  const origin = location.state?.origin || "user";
+  const wordList = location.state?.wordList || [];
 
   const correctCount = results.filter((r) => r.isCorrect).length;
 
-  // ✅ 다시 풀기 → 같은 세트로 퀴즈 재시작
+  /* ---------------------------------------------------------
+     1) 다시 풀기
+  --------------------------------------------------------- */
   const handleRetry = () => {
     if (!setId) {
-      alert("단어장 정보가 없습니다.");
-      navigate("/user/game/custom");
+      alert("다시 풀 수 있는 단어장 정보가 없습니다.");
       return;
     }
 
     navigate("/user/game/quiz", {
-      state: { setId, setName },
+      state: { setId, setName, origin },
     });
   };
 
-  // 산성비 모드 시작
+  /* ---------------------------------------------------------
+     2) 목록으로
+  --------------------------------------------------------- */
+  const handleGoList = () => {
+    navigate("/user/game/word");
+  };
+
+  /* ---------------------------------------------------------
+     3) 산성비 게임 전환
+  --------------------------------------------------------- */
   const handleAcidRain = () => {
-    if (!setId) {
-      alert("단어장 정보가 없습니다.");
+    if (results.length === 0) {
+      alert("산성비 모드로 전환할 단어 데이터가 없습니다.");
       return;
     }
 
     navigate("/user/game/acid-rain", {
-      state: { setId, setName },
+      state: { wordList: results, setName, origin, setId },
     });
-  };
-
-  // 게임 종료 → 게임 메인
-  const handleExit = () => {
-    navigate("/user/game");
   };
 
   return (
@@ -52,21 +58,20 @@ export default function ResultPage() {
 
       <div className="wordgame-page">
         <div className="wordgame-result">
-          <h2>결과 확인</h2>
+          <h2>{setName} 결과</h2>
 
           <p>
-            맞은 개수: {correctCount} / {results.length}
+            맞은 개수: <strong>{correctCount}</strong> / {results.length}
           </p>
 
           <table className="result-table">
             <thead>
               <tr>
-                <th>단어</th>
+                <th>문제</th>
                 <th>정답</th>
-                <th>내 답</th>
+                <th>선택한 답</th>
               </tr>
             </thead>
-
             <tbody>
               {results.map((r, i) => (
                 <tr
@@ -81,18 +86,17 @@ export default function ResultPage() {
             </tbody>
           </table>
 
-          {/* 버튼 영역 */}
           <div className="wordgame-result-btns">
             <button className="wordgame-nav-btn" onClick={handleRetry}>
               다시 풀기
             </button>
 
-            <button className="wordgame-nav-btn" onClick={handleAcidRain}>
-              산성비 모드
+            <button className="wordgame-nav-btn" onClick={handleGoList}>
+              목록으로
             </button>
 
-            <button className="wordgame-nav-btn" onClick={handleExit}>
-              게임 종료
+            <button className="wordgame-nav-btn" onClick={handleAcidRain}>
+              산성비
             </button>
           </div>
         </div>
