@@ -1,53 +1,47 @@
 import React, { useState, useEffect } from "react";
 import "../../../styles/community/Tabs.css";
 import WriteTab from "./AdminWriteTab";
+import {
+  getAdminNotices,
+  createAdminNotice,
+  updateAdminNotice,
+  deleteAdminNotice,
+} from "../../../utils/api";
 
 function AdminNoticeTab() {
   const [search, setSearch] = useState("");
   const [isWriting, setIsWriting] = useState(false);
   const [editPost, setEditPost] = useState(null);
-  const [noticeList, setNoticeList] = useState([
-    {
-      id: 1,
-      title: "업데이트 공지",
-      time: "2025년 11월 3일 14:20",
-      content: "업데이트가 완료되었습니다.",
-    },
-    {
-      id: 2,
-      title: "점검 안내",
-      time: "2025년 11월 2일 10:15",
-      content: "내일 오전 10시부터 시스템 점검 예정입니다.",
-    },
-  ]);
+  const [noticeList, setNoticeList] = useState([]);
   const [originalList, setOriginalList] = useState([]);
 
+  // 공지 불러오기
   useEffect(() => {
-    if (originalList.length === 0) setOriginalList(noticeList);
-  }, [noticeList, originalList.length]);
+    loadNotices();
+  }, []);
 
-  const parseDate = (t) => {
-    if (!t) return 0;
-    const [year, month, day, hour, minute] = t
-      .replace("년", "")
-      .replace("월", "")
-      .replace("일", "")
-      .trim()
-      .split(/[\s:]+/)
-      .map(Number);
-    return new Date(year, month - 1, day, hour, minute).getTime();
+  const loadNotices = async () => {
+    try {
+      const data = await getAdminNotices();
+      // time 필드 추가(프론트 표시용)
+      const mapped = data.map((n) => ({
+        ...n,
+        time: new Date(n.createdAt).toLocaleString("ko-KR"),
+      }));
+
+      setNoticeList(mapped);
+      setOriginalList(mapped);
+    } catch (err) {
+      console.error(err);
+      alert("공지사항을 불러오는 중 오류가 발생했습니다.");
+    }
   };
-
-  const sortedList = [...noticeList]
-    .sort((a, b) => parseDate(b.time) - parseDate(a.time))
-    .map((item, index, arr) => ({ ...item, no: arr.length - index }));
 
   const handleSearch = () => {
     if (!search.trim()) {
       setNoticeList(originalList);
       return;
     }
-
     const filtered = originalList.filter(
       (item) =>
         item.title.includes(search) || item.content.includes(search)
@@ -55,11 +49,16 @@ function AdminNoticeTab() {
     setNoticeList(filtered);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
-    const updated = noticeList.filter((n) => n.id !== id);
-    setNoticeList(updated);
-    setOriginalList(updated);
+
+    try {
+      await deleteAdminNotice(id);
+      await loadNotices();
+    } catch (err) {
+      console.error(err);
+      alert("삭제 중 오류 발생");
+    }
   };
 
   if (isWriting || editPost) {
@@ -70,29 +69,28 @@ function AdminNoticeTab() {
           setIsWriting(false);
           setEditPost(null);
         }}
-        onSubmit={(newPost) => {
-          let updated;
-          if (editPost) {
-            updated = noticeList.map((n) =>
-              n.id === newPost.id ? newPost : n
-            );
-          } else {
-            updated = [
-              {
-                id: Date.now(),
-                ...newPost,
-              },
-              ...noticeList,
-            ];
+        onSubmit={async (post) => {
+          try {
+            if (editPost) {
+              await updateAdminNotice(editPost.id, post);
+            } else {
+              await createAdminNotice(post);
+            }
+            await loadNotices();
+          } catch (err) {
+            console.error(err);
+            alert("저장 중 오류 발생");
           }
-          setNoticeList(updated);
-          setOriginalList(updated);
           setIsWriting(false);
           setEditPost(null);
         }}
       />
     );
   }
+
+  const sortedList = [...noticeList]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map((item, index, arr) => ({ ...item, no: arr.length - index }));
 
   return (
     <div className="admin-community-tab">
