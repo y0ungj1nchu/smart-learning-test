@@ -275,12 +275,53 @@ export const updateAdminWord = (id, question, answer) =>
     answer,
   });
 
-export const uploadAdminWordExcel = (title, file) => {
+export const uploadAdminWordExcel = (file) => {
   const form = new FormData();
-  form.append("title", title);
-  form.append("file", file);
+  form.append("wordFile", file);   // backend upload.single("wordFile") 일치
   return requestWithFile("/admin/game/upload", form);
 };
 
 export const getAdminWordSetQuiz = (setId) =>
   request(`/words/admin-sets/${setId}`, "GET");
+
+/* ===================== 관리자 공지사항 API ====================== */
+export const getAdminNotices = () =>
+  request("/admin/notice", "GET");
+
+export const createAdminNotice = (data) =>
+  request("/admin/notice", "POST", data);
+
+export const updateAdminNotice = (id, data) =>
+  request(`/admin/notice/${id}`, "PUT", data);
+
+export const deleteAdminNotice = (id) =>
+  request(`/admin/notice/${id}`, "DELETE");
+
+// 관리자 FAQ
+export const getAdminFaqs = () =>
+  request("/admin/faq", "GET");
+
+export const createAdminFaq = (question, answer) =>
+  request("/admin/faq", "POST", {
+    question,
+    answer,
+  });
+
+export const updateAdminFaq = (id, question, answer) =>
+  request(`/admin/faq/${id}`, "PUT", {
+    question,
+    answer,
+  });
+
+export const deleteAdminFaq = (id) =>
+  request(`/admin/faq/${id}`, "DELETE");
+
+// ===================== 관리자 1:1 문의 API ======================
+export const getAdminInquiries = () =>
+  request("/admin/inquiry", "GET");
+
+export const getAdminInquiryById = (id) =>
+  request(`/admin/inquiry/${id}`, "GET");
+
+export const answerAdminInquiry = (id, answer) =>
+  request(`/admin/inquiry/${id}/answer`, "PUT", { answer });
