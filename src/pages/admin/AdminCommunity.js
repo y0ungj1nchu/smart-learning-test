@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../styles/community/Community.css";
 import "../../styles/community/Tabs.css";
+
+import { useLocation } from "react-router-dom";
 
 import AdminHeader1 from "../../components/common/AdminHeader1";
 import AdminHeader2 from "../../components/common/AdminHeader2";
@@ -10,16 +12,20 @@ import AdminNoticeTab from "./adminTabs/AdminNoticeTab";
 import AdminQnaTab from "./adminTabs/AdminQnaTab";
 
 export default function AdminCommunity() {
-  const [activeTab, setActiveTab] = useState("faq");
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const qnaId = params.get("qna");
+
+  const [activeTab, setActiveTab] = useState(qnaId ? "qna" : "notice");
 
   const renderContent = () => {
     switch (activeTab) {
-      case "faq":
-        return <AdminFaqTab />;
       case "notice":
         return <AdminNoticeTab />;
+      case "faq":
+        return <AdminFaqTab />;
       case "qna":
-        return <AdminQnaTab />;
+        return <AdminQnaTab initialSelectId={qnaId} />;
       default:
         return <AdminFaqTab />;
     }
@@ -35,13 +41,22 @@ export default function AdminCommunity() {
           <div className="profile-sidebar">
             <p className="sidebar-title">관리자 커뮤니티</p>
             <ul>
-              <li className={activeTab === "notice" ? "active" : ""} onClick={() => setActiveTab("notice")}>
+              <li
+                className={activeTab === "notice" ? "active" : ""}
+                onClick={() => setActiveTab("notice")}
+              >
                 공지사항 관리
               </li>
-              <li className={activeTab === "faq" ? "active" : ""} onClick={() => setActiveTab("faq")}>
+              <li
+                className={activeTab === "faq" ? "active" : ""}
+                onClick={() => setActiveTab("faq")}
+              >
                 FAQ 관리
               </li>
-              <li className={activeTab === "qna" ? "active" : ""} onClick={() => setActiveTab("qna")}>
+              <li
+                className={activeTab === "qna" ? "active" : ""}
+                onClick={() => setActiveTab("qna")}
+              >
                 1:1 문의 답변
               </li>
             </ul>
