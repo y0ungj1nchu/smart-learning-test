@@ -10,6 +10,7 @@ import {
   fetchCharacterTemplates,
   getMyProfile,
   updateCharacterImage,
+  updateCharacterName
 } from "@/utils/api";
 
 function CharacterPage() {
@@ -22,23 +23,21 @@ function CharacterPage() {
   const [userLevel, setUserLevel] = useState(1);
   const [characterList, setCharacterList] = useState([]);
 
-  // -------------------------------
-  // 1) 사용자 정보 + 캐릭터 템플릿 불러오기
-  // -------------------------------
+  /* --------------------------------------------------
+      1) 사용자 정보 + 캐릭터 리스트 불러오기
+  -------------------------------------------------- */
   useEffect(() => {
     const loadData = async () => {
       const me = await getMyProfile();
+
       setUserLevel(me.level);
-      setName(me.nickname || "사용자");
+      setName(me.characterName || me.nickname);
       setCharacter(me.characterImage);
 
       const list = await fetchCharacterTemplates();
       setCharacterList(list);
 
-      // 현재 선택된 캐릭터 index 찾기
-      const idx = list.findIndex(
-        (c) => c.imagePath === me.characterImage
-      );
+      const idx = list.findIndex(c => c.imagePath === me.characterImage);
       setCurrentIndex(idx >= 0 ? idx : 0);
     };
     loadData();
@@ -46,36 +45,29 @@ function CharacterPage() {
 
   if (!characterList.length) return <p>로딩 중...</p>;
 
-  const currentChar = characterList[currentIndex];
-
-  const currentImageUrl = `http://localhost:3001/uploads/characters/${currentChar.imagePath}`;
-
-  // -------------------------------
-  // 2) 캐릭터 캐러셀 이동
-  // -------------------------------
+  /* --------------------------------------------------
+      2) 캐러셀 이동
+  -------------------------------------------------- */
   const handlePrev = () => {
-    setCurrentIndex((prev) =>
+    setCurrentIndex(prev =>
       (prev - 1 + characterList.length) % characterList.length
     );
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % characterList.length);
+    setCurrentIndex(prev => (prev + 1) % characterList.length);
   };
 
-  const getVisibleCharacters = () => {
-    const first = currentIndex;
-    const second = (currentIndex + 1) % characterList.length;
-    return [characterList[first], characterList[second]];
-  };
+  const visibleCharacters = [
+    characterList[currentIndex],
+    characterList[(currentIndex + 1) % characterList.length],
+  ];
 
-  const visibleCharacters = getVisibleCharacters();
-
-  // -------------------------------
-  // 3) 캐릭터 변경 / 이름 변경
-  // -------------------------------
+  /* --------------------------------------------------
+      3) 캐릭터 변경
+  -------------------------------------------------- */
   const handleCharacterChange = async (imgName, minLevel) => {
-    if (userLevel < minLevel) return;
+    if (userLevel < minLevel) return; // 레벨 미달
 
     await updateCharacterImage(imgName);
     setCharacter(imgName);
@@ -85,11 +77,24 @@ function CharacterPage() {
     setMode("view");
   };
 
-  const handleNameChange = () => {
+  /* --------------------------------------------------
+      4) 캐릭터 이름 변경
+  -------------------------------------------------- */
+  const handleNameChange = async () => {
     if (!newName.trim()) return;
-    setName(newName);
-    setNewName("");
-    setMode("view");
+
+    try {
+      await updateCharacterName(newName);
+      setName(newName); // 프론트 반영
+
+      alert("캐릭터 이름이 변경되었습니다!");
+
+      setNewName("");
+      setMode("view");
+    } catch (error) {
+      console.error(error);
+      alert("이름 변경 실패");
+    }
   };
 
   return (
@@ -99,9 +104,10 @@ function CharacterPage() {
 
       <div className="character-page">
         <div className="character-container">
-          {/* ----------------------- */}
-          {/* 왼쪽 큰 캐릭터 이미지   */}
-          {/* ----------------------- */}
+
+          {/* ------------------------- */}
+          {/* 왼쪽 큰 캐릭터 이미지 */}
+          {/* ------------------------- */}
           <div className="character-left">
             <img
               src={`http://localhost:3001/uploads/characters/${character}`}
@@ -110,10 +116,12 @@ function CharacterPage() {
             />
           </div>
 
-          {/* ----------------------- */}
-          {/* 오른쪽 정보 카드 및 모드 */}
-          {/* ----------------------- */}
+          {/* ------------------------- */}
+          {/* 오른쪽 정보창 */}
+          {/* ------------------------- */}
           <div className="character-right">
+
+            {/* ---------- VIEW MODE ---------- */}
             {mode === "view" && (
               <div className="character-card">
                 <h2 className="character-title">캐릭터</h2>
@@ -129,63 +137,49 @@ function CharacterPage() {
                 </div>
 
                 <div className="btn-group">
-                  <button
-                    onClick={() => setMode("rename")}
-                    className="yellow-btn"
-                  >
+                  <button className="yellow-btn" onClick={() => setMode("rename")}>
                     캐릭터 이름 변경
                   </button>
 
-                  <button
-                    onClick={() => setMode("change")}
-                    className="yellow-btn"
-                  >
+                  <button className="yellow-btn" onClick={() => setMode("change")}>
                     캐릭터 변경
                   </button>
                 </div>
               </div>
             )}
 
-            {/* ----------------------- */}
-            {/* 이름 변경 모드 */}
-            {/* ----------------------- */}
+            {/* ---------- NAME CHANGE MODE ---------- */}
             {mode === "rename" && (
               <div className="character-card">
                 <h2 className="character-title">캐릭터 이름 변경</h2>
 
                 <div className="info-row">
-                  <span className="label">변경 전 이름</span>
+                  <span className="label">현재 이름</span>
                   <span className="value">{name}</span>
                 </div>
 
                 <div className="info-row">
-                  <span className="label">새로운 이름</span>
+                  <span className="label">새 이름</span>
                   <input
-                    type="text"
+                    className="input-box"
                     placeholder="새 이름 입력"
                     value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    className="input-box"
+                    onChange={e => setNewName(e.target.value)}
                   />
                 </div>
 
                 <div className="btn-group">
-                  <button onClick={handleNameChange} className="yellow-btn">
+                  <button className="yellow-btn" onClick={handleNameChange}>
                     이름 변경
                   </button>
-                  <button
-                    onClick={() => setMode("view")}
-                    className="gray-btn"
-                  >
+                  <button className="gray-btn" onClick={() => setMode("view")}>
                     취소
                   </button>
                 </div>
               </div>
             )}
 
-            {/* ----------------------- */}
-            {/* 캐릭터 교체 모드 */}
-            {/* ----------------------- */}
+            {/* ---------- CHARACTER CHANGE MODE ---------- */}
             {mode === "change" && (
               <div className="character-card">
                 <h2 className="character-title">캐릭터 변경</h2>
@@ -198,20 +192,15 @@ function CharacterPage() {
                   <div className="character-carousel">
                     {visibleCharacters.map((char) => {
                       const isLocked = userLevel < char.level;
-                      const fileName = char.imagePath;
-                      const imgPath = `http://localhost:3001/uploads/characters/${fileName}`;
-                      const isSelected = character === fileName;
+                      const isSelected = character === char.imagePath;
+                      const imgPath = `http://localhost:3001/uploads/characters/${char.imagePath}`;
 
                       return (
                         <div
                           key={char.id}
-                          className={`character-option ${
-                            isSelected ? "selected" : ""
-                          } ${isLocked ? "locked" : ""}`}
-                          onClick={() =>
-                            !isLocked &&
-                            handleCharacterChange(fileName, char.level)
-                          }
+                          className={`character-option 
+                            ${isSelected ? "selected" : ""} 
+                            ${isLocked ? "locked" : ""}`}
                         >
                           <div className="character-image-container">
                             <img
@@ -231,19 +220,18 @@ function CharacterPage() {
                           <p>
                             {char.name}
                             {isLocked && (
-                              <span className="locked-text">
-                                {" "}
-                                (Lv.{char.level})
-                              </span>
+                              <span className="locked-text"> (Lv.{char.level})</span>
                             )}
                           </p>
 
+                          {/* 버튼 클릭만 캐릭터 변경(중복 방지!) */}
                           <button
                             className="yellow-btn"
                             disabled={isLocked}
-                            onClick={() =>
-                              handleCharacterChange(fileName, char.level)
-                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCharacterChange(char.imagePath, char.level);
+                            }}
                           >
                             {isLocked ? "잠김" : "선택"}
                           </button>
@@ -258,15 +246,14 @@ function CharacterPage() {
                 </div>
 
                 <div className="btn-group">
-                  <button
-                    onClick={() => setMode("view")}
-                    className="gray-btn"
-                  >
+                  <button className="gray-btn" onClick={() => setMode("view")}>
                     취소
                   </button>
                 </div>
+
               </div>
             )}
+
           </div>
         </div>
       </div>
