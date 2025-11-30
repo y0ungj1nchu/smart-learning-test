@@ -5,15 +5,12 @@ import {
   answerAdminInquiry,
 } from "../../../utils/api";
 
-export default function AdminQnaTab() {
+export default function AdminQnaTab({ initialSelectId }) {
   const [showUnansweredOnly, setShowUnansweredOnly] = useState(false);
   const [qnaList, setQnaList] = useState([]);
   const [selected, setSelected] = useState(null);
   const [answerText, setAnswerText] = useState("");
 
-  // -------------------------------
-  // 문의목록 로드
-  // -------------------------------
   useEffect(() => {
     loadInquiries();
   }, []);
@@ -28,18 +25,26 @@ export default function AdminQnaTab() {
     }
   };
 
-  // -------------------------------
-  // 미답변 필터링
-  // -------------------------------
+  // 🔥 URL에서 받은 문의 ID로 자동 선택
+  useEffect(() => {
+    if (!initialSelectId || qnaList.length === 0) return;
+
+    const target = qnaList.find(
+      (q) => String(q.id) === String(initialSelectId)
+    );
+
+    if (target) {
+      setSelected(target);
+      setAnswerText(target.answer || "");
+    }
+  }, [initialSelectId, qnaList]);
+
   const filteredList = showUnansweredOnly
     ? qnaList.filter((q) => q.status === "pending")
     : qnaList;
 
   const unansweredCount = qnaList.filter((q) => q.status === "pending").length;
 
-  // -------------------------------
-  // 답변 등록
-  // -------------------------------
   const handleSendAnswer = async () => {
     if (!answerText.trim()) return alert("답변을 입력하세요.");
 
@@ -61,7 +66,6 @@ export default function AdminQnaTab() {
     <div className="tab-inner admin-qna-tab">
       <h2>1:1 문의 답변</h2>
 
-      {/* 문의 통계 */}
       <div className="qna-stats-box">
         <div className="qna-tag total">
           총 문의 개수 <span>{qnaList.length}</span>
@@ -78,7 +82,6 @@ export default function AdminQnaTab() {
         </button>
       </div>
 
-      {/* 목록 화면 */}
       {!selected && (
         <table className="table">
           <thead>
@@ -102,9 +105,15 @@ export default function AdminQnaTab() {
               >
                 <td>{idx + 1}</td>
                 <td>{q.title}</td>
-                <td>{q.nickname || q.userNickname}</td>
+                <td>{q.nickname}</td>
                 <td>{new Date(q.createdAt).toLocaleString()}</td>
-                <td className={q.status === "answered" ? "status-complete" : "status-pending"}>
+                <td
+                  className={
+                    q.status === "answered"
+                      ? "status-complete"
+                      : "status-pending"
+                  }
+                >
                   {q.status === "answered" ? "답변완료" : "미답변"}
                 </td>
               </tr>
@@ -113,7 +122,6 @@ export default function AdminQnaTab() {
         </table>
       )}
 
-      {/* 답변 작성 화면 */}
       {selected && (
         <div className="write-form">
           <h3>[{selected.nickname}] {selected.title}</h3>
