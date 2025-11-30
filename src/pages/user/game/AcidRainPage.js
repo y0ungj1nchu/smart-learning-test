@@ -22,16 +22,11 @@ export default function AcidRainPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  // 🔥 WordQuiz에서 넘어온 wordList 그대로 사용 (중요!)
   const baseList = useMemo(() => state?.wordList || [], [state]);
 
-  /* 시작 안내 모달 */
   const [showStartGuide, setShowStartGuide] = useState(true);
-
-  /* 단어세트 보기 모달 */
   const [showSetModal, setShowSetModal] = useState(false);
 
-  /* 게임 상태 */
   const [seconds, setSeconds] = useState(LIMIT_SECONDS);
   const [miss, setMiss] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -40,15 +35,16 @@ export default function AcidRainPage() {
   const [resultText, setResultText] = useState("");
 
   const spawnTimer = useRef(null);
-  const raf = useRef(null);
+  const animationFrameId = useRef(null);
 
-  /* 게임 시작 */
+  /* ===========================
+      게임 시작 / 재시작
+  ============================ */
   const startGame = () => {
     setShowStartGuide(false);
     setPlaying(true);
   };
 
-  /* 재시작 */
   const restartGame = () => {
     setSeconds(LIMIT_SECONDS);
     setMiss(0);
@@ -58,33 +54,39 @@ export default function AcidRainPage() {
     setPlaying(true);
   };
 
-  /* 타이머 */
+  /* ===========================
+      타이머
+  ============================ */
   useEffect(() => {
     if (!playing || showStartGuide) return;
 
-    const timer = setInterval(() => {
+    const timerId = setInterval(() => {
       setSeconds((prev) => {
         if (prev <= 1) {
-          clearInterval(timer);
+          clearInterval(timerId);
           setPlaying(false);
-
           if (miss < MAX_MISS) setResultText("GAME CLEAR");
           else setResultText("GAME OUT");
-
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => clearInterval(timerId);
   }, [playing, miss, showStartGuide]);
 
-  /* 단어 생성 */
+  /* ===========================
+      단어 생성
+  ============================ */
   useEffect(() => {
     if (!playing || showStartGuide) return;
 
+    let active = true;
+
     spawnTimer.current = setInterval(() => {
+      if (!active) return;
+
       setDrops((prev) => {
         if (prev.length > 0) return prev;
         if (baseList.length === 0) return prev;
@@ -101,49 +103,80 @@ export default function AcidRainPage() {
             x,
             y: -30,
             speed,
+            missed: false // 🔥 중복 miss 방지 핵심
           },
         ];
       });
     }, SPAWN_INTERVAL);
 
-    return () => clearInterval(spawnTimer.current);
+    return () => {
+      active = false;
+      clearInterval(spawnTimer.current);
+    };
   }, [playing, baseList, showStartGuide]);
 
-  /* 단어 낙하 */
+  /* ===========================
+      단어 낙하 (중복 miss 절대 방지)
+  ============================ */
   useEffect(() => {
     if (!playing || showStartGuide) return;
 
-    const tick = () => {
+    let running = true;
+
+    const loop = () => {
+      if (!running) return;
+
       setDrops((prev) => {
         if (prev.length === 0) return prev;
 
-        const d = prev[0];
-        const newY = d.y + d.speed;
+        let missCount = 0;
+        const nextDrops = [];
 
-        if (newY > GAME_HEIGHT - 30) {
+        prev.forEach((d) => {
+          // 이미 miss 처리한 단어라면 무시하고 제거
+          if (d.missed) {
+            return;
+          }
+
+          const newY = d.y + d.speed;
+
+          if (newY > GAME_HEIGHT - 30) {
+            // 🔥 한 번만 miss 처리
+            d.missed = true;
+            missCount++;
+          } else {
+            nextDrops.push({ ...d, y: newY });
+          }
+        });
+
+        if (missCount > 0) {
           setMiss((m) => {
-            const newMiss = m + 1 >= MAX_MISS ? MAX_MISS : m + 1;
+            const newMiss = Math.min(MAX_MISS, m + missCount);
             if (newMiss >= MAX_MISS) {
               setPlaying(false);
               setResultText("GAME OUT");
             }
             return newMiss;
           });
-
-          return [];
         }
 
-        return [{ ...d, y: newY }];
+        return nextDrops;
       });
 
-      raf.current = requestAnimationFrame(tick);
+      animationFrameId.current = requestAnimationFrame(loop);
     };
 
-    raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
+    animationFrameId.current = requestAnimationFrame(loop);
+
+    return () => {
+      running = false;
+      cancelAnimationFrame(animationFrameId.current);
+    };
   }, [playing, showStartGuide]);
 
-  /* 정답 제출 */
+  /* ===========================
+      정답 제출
+  ============================ */
   const onSubmit = (e) => {
     e.preventDefault();
     const answer = input.trim();
@@ -158,14 +191,16 @@ export default function AcidRainPage() {
     setInput("");
   };
 
+  /* ===========================
+      렌더링
+  ============================ */
   return (
     <>
       <Header1 isLoggedIn={true} />
       <Header2 isLoggedIn={true} />
 
       <div className="wordgame-page">
-
-        {/* 시작 안내 모달 — UI 100% 동일 */}
+        {/* 시작 안내 모달 */}
         {showStartGuide && (
           <div className="game-out-wrapper">
             <div className="game-out-text" style={{ color: "#333", fontSize: "18px" }}>
@@ -180,8 +215,7 @@ export default function AcidRainPage() {
         )}
 
         <div className="acid-container" style={{ width: GAME_WIDTH, height: GAME_HEIGHT }}>
-
-          {/* HUD (UI 동일) */}
+          {/* HUD */}
           <div className="acid-hud">
             <span>
               <img src={timerIcon} className="hud-icon" alt="timer" /> {seconds}s
@@ -225,29 +259,21 @@ export default function AcidRainPage() {
           </form>
         )}
 
-        {/* 버튼들 — UI 완전 동일 */}
+        {/* 버튼 */}
         {!showStartGuide && (
           <div className="wordgame-result-btns">
-            <button className="wordgame-nav-btn" onClick={restartGame}>
-              재시작하기
-            </button>
+            <button className="wordgame-nav-btn" onClick={restartGame}>재시작하기</button>
 
             {playing && resultText === "" && (
-              <button className="wordgame-nav-btn" onClick={() => setPlaying(false)}>
-                일시정지
-              </button>
+              <button className="wordgame-nav-btn" onClick={() => setPlaying(false)}>일시정지</button>
             )}
 
             {!playing && resultText === "" && (
-              <button className="wordgame-nav-btn" onClick={() => setPlaying(true)}>
-                다시 진행
-              </button>
+              <button className="wordgame-nav-btn" onClick={() => setPlaying(true)}>다시 진행</button>
             )}
 
             {!playing && resultText === "" && (
-              <button className="wordgame-nav-btn" onClick={() => setShowSetModal(true)}>
-                단어세트 보기
-              </button>
+              <button className="wordgame-nav-btn" onClick={() => setShowSetModal(true)}>단어세트 보기</button>
             )}
 
             <button className="wordgame-nav-btn" onClick={() => navigate("/user/game")}>
@@ -256,7 +282,7 @@ export default function AcidRainPage() {
           </div>
         )}
 
-        {/* 단어세트 보기 모달 — UI 동일 */}
+        {/* 단어세트 모달 */}
         {showSetModal && (
           <div className="modal-overlay">
             <div className="modal-box" style={{ maxHeight: "450px", overflowY: "auto" }}>
@@ -268,9 +294,7 @@ export default function AcidRainPage() {
                   </li>
                 ))}
               </ul>
-              <button className="modal-btn" onClick={() => setShowSetModal(false)}>
-                닫기
-              </button>
+              <button className="modal-btn" onClick={() => setShowSetModal(false)}>닫기</button>
             </div>
           </div>
         )}
