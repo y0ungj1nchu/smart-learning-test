@@ -20,7 +20,6 @@ export default function MainAdmin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 🔥 마운트 시 관리자 대시보드 데이터 가져오기
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
@@ -28,6 +27,7 @@ export default function MainAdmin() {
         const data = await getAdminDashboard();
 
         setUserStats(data.userStats || { totalUsers: 0, todayLogin: 0, newUsers: 0 });
+
         if (data.inquiries) {
           setUnanswered(data.inquiries.unanswered || []);
           setAnswered(data.inquiries.answered || []);
@@ -57,16 +57,12 @@ export default function MainAdmin() {
           {loading ? (
             <p className="empty-text">로딩 중...</p>
           ) : error ? (
-            <p className="empty-text" style={{ color: "red" }}>
-              {error}
-            </p>
+            <p className="empty-text" style={{ color: "red" }}>{error}</p>
           ) : (
             <>
               <div className="stats-card">
                 <p className="stat-title">총 사용자 수</p>
-                <h3 className="stat-value">
-                  {userStats.totalUsers.toLocaleString()}명
-                </h3>
+                <h3 className="stat-value">{userStats.totalUsers.toLocaleString()}명</h3>
               </div>
 
               <div className="stats-card">
@@ -83,9 +79,7 @@ export default function MainAdmin() {
         </div>
 
         <div className="admin-right">
-          <h2 className="section-title">
-            📬 미답변 문의 ({unanswered.length}건)
-          </h2>
+          <h2 className="section-title">📬 미답변 문의 ({unanswered.length}건)</h2>
 
           {loading ? (
             <p className="empty-text">로딩 중...</p>
@@ -97,7 +91,7 @@ export default function MainAdmin() {
                 <div
                   key={q.id}
                   className="timeline-item"
-                  onClick={() => navigate(`/admin/inquiry/${q.id}`)}
+                  onClick={() => navigate(`/admin/community?qna=${q.id}`)}
                 >
                   <div className="timeline-dot" />
                   <div className="timeline-content">
@@ -124,7 +118,7 @@ export default function MainAdmin() {
                 <div
                   key={q.id}
                   className="timeline-item answered"
-                  onClick={() => navigate(`/admin/inquiry/${q.id}`)}
+                  onClick={() => navigate(`/admin/community?qna=${q.id}`)}
                 >
                   <div className="timeline-dot answered-dot" />
                   <div className="timeline-content">
