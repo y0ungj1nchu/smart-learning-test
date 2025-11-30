@@ -5,28 +5,16 @@ import Header1 from "../../components/common/Header1";
 import Header2 from "../../components/common/Header2";
 import Footer from "../../components/common/Footer";
 
-// --- API Imports ---
+// API
 import { getMyProfile, getCalendarData, getRanking } from "../../utils/api";
 
-// --- Image Imports ---
+// 기본 이미지
 import basicUser from "../../assets/basicUser.png";
-import snoopy1 from "../../assets/snoopy1.png";
-import snoopy2 from "../../assets/snoopy2.png";
-import snoopy3 from "../../assets/snoopy3.png";
-import snoopy4 from "../../assets/snoopy4.png";
-import snoopy5 from "../../assets/snoopy5.png";
 
-// --- Image Mapping ---
-const characterImages = {
-  snoopy1,
-  snoopy2,
-  snoopy3,
-  snoopy4,
-  snoopy5,
-};
-
-// (날짜 함수 - YYYY-MM-DD 형식)
-function pad(n) { return n.toString().padStart(2, "0"); }
+// 날짜 함수
+function pad(n) {
+  return n.toString().padStart(2, "0");
+}
 function ymd(date) {
   const localDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = localDate.getUTCFullYear();
@@ -40,46 +28,46 @@ function MainAfterLogin() {
   const [ranking, setRanking] = useState([]);
   const [characterName, setCharacterName] = useState("캐릭터");
   const [characterLevel, setCharacterLevel] = useState(1);
-  const [characterImage, setCharacterImage] = useState(null); // 캐릭터 이미지 상태
+  const [characterImage, setCharacterImage] = useState(null); // 서버 파일명
 
   useEffect(() => {
-    // 1. 프로필 정보 (캐릭터) 불러오기
+    // ▼ 1. 프로필
     const fetchProfile = async () => {
       try {
-        const profileData = await getMyProfile();
-        setCharacterName(profileData.characterNickname || profileData.nickname);
-        setCharacterLevel(profileData.level);
-        
-        // characterImage가 유효한 문자열인지 확인
-        if (profileData.characterImage && typeof profileData.characterImage === 'string') {
-          setCharacterImage(profileData.characterImage);
+        const profile = await getMyProfile();
+
+        setCharacterName(profile.characterNickname || profile.nickname);
+        setCharacterLevel(profile.level);
+
+        // DB에 저장된 이미지 파일명 그대로 사용
+        if (profile.characterImage && typeof profile.characterImage === "string") {
+          setCharacterImage(profile.characterImage);
         } else {
-          setCharacterImage(null); // 유효하지 않으면 null로 설정
+          setCharacterImage(null);
         }
-      } catch (error) {
-        console.error("프로필 정보 로드 실패:", error);
+      } catch (e) {
+        console.error("프로필 로드 실패:", e);
       }
     };
 
-    // 2. 캘린더 (오늘 할 일) 불러오기
+    // ▼ 2. 오늘 일정
     const fetchCalendar = async () => {
       try {
         const todayStr = ymd(new Date());
-        const calendarData = await getCalendarData(todayStr);
-        setTodayTodos(calendarData.todos || []);
-      } catch (error) {
-        console.error("캘린더 정보 로드 실패:", error);
+        const cal = await getCalendarData(todayStr);
+        setTodayTodos(cal.todos || []);
+      } catch (e) {
+        console.error("캘린더 로드 실패:", e);
       }
     };
 
-    // 3. 랭킹 불러오기
+    // ▼ 3. 랭킹
     const fetchRanking = async () => {
       try {
-        const rankingData = await getRanking();
-        setRanking(rankingData.slice(0, 5)); // 상위 5개만 표시
-      } catch (error) {
-        console.error("랭킹 정보 로드 실패:", error);
-        // 에러 발생 시 더미 데이터 대신 빈 배열 유지
+        const rank = await getRanking();
+        setRanking(rank.slice(0, 5));
+      } catch (e) {
+        console.error("랭킹 로드 실패:", e);
         setRanking([]);
       }
     };
@@ -95,13 +83,13 @@ function MainAfterLogin() {
       <Header2 isLoggedIn={true} />
 
       <div className="afterlogin-container">
-        {/* 캘린더 */}
+        {/* ===================== 캘린더 ===================== */}
         <div className="card-group">
           <p className="card-title">캘린더</p>
           <div className="card">
             <h3>오늘의 할 일</h3>
             <p className="date">{new Date().toLocaleDateString("ko-KR")}</p>
-            
+
             {todayTodos.length === 0 ? (
               <ul>
                 <li>오늘의 일정이 없습니다.</li>
@@ -109,27 +97,31 @@ function MainAfterLogin() {
             ) : (
               <ul>
                 {todayTodos.slice(0, 3).map((t) => (
-                  <li key={t.id}>
-                    {t.isCompleted ? <s>{t.title}</s> : t.title}
-                  </li>
+                  <li key={t.id}>{t.isCompleted ? <s>{t.title}</s> : t.title}</li>
                 ))}
               </ul>
             )}
+
             <Link to="/user/calendar" className="more-link">
               바로가기 →
             </Link>
           </div>
         </div>
 
-        {/* 캐릭터 */}
+        {/* ===================== 캐릭터 ===================== */}
         <div className="card-group">
           <p className="card-title">캐릭터</p>
+
           <div className="card">
             <div className="character-box">
               <img
-                src={characterImage ? characterImages[characterImage] : basicUser}
-                alt="캐릭터"
                 className="character-image"
+                alt="캐릭터"
+                src={
+                  characterImage
+                    ? `http://localhost:3001/uploads/characters/${characterImage}` // ★ 수정완료
+                    : basicUser
+                }
               />
               <span className="character-level">Lv.{characterLevel}</span>
             </div>
@@ -137,13 +129,14 @@ function MainAfterLogin() {
           </div>
         </div>
 
-        {/* 사용자 레벨 순위 */}
+        {/* ===================== 사용자 레벨 순위 ===================== */}
         <div className="card-group">
           <p className="card-title">사용자 레벨 순위</p>
+
           <div className="card">
             <h3>주간 순위</h3>
             <p className="date">{new Date().toLocaleDateString("ko-KR")}</p>
-            
+
             {ranking.length === 0 ? (
               <ul>
                 <li>순위 데이터가 없습니다.</li>
@@ -152,11 +145,13 @@ function MainAfterLogin() {
               <ol>
                 {ranking.map((user, i) => (
                   <li key={user.userId || i}>
-                    {i + 1}. {user.characterNickname || user.nickname} — Lv.{user.level}
+                    {i + 1}. {user.characterNickname || user.nickname} — Lv.
+                    {user.level}
                   </li>
                 ))}
               </ol>
             )}
+
             <Link to="/user/ranking" className="more-link">
               바로가기 →
             </Link>
