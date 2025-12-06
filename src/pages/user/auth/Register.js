@@ -51,7 +51,7 @@ function Register() {
     <>
       <Header1 isLoggedIn={false} />
       <Header2 isLoggedIn={false} />
-
+      <div className="page-content" style={{ paddingTop: "93px", minHeight: "calc(100vh-93px)", boxSizing: "border-box", }}>
       <div className="register-container">
         <div className="register-box">
           <h2>회원가입</h2>
@@ -120,6 +120,7 @@ function Register() {
             <button type="submit" className="register-btn">가입완료</button>
           </form>
         </div>
+      </div>
       </div>
     </>
   );

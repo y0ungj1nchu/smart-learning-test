@@ -1,11 +1,13 @@
+/* 전체 배경 */
 .findid-container {
-  background-color: #FFEEB5;
-  height: calc(100vh - 140px); /* 헤더,푸터 제외 높이 */
+  background-color: #FFEEB5 !important; /* 고정 */
+  height: calc(100vh - 140px);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+/* 박스 */
 .findid-box {
   background: #fff;
   padding: 40px;
@@ -51,18 +53,14 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-
 .next-btn:hover {
   background: #e6c200;
 }
 
-/* 🔹 모달 팝업 스타일 */
+/* 모달 공통 */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
@@ -95,7 +93,6 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-
 .modal-btn:hover {
   background: #e6c200;
 }

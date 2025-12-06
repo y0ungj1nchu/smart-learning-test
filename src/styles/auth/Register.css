@@ -1,5 +1,6 @@
+/* 정 배경색 사용 */
 .register-container {
-  background-color: #FFEEB5;
+  background-color: #FFEEB5 !important;
   height: calc(100vh - 140px);
   display: flex;
   justify-content: center;
@@ -11,7 +12,7 @@
   padding: 40px;
   border-radius: 12px;
   width: 360px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   text-align: center;
 }
 
@@ -38,6 +39,7 @@
   position: relative;
   margin-bottom: 12px;
 }
+
 .eye-icon {
   position: absolute;
   right: 8px;
@@ -52,28 +54,31 @@
   margin: 5px 0 10px 0;
 }
 
-/* 소셜 로그인 */
+/* 소셜 로그인 영역 */
 .social-login {
   margin: 15px 0;
   text-align: center;
 }
+
 .social-login p {
   margin-bottom: 10px;
   font-size: 14px;
   color: #333;
 }
+
 .social-icons {
   display: flex;
   justify-content: center;
   gap: 15px;
 }
+
 .social-icons img {
   width: 35px;
   height: 35px;
   cursor: pointer;
 }
 
-/* 가입완료 버튼 */
+/* 가입 완료 버튼 */
 .register-btn {
   width: 100%;
   padding: 12px;
@@ -83,6 +88,7 @@
   font-weight: bold;
   cursor: pointer;
 }
+
 .register-btn:hover {
   background: #e6c200;
 }

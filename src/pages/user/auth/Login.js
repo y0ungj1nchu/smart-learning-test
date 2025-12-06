@@ -10,39 +10,43 @@ import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 
 import { loginUser } from "../../../utils/api";
+import { useAuth } from "../../../context/useAuth";
 
 function Login() {
-  const navigate = useNavigate();   // 🔥 추가
+  const navigate = useNavigate();
+
+  // 🔥 AuthContext 기능 가져오기
+  const { login, fetchMe } = useAuth();
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  // ----------------------------------------------------
+  // 🔥 수정된 핵심 로그인 로직
+  // ----------------------------------------------------
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
+      // 1) 로그인 요청 → token 수신
       const data = await loginUser({ id, password });
 
-      // 토큰 저장
-      localStorage.setItem("authToken", data.token);
-      localStorage.setItem("isLoggedIn", "true");
-
-      // payload에서 role 파싱
+      // 2) JWT decode → userId, role 추출
       const payload = JSON.parse(atob(data.token.split(".")[1]));
       const role = payload.role;
+      const userId = payload.id;
 
-      // 저장
-      localStorage.setItem("role", role);
-      localStorage.setItem("userId", payload.id);
+      // 3) 임시 login (themeColor 없음)
+      login(data.token, { id: userId, role });
 
-      // 🔥 navigate로 페이지 이동 (window.location.href 제거)
-      if (role === "ADMIN") {
-        navigate("/admin/main");
-      } else {
-        navigate("/home/after");
-      }
+      // 4) 🔥 로그인 직후 바로 /me 호출
+      await fetchMe(data.token);
+
+      // 5) 역할에 따라 이동
+      if (role === "ADMIN") navigate("/admin/main");
+      else navigate("/home/after");
 
     } catch (err) {
       setError(err.message || "로그인에 실패했습니다.");
@@ -51,61 +55,74 @@ function Login() {
 
   return (
     <>
-      <Header1 isLoggedIn={false} />
-      <Header2 isLoggedIn={false} />
+      <Header1 />
+      <Header2 />
 
-      <div className="login-container">
-        <div className="login-box">
-          <h2>
-            로그인으로 <br /> 스마트 학습 도우미를<br /> 이용하세요.
-          </h2>
+      <div
+        className="page-content"
+        style={{
+          paddingTop: "93px",
+          minHeight: "calc(100vh - 93px)",
+          boxSizing: "border-box",
+        }}
+      >
+        <div className="login-container">
+          <div className="login-box">
 
-          <form onSubmit={handleLogin}>
-            <div className="input-group">
-              <img src={userIcon} alt="user" className="input-icon" />
-              <input
-                type="text"
-                placeholder="아이디 (이메일)"
-                value={id}
-                onChange={(e) => setId(e.target.value)}
-                required
-              />
+            <h2>
+              로그인으로 <br /> 스마트 학습 도우미를<br /> 이용하세요.
+            </h2>
+
+            <form onSubmit={handleLogin}>
+              <div className="input-group">
+                <img src={userIcon} alt="user" className="input-icon" />
+                <input
+                  type="text"
+                  placeholder="아이디 (이메일)"
+                  value={id}
+                  onChange={(e) => setId(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <img src={lockIcon} alt="lock" className="input-icon" />
+                <input
+                  type="password"
+                  placeholder="비밀번호"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <button type="submit" className="login-btn">
+                로그인
+              </button>
+            </form>
+
+            {error && <p className="error-msg">{error}</p>}
+
+            <div className="links">
+              <Link to="/user/auth/Register" className="register-link">
+                회원가입
+              </Link>
+              <div className="find-links">
+                <Link to="/user/auth/FindId">아이디 찾기</Link>
+                <span> | </span>
+                <Link to="/user/auth/FindPw">비밀번호 찾기</Link>
+              </div>
             </div>
 
-            <div className="input-group">
-              <img src={lockIcon} alt="lock" className="input-icon" />
-              <input
-                type="password"
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+            <div className="social-login">
+              <p>소셜 로그인</p>
+              <div className="social-icons">
+                <img src={kakaoLogo} alt="카카오 로그인" />
+                <img src={naverLogo} alt="네이버 로그인" />
+                <img src={googleLogo} alt="구글 로그인" />
+              </div>
             </div>
 
-            <button type="submit" className="login-btn">
-              로그인
-            </button>
-          </form>
-
-          {error && <p className="error-msg">{error}</p>}
-
-          <div className="links">
-            <Link to="/user/auth/Register" className="register-link">회원가입</Link>
-            <div className="find-links">
-              <Link to="/user/auth/FindId">아이디 찾기</Link>
-              <span> | </span>
-              <Link to="/user/auth/FindPw">비밀번호 찾기</Link>
-            </div>
-          </div>
-
-          <div className="social-login">
-            <p>소셜 로그인</p>
-            <div className="social-icons">
-              <img src={kakaoLogo} alt="카카오 로그인" />
-              <img src={naverLogo} alt="네이버 로그인" />
-              <img src={googleLogo} alt="구글 로그인" />
-            </div>
           </div>
         </div>
       </div>

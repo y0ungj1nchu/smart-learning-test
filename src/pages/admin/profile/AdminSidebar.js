@@ -2,10 +2,10 @@ import React from "react";
 import "../../../styles/profile/ProfileView.css";
 import { User, Settings } from "lucide-react";
 
-function ProfileSidebar({ activeTab, goToTab }) {
+function AdminSidebar({ activeTab, goToTab }) {
   return (
     <div className="profile-sidebar">
-      <p className="sidebar-title">내 정보</p>
+      <p className="sidebar-title">관리자 설정</p>
       <ul>
         <li
           className={activeTab === "profile" ? "active" : ""}
@@ -25,4 +25,4 @@ function ProfileSidebar({ activeTab, goToTab }) {
   );
 }
 
-export default ProfileSidebar;
+export default AdminSidebar;

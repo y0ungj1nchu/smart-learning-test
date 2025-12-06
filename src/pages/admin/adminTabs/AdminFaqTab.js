@@ -12,13 +12,16 @@ import {
 
 export default function AdminFaqTab() {
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("new"); // 🔥 추가됨 (최신순/오래된순)
   const [isWriting, setIsWriting] = useState(false);
   const [editPost, setEditPost] = useState(null);
 
   const [faqList, setFaqList] = useState([]);
   const [originalList, setOriginalList] = useState([]);
 
-  // FAQ 목록 불러오기
+  // ---------------------------------------------
+  // 🔥 FAQ 불러오기
+  // ---------------------------------------------
   useEffect(() => {
     loadFaqs();
   }, []);
@@ -26,27 +29,42 @@ export default function AdminFaqTab() {
   const loadFaqs = async () => {
     try {
       const rows = await getAdminFaqs();
-      setFaqList(rows);
-      setOriginalList(rows);
+
+      const mapped = rows.map((f) => ({
+        ...f,
+        time: new Date(f.createdAt).toLocaleString("ko-KR"),
+      }));
+
+      setFaqList(mapped);
+      setOriginalList(mapped);
     } catch (err) {
       console.error(err);
       alert("FAQ 목록을 불러오는 중 오류가 발생했습니다.");
     }
   };
 
+  // ---------------------------------------------
+  // 🔍 검색
+  // ---------------------------------------------
   const handleSearch = () => {
     if (!search.trim()) {
       setFaqList(originalList);
       return;
     }
 
-    const filtered = originalList.filter((item) =>
-      item.question.toLowerCase().includes(search.toLowerCase())
+    const keyword = search.toLowerCase();
+    const filtered = originalList.filter(
+      (item) =>
+        item.question.toLowerCase().includes(keyword) ||
+        item.answer.toLowerCase().includes(keyword)
     );
 
     setFaqList(filtered);
   };
 
+  // ---------------------------------------------
+  // ❌ 삭제
+  // ---------------------------------------------
   const handleDelete = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
 
@@ -59,12 +77,28 @@ export default function AdminFaqTab() {
     }
   };
 
-  // 글쓰기/수정 모드
+  // ---------------------------------------------
+  // 🔥 정렬 기능 (더미버전 기능 기반)
+  // ---------------------------------------------
+  const sortedList = [...faqList]
+    .sort((a, b) =>
+      sort === "new"
+        ? new Date(b.createdAt) - new Date(a.createdAt)
+        : new Date(a.createdAt) - new Date(b.createdAt)
+    )
+    .map((item, index, arr) => ({
+      ...item,
+      no: arr.length - index, // 번호 재부여
+    }));
+
+  // ---------------------------------------------
+  // ✏ 글쓰기/수정 모드
+  // ---------------------------------------------
   if (isWriting || editPost) {
     return (
       <WriteTab
         mode="faq"
-        editPost={editPost} // 🔥 핵심: 변환하지 말고 그대로 넘긴다
+        editPost={editPost}
         onBack={() => {
           setIsWriting(false);
           setEditPost(null);
@@ -89,11 +123,9 @@ export default function AdminFaqTab() {
     );
   }
 
-  // 최신순 정렬
-  const sortedList = [...faqList].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-  );
-
+  // ---------------------------------------------
+  // 📄 목록 화면
+  // ---------------------------------------------
   return (
     <div className="admin-community-tab">
       <h2>FAQ 관리</h2>
@@ -111,6 +143,23 @@ export default function AdminFaqTab() {
         </button>
       </div>
 
+      {/* 🔥 정렬 버튼 추가 */}
+      <div className="sort-row">
+        <button
+          className={`sort-btn ${sort === "new" ? "active" : ""}`}
+          onClick={() => setSort("new")}
+        >
+          최신순
+        </button>
+
+        <button
+          className={`sort-btn ${sort === "old" ? "active" : ""}`}
+          onClick={() => setSort("old")}
+        >
+          오래된 순
+        </button>
+      </div>
+
       {/* 목록 */}
       <table className="table">
         <thead>
@@ -123,11 +172,11 @@ export default function AdminFaqTab() {
         </thead>
 
         <tbody>
-          {sortedList.map((item, index) => (
+          {sortedList.map((item) => (
             <tr key={item.id}>
-              <td>{index + 1}</td>
+              <td>{item.no}</td>
               <td>{item.question}</td>
-              <td>{new Date(item.createdAt).toLocaleString()}</td>
+              <td>{item.time}</td>
 
               <td className="action-cell">
                 <button

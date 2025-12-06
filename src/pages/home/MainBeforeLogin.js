@@ -9,9 +9,10 @@ function MainBeforeLogin() {
   return (
     <>
       {/* 상단 헤더 */}
-      <Header1 isLoggedIn={false} /> {/* 비활성 */}
-      <Header2 isLoggedIn={false} />
+      <Header1/>
+      <Header2/>
 
+      <div className="page-content" style={{paddingTop: "93px", minHeight: "calc(100vh-93px)", boxSizing: "border-box",}}>
       {/* 메인 컨텐츠 */}
       <div className="before-login-container">
         <div className="before-login-content">
@@ -25,7 +26,7 @@ function MainBeforeLogin() {
       </div>
 
       {/* 하단 */}
-      <Footer />
+      <Footer /></div>
     </>
   );
 }

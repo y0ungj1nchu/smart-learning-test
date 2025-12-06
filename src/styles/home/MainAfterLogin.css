@@ -1,23 +1,32 @@
-/* 전체 */
 .afterlogin-container {
-  background-color: #ffeeB5;
-  min-height: calc(100vh - 220px); /* 헤더2 + 푸터 제외 */
+  background-color: var(--theme-bg) !important;
+  padding: 40px 40px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   gap: 40px;
-  padding: 60px 40px;
   flex-wrap: wrap;
 }
 
-/* 카드 전체 그룹 */
+/* 카드 공통 */
+.uniform-card {
+  background: #fff;
+  border-radius: 18px;
+  width: 280px;
+  min-height: 260px;
+  padding: 28px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; 
+}
+
 .card-group {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
-/* 카드 제목 (캘린더 / 캐릭터 / 사용자 레벨 순위) */
 .card-title {
   font-size: 18px;
   font-weight: 700;
@@ -26,87 +35,50 @@
   margin-bottom: 10px;
 }
 
-/* 개별 카드 */
-.card {
-  background: #fff;
-  border-radius: 12px;
-  width: 280px;
-  height: 230px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+/* 캐릭터 */
+.char-section {
+  text-align: center;
 }
 
-/* 카드 내용 */
-.card h3 {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: #000;
-}
-
-.card .date {
-  font-size: 13px;
-  color: #555;
-  margin-bottom: 10px;
-}
-
-.card ul,
-.card ol {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 12px 0;
-  line-height: 1.8;
-}
-
-.card li {
-  font-size: 14px;
-  color: #333;
-}
-
-/* 캐릭터 카드 */
-.character-box {
-  position: relative; /* 자식 요소(.character-level)를 절대 위치로 지정하기 위함 */
-  height: 120px;
+.character-image-box {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 12px;
+  background: #fafafa;
+  border-radius: 14px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 10px;
-  overflow: hidden; /* 이미지가 박스를 벗어나지 않도록 */
 }
 
-.character-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain; /* 이미지 비율을 유지하면서 박스에 맞춤 */
+.character-img-home {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
-.character-level {
-  position: absolute;
-  bottom: 5px;
-  right: 8px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: bold;
+.no-img-text {
+  font-size: 15px;
+  color: #888;
 }
 
-.character-name {
-  text-align: center;
-  font-size: 14px;
-  color: #333;
+.char-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 5px;
+}
+
+.char-level {
+  font-size: 13px;
+  color: #666;
 }
 
 /* 바로가기 */
 .more-link {
-  font-size: 13px;
-  color: #FFD400;
+  font-size: 14px;
+  color: var(--theme-accent);
   text-decoration: none;
   font-weight: bold;
   text-align: right;
@@ -116,4 +88,76 @@
 
 .more-link:hover {
   text-decoration: underline;
+}
+
+.card-bottom {
+  margin-top: auto;
+  text-align: right;
+}
+
+/* 공부 통계 */
+.study-stat-big {
+  width: 100%;
+  max-width: 1020px;
+  padding: 30px;
+  border-radius: 20px;
+  margin: 20px auto;
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+
+.stats-inner-row {
+  display: flex;
+  gap: 30px;
+  margin-top: 15px;
+}
+
+.stats-small-card {
+  flex: 1;
+  height: 150px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.stats-small-card.today {
+  background: color-mix(in srgb, var(--theme-accent) 30%, white);
+  border: 2px solid var(--theme-accent);
+}
+
+.stats-small-card.week {
+  background: #EAF4FF;
+  border: 2px solid #4DA3FF;
+}
+
+.stats-time {
+  margin-top: 10px;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.todo-count {
+  color: #ff4242; 
+  font-weight: 900;
+}
+
+.todo-ul {
+  margin: 4px 0 0 10px;
+  padding-left: 0;
+}
+
+.date {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.afterlogin-wrapper {
+  padding-top: 95px; /* Header1(50) + Header2(45) = 95px */
+  min-height: calc(100vh - 95px);
 }

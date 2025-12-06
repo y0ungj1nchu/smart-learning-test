@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useContext } from "react";
 import "../../../../styles/profile/Tabs.css";
 import { Bell } from "lucide-react";
+import { ThemeContext } from "../../../../context/ThemeContext";
 
 function SettingTab() {
-  const [isAllowed, setIsAllowed] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState("#9CA2AE");
+  const { themeColor, applyTheme } = useContext(ThemeContext);
+  const [isAllowed, setIsAllowed] = React.useState(false);
 
   const themes = [
     "#BFC0C4", "#F9C4C4", "#FFE5C1", "#FFF9BF",
@@ -16,8 +17,7 @@ function SettingTab() {
   };
 
   const handleThemeSelect = (color) => {
-    setSelectedTheme(color);
-    document.body.style.backgroundColor = color + "20";
+    applyTheme(color);
   };
 
   return (
@@ -46,9 +46,7 @@ function SettingTab() {
           {themes.map((color, idx) => (
             <div
               key={idx}
-              className={`theme-box ${
-                selectedTheme === color ? "selected" : ""
-              }`}
+              className={`theme-box ${themeColor === color ? "selected" : ""}`}
               style={{ backgroundColor: color }}
               onClick={() => handleThemeSelect(color)}
             ></div>

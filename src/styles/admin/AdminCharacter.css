@@ -7,7 +7,7 @@
 
 /* 레이아웃 */
 .adminChar-layout {
-  background-color: #ffeeB5;
+  background-color: var(--theme-bg) !important;
   min-height: calc(100vh - 200px);
   display: flex;
   justify-content: center;
@@ -16,7 +16,6 @@
   padding: 130px 80px 80px;
   font-family: "Pretendard", sans-serif;
 }
-
 
 /* 제목 */
 .adminChar-title {
@@ -29,10 +28,10 @@
 /* 왼쪽 리스트 */
 .adminChar-list-box {
   flex: 1;
-  background: #fff; /* 랭킹 리스트 박스와 통일 */
+  background: #fff;
   border-radius: 20px;
   padding: 40px 35px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 /* 캐릭터 리스트 */
@@ -44,19 +43,19 @@
 
 /* 캐릭터 카드 */
 .adminChar-card {
-  background: #fffdf2; /* ranking-table even background 느낌 */
+  background: color-mix(in srgb, var(--theme-accent) 12%, white);
   border-radius: 15px;
   padding: 18px 25px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); /* stat-card와 동일 */
-  border: 1px solid #ddd; /* ranking-table border 느낌 */
-  transition: background 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  border: 1px solid #ddd;
+  transition: 0.2s;
 }
 
 .adminChar-card:hover {
-  background: #fff5a8; /* ranking-table hover 동일 */
+  background: color-mix(in srgb, var(--theme-accent) 25%, white);
 }
 
 /* 이미지 */
@@ -85,7 +84,7 @@
 .adminChar-delete {
   background: #ff7070;
   border: none;
-  color: #fff;
+  color: white;
   padding: 8px 16px;
   border-radius: 10px;
   cursor: pointer;
@@ -111,7 +110,7 @@
   background: #fff;
   border-radius: 20px;
   padding: 35px 25px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 /* 폼 */
@@ -140,7 +139,7 @@
 }
 
 .adminChar-form input:focus {
-  border-color: #ffd400;
+  border-color: var(--theme-accent);
   outline: none;
 }
 
@@ -152,12 +151,12 @@
   border: 1px solid #ddd;
   background: #fff;
   border-radius: 15px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 /* 등록 버튼 */
 .adminChar-add-btn {
-  background: #ffd400;
+  background: var(--theme-accent);
   border: none;
   border-radius: 30px;
   padding: 12px 0;
@@ -165,11 +164,11 @@
   font-size: 16px;
   cursor: pointer;
   transition: 0.2s;
-  box-shadow: 0 4px 10px rgba(255, 212, 0, 0.3);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--theme-accent) 40%, transparent);
 }
 
 .adminChar-add-btn:hover {
-  background: #f0c500;
+  background: color-mix(in srgb, var(--theme-accent) 80%, black);
 }
 
 /* 반응형 */

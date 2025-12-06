@@ -98,11 +98,11 @@ function ProfileTab({ onNavigatePassword }) {
           </div>
         </div>
 
-        {/* 이메일 */}
+        {/* Email */}
         <div className="profile-info">
-          <div className="info-row">
-            <label>아이디 (이메일)</label>
-            <input type="text" value={email} readOnly />
+          <div className="profile-info-row horizontal">
+            <label>Email</label>
+            <div>{email}</div>
           </div>
         </div>
 
@@ -111,7 +111,6 @@ function ProfileTab({ onNavigatePassword }) {
           <button className="yellow-btn" onClick={onNavigatePassword}>
             비밀번호 재설정
           </button>
-          <button className="gray-btn">취소</button>
         </div>
       </div>
     </div>

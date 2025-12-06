@@ -1,3 +1,4 @@
+// src/pages/admin/MainAdmin.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminHeader1 from "../../components/common/AdminHeader1";
@@ -9,6 +10,9 @@ import { getAdminDashboard } from "../../utils/api";
 export default function MainAdmin() {
   const navigate = useNavigate();
 
+  // -----------------------------
+  // 🔵 API로 가져올 상태
+  // -----------------------------
   const [userStats, setUserStats] = useState({
     totalUsers: 0,
     todayLogin: 0,
@@ -17,23 +21,29 @@ export default function MainAdmin() {
 
   const [unanswered, setUnanswered] = useState([]);
   const [answered, setAnswered] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // -----------------------------
+  // 🔵 API 호출 (두 번째 버전의 핵심 로직)
+  // -----------------------------
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
         setLoading(true);
         const data = await getAdminDashboard();
 
+        // 📌 사용자 통계
         setUserStats(data.userStats || { totalUsers: 0, todayLogin: 0, newUsers: 0 });
 
+        // 📌 문의 데이터 (구조: {answered:[], unanswered:[]})
         if (data.inquiries) {
           setUnanswered(data.inquiries.unanswered || []);
           setAnswered(data.inquiries.answered || []);
         }
       } catch (err) {
-        console.error("관리자 대시보드 불러오기 실패:", err);
+        console.error("관리자 대시보드 로드 실패:", err);
         setError(err.message || "관리자 대시보드 불러오기 실패");
       } finally {
         setLoading(false);
@@ -45,12 +55,19 @@ export default function MainAdmin() {
 
   return (
     <>
+      {/* --------------------- */}
+      {/* 🔵 상단 헤더 (첫 버전 UI 유지) */}
+      {/* --------------------- */}
       <div className="admin-header-fixed">
-        <AdminHeader1 isLoggedIn={true} />
-        <AdminHeader2 isLoggedIn={true} />
+        <AdminHeader1 />
+        <AdminHeader2 />
       </div>
 
       <div className="admin-main-layout">
+
+        {/* --------------------- */}
+        {/* 🔵 왼쪽 패널 (첫 번째 UI) */}
+        {/* --------------------- */}
         <div className="admin-left">
           <h2 className="section-title">👥 사용자 현황</h2>
 
@@ -78,8 +95,15 @@ export default function MainAdmin() {
           )}
         </div>
 
+        {/* --------------------- */}
+        {/* 🔵 오른쪽 패널 (첫 번째 UI + API 연동) */}
+        {/* --------------------- */}
         <div className="admin-right">
-          <h2 className="section-title">📬 미답변 문의 ({unanswered.length}건)</h2>
+          
+          {/* 미답변 문의 */}
+          <h2 className="section-title">
+            📬 미답변 문의 ({unanswered.length}건)
+          </h2>
 
           {loading ? (
             <p className="empty-text">로딩 중...</p>
@@ -104,6 +128,7 @@ export default function MainAdmin() {
             </div>
           )}
 
+          {/* 답변 완료된 문의 */}
           <h2 className="section-title" style={{ marginTop: "50px" }}>
             ✅ 답변 완료된 문의 ({answered.length}건)
           </h2>
@@ -134,6 +159,7 @@ export default function MainAdmin() {
         </div>
       </div>
 
+      {/* 푸터 */}
       <Footer />
     </>
   );

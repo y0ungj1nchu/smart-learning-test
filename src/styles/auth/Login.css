@@ -1,6 +1,6 @@
 /* 전체 배경 */
 .login-container {
-  background-color: #FFEEB5;
+  background-color: #FFEEB5 !important;
   height: calc(100vh - 140px);
   display: flex;
   justify-content: center;
@@ -34,10 +34,12 @@
   margin-bottom: 12px;
   padding: 0 10px;
 }
+
 .input-icon {
   width: 18px;
   margin-right: 8px;
 }
+
 .input-group input {
   flex: 1;
   border: none;
@@ -55,6 +57,7 @@
   font-weight: bold;
   cursor: pointer;
 }
+
 .login-btn:hover {
   background: #e6c200;
 }
@@ -73,14 +76,13 @@
   align-items: center;
   margin: 15px 0;
 }
-.register-link {
-  font-size: 14px;
-  color: #333;
-}
+
+.register-link,
 .find-links {
   font-size: 14px;
   color: #333;
 }
+
 .find-links span {
   margin: 0 5px;
 }
@@ -94,17 +96,20 @@
   border-radius: 8px;
   gap: 20px;
 }
+
 .social-login p {
   margin-bottom: 8px;
   color: #333;
   font-size: 14px;
   padding-top: 15px;
 }
+
 .social-icons {
   display: flex;
   justify-content: center;
   gap: 15px;
 }
+
 .social-icons img {
   width: 35px;
   height: 35px;

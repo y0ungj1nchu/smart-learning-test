@@ -136,17 +136,31 @@ export const deleteDiaryApi = (id) => request(`/diaries/${id}`, "DELETE");
 export const getCalendarData = (date) =>
   request(`/diaries/date/${date}`, "GET");
 
+// 날짜별 상세 조회 (Diary + Todos + StudyLogs)
+export const getCalendarDay = (date) =>
+  request(`/calendar/day/${date}`, "GET");
+
+// 월별 요약 조회 (todoCount, hasDiary, totalStudy)
+export const getCalendarMonthSummary = (year, month) =>
+  request(`/calendar/month?year=${year}&month=${month}`, "GET");
+
 /* ========================================================================
     4. 순공시간(Study)
 =========================================================================== */
-export const startStudySession = () =>
-  request("/study/start", "POST");
+export const startStudySession = (body) =>
+  request("/study/start", "POST", body);
 
 export const stopStudySession = (logId) =>
   request(`/study/stop/${logId}`, "PUT");
 
 export const getStudySummary = () => request("/study/summary");
 export const getCurrentStudySession = () => request("/study/current");
+
+export const getStudyStatsToday = () =>
+  request("/study/stats/today", "GET");
+
+export const getStudyStatsLast7 = () =>
+  request("/study/stats/last7", "GET");
 
 /* ========================================================================
     5. 단어 게임 — 사용자용 words.js 기반 API
@@ -325,3 +339,51 @@ export const getAdminInquiryById = (id) =>
 
 export const answerAdminInquiry = (id, answer) =>
   request(`/admin/inquiry/${id}/answer`, "PUT", { answer });
+
+// 알림 목록 가져오기
+export const getNotifications = async () => {
+  return await request("/notifications", "GET");
+};
+
+// 개별 알림 읽음 처리
+export const readNotification = async (id) => {
+  return await request(`/notifications/${id}/read`, "PATCH");
+};
+
+// 전체 읽음 처리
+export const readAllNotifications = async () => {
+  return await request(`/notifications/read-all`, "PATCH");
+};
+
+// 알림 삭제
+export const deleteNotification = async (id) => {
+  return await request(`/notifications/${id}`, "DELETE");
+};
+
+// ========================
+// 카테고리 API
+// ========================
+export const getCategories = async () => {
+  return request("/categories", "GET");
+};
+
+export const addCategory = async (categoryName) => {
+  return request("/categories", "POST", { categoryName });
+};
+
+export const deleteCategory = async (id) => {
+  return request(`/categories/${id}`, "DELETE");
+};
+
+export const updateThemeColor = (color) =>
+  request("/user/theme", "PATCH", { themeColor:color});
+
+// 세트 제목 수정
+export async function updateAdminWordSet(id, newTitle) {
+  return request(`/admin/wordsets/${id}`, "PUT", { newTitle });
+}
+
+export const getAdminNotifications = async () => {
+  const res = await request("/notifications", "GET");
+  return res;
+};

@@ -78,7 +78,7 @@ function EmailVerification() {
     <>
       <Header1 isLoggedIn={false} />
       <Header2 isLoggedIn={false} />
-
+<div className="page-content" style={{paddingTop: "93px", minHeight: "calc(100vh-93px)", boxSizing: "border-box",}}>
       <div className="verify-container">
         <div className="verify-box">
           <h2>가입한 이메일로 보낸 인증코드를 입력해주세요</h2>
@@ -112,6 +112,7 @@ function EmailVerification() {
           </div>
         </div>
       )}
+      </div>
     </>
   );
 }

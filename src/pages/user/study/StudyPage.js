@@ -1,249 +1,308 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Header1 from "../../../components/common/Header1";
 import Header2 from "../../../components/common/Header2";
 import "../../../styles/study/StudyPage.css";
-import { startStudySession, stopStudySession, getStudySummary, getCurrentStudySession } from "../../../utils/api";
 
-// Normalize seconds from API (handles seconds/ms and alt fields)
-const normalizeSec = (v) => {
-  if (v == null) return 0;
-  const n = Number(v);
-  return n > 7 * 24 * 3600 * 10 ? Math.floor(n / 1000) : Math.floor(n);
-};
-
-// Day/Week boundary helpers
-const startOfTodayMs = () => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
-};
-const startOfWeekMs = () => {
-  const d = new Date();
-  const day = (d.getDay() + 6) % 7; // Mon=0 ... Sun=6
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - day);
-  return d.getTime();
-};
+import {
+  startStudySession,
+  stopStudySession,
+  getStudySummary,
+  getCurrentStudySession,
+  getCategories,
+  addCategory,
+  deleteCategory,
+  getStudyStatsToday,
+} from "../../../utils/api";
 
 function StudyPage() {
-  const [time, setTime] = useState(0); 
+  const [time, setTime] = useState(0); // ms 단위 타이머
   const [running, setRunning] = useState(false);
-  const [logId, setLogId] = useState(null); 
-  const [todayStudy, setTodayStudy] = useState(0);
-  const [weekStudy, setWeekStudy] = useState(0);
-  
+  const [logId, setLogId] = useState(null);
+
+  const [todayStudy, setTodayStudy] = useState(0); // 초
+  const [weekStudy, setWeekStudy] = useState(0); // 초
+
+  const [subjects, setSubjects] = useState([]);
+  const [subjectInput, setSubjectInput] = useState("");
+  const [currentSubject, setCurrentSubject] = useState(null); // categoryId
+
+  const [subjectTimes, setSubjectTimes] = useState({}); // { "수학": 3600, ... }
+
+  const [showModal, setShowModal] = useState(false);
+
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
-  const boundaryRef = useRef({
-    dayStart: startOfTodayMs(),
-    weekStart: startOfWeekMs(),
-  });
 
-  // --- 🔥 수정된 부분 (페이지 로드 시 상태 복원) ---
+  /* ===========================================================
+      시간 포맷 (초 → HH:MM:SS)
+  =========================================================== */
+  const formatTime = (sec) => {
+    const h = String(Math.floor(sec / 3600)).padStart(2, "0");
+    const m = String(Math.floor((sec % 3600) / 60)).padStart(2, "0");
+    const s = String(sec % 60).padStart(2, "0");
+    return `${h}:${m}:${s}`;
+  };
+
+  const formatTimerMS = (ms) => formatTime(Math.floor(ms / 1000));
+
+  /* ===========================================================
+      초기 로드
+  =========================================================== */
   useEffect(() => {
-    // 1. (기존) 학습 시간 요약 불러오기
-    const fetchStudySummary = async () => {
-      try {
-        const data = await getStudySummary();
-        const today = normalizeSec(data?.todaySeconds ?? data?.todayStudy);
-        const week = normalizeSec(data?.weekSeconds ?? data?.weekStudy);
-        setTodayStudy(today);
-        setWeekStudy(week);
-      } catch (error) {
-        console.error("학습 요약 불러오기 실패:", error);
+    loadCategories();
+    loadSummary();
+    restoreSession();
+    loadCategoryStatsToday();
+  }, []);
+
+  /* 🔥 카테고리 가져오기 */
+  const loadCategories = async () => {
+    try {
+      const list = await getCategories();
+      setSubjects(list);
+    } catch (err) {
+      console.error("카테고리 조회 실패:", err);
+    }
+  };
+
+  /* 🔥 오늘/주간 공부 시간 (초 단위) */
+  const loadSummary = async () => {
+    try {
+      const data = await getStudySummary(); // { today: 초, week: 초 }
+      setTodayStudy(Number(data.today || 0));
+      setWeekStudy(Number(data.week || 0));
+    } catch (err) {
+      console.error("요약 조회 실패:", err);
+    }
+  };
+
+  /* 🔥 카테고리별 오늘 공부시간 (seconds 단위) */
+  const loadCategoryStatsToday = async () => {
+    try {
+      const stats = await getStudyStatsToday();
+      // stats.seconds = [3600, 1800]
+
+      const map = {};
+      stats.labels.forEach((label, i) => {
+        map[label] = stats.seconds[i] || 0; // ⬅ 초 그대로
+      });
+
+      setSubjectTimes(map);
+    } catch (err) {
+      console.error("카테고리별 시간 조회 실패:", err);
+    }
+  };
+
+  /* 🔥 진행 중 세션 복원 */
+  const restoreSession = async () => {
+    try {
+      const data = await getCurrentStudySession();
+      if (data.activeSession) {
+        const { logId, categoryId, startTime } = data.activeSession;
+
+        setLogId(logId);
+        setCurrentSubject(categoryId);
+        setRunning(true);
+
+        const startMs = new Date(startTime).getTime();
+        startTimeRef.current = startMs;
+        setTime(Date.now() - startMs);
       }
-    };
+    } catch (err) {
+      console.error("세션 복원 실패:", err);
+    }
+  };
 
-    // 2. (신규) 진행 중인 세션 확인하기
-    const checkActiveSession = async () => {
-      try {
-        const data = await getCurrentStudySession();
-        if (data.activeSession) {
-          // 멈추지 않은 세션이 있다면
-          const { logId, startTime } = data.activeSession;
-          
-          // 3. 상태 복원
-          setLogId(logId); // DB의 logId로 설정
-          setRunning(true); // 타이머 실행
-          
-          // 4. 경과 시간 계산 및 타이머 시작 시간 설정
-          const startTimeMs = new Date(startTime).getTime(); // DB의 시작 시간
-          const elapsedTime = Date.now() - startTimeMs;     // 현재까지 경과 시간
-          
-          startTimeRef.current = startTimeMs; // 타이머 기준 시간 설정
-          setTime(elapsedTime);               // 화면 시간 복원
-
-          // 서버 요약 값이 진행 중 세션의 경과를 포함했을 가능성 방지: 베이스 보정
-          const now = Date.now();
-          const elapsedSec = Math.floor((now - startTimeMs) / 1000);
-          let addToday = elapsedSec;
-          let addWeek = elapsedSec;
-          const todayOffset = Math.ceil((startOfTodayMs() - startTimeMs) / 1000);
-          if (todayOffset > 0) addToday = Math.max(0, elapsedSec - todayOffset);
-          const weekOffset = Math.ceil((startOfWeekMs() - startTimeMs) / 1000);
-          if (weekOffset > 0) addWeek = Math.max(0, elapsedSec - weekOffset);
-          setTodayStudy((prev) => Math.max(0, normalizeSec(prev) - addToday));
-          setWeekStudy((prev) => Math.max(0, normalizeSec(prev) - addWeek));
-        }
-      } catch (error) {
-        console.error("진행 중인 세션 확인 실패:", error);
-      }
-    };
-
-    fetchStudySummary(); // 1. 요약 불러오기
-    checkActiveSession(); // 2. 진행 중인 세션 확인 (매우 중요)
-
-  }, []); // 페이지 로드 시 1회만 실행 (의존성 배열 비움)
-  // ----------------------------------------------------
-
-  // 타이머 로직 (100ms마다 화면 갱신)
+  /* ===========================================================
+      타이머
+  =========================================================== */
   useEffect(() => {
     if (running) {
       timerRef.current = setInterval(() => {
-        const now = Date.now();
-        const elapsedTime = now - startTimeRef.current;
-        setTime(elapsedTime);
-
-        // Reset base totals when day/week boundary rolls over
-        const ds = startOfTodayMs();
-        const ws = startOfWeekMs();
-        if (boundaryRef.current.dayStart !== ds) {
-          setTodayStudy(0);
-          boundaryRef.current.dayStart = ds;
-        }
-        if (boundaryRef.current.weekStart !== ws) {
-          setWeekStudy(0);
-          boundaryRef.current.weekStart = ws;
-        }
-      }, 100); 
+        setTime(Date.now() - startTimeRef.current);
+      }, 100);
     } else {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [running]); 
+  }, [running]);
 
+  /* ===========================================================
+      카테고리 클릭
+  =========================================================== */
+  const handleSelectSubject = (item) => {
+    setCurrentSubject(item.id);
+    if (!running) setTime(0);
+  };
+
+  /* ===========================================================
+      카테고리 추가
+  =========================================================== */
+  const handleAddCategory = async () => {
+    if (!subjectInput.trim()) return;
+
+    await addCategory(subjectInput.trim());
+    setSubjectInput("");
+
+    await loadCategories();
+    await loadCategoryStatsToday();
+  };
+
+  /* ===========================================================
+      카테고리 삭제
+  =========================================================== */
+  const handleDeleteCategory = async (id, e) => {
+    e.stopPropagation();
+    await deleteCategory(id);
+
+    if (currentSubject === id) setCurrentSubject(null);
+
+    await loadCategories();
+    await loadCategoryStatsToday();
+  };
+
+  /* ===========================================================
+      START / STOP
+  =========================================================== */
   const handleStartStop = async () => {
-    if (running) {
-      // --- STOP 로직 ---
-      try {
-        setRunning(false); 
-        setTime(0);      
-        
-        const data = await stopStudySession(logId); // API 호출
-        setLogId(null);
-        alert(data.message || "공부 기록이 저장되었습니다.");
-        
-        // 요약 정보 즉시 갱신
-        const summaryData = await getStudySummary();
-        setTodayStudy(normalizeSec(summaryData?.todaySeconds ?? summaryData?.todayStudy));
-        setWeekStudy(normalizeSec(summaryData?.weekSeconds ?? summaryData?.weekStudy));
-        
-      } catch (error) {
-        alert(error.message || "기록 중지에 실패했습니다.");
-        setRunning(true); 
+    if (!running) {
+      if (!currentSubject) {
+        setShowModal(true);
+        return;
       }
 
+      const res = await startStudySession({ categoryId: currentSubject });
+      setLogId(res.logId);
+
+      startTimeRef.current = Date.now();
+      setTime(0);
+      setRunning(true);
     } else {
-      // --- START 로직 ---
-      try {
-        const data = await startStudySession(); // API 호출
-        setLogId(data.logId);
-        
-        startTimeRef.current = Date.now(); 
-        
-        setTime(0);
-        setRunning(true);
-      } catch (error) {
-        // (409 Conflict 에러는 이제 발생하지 않음)
-        alert(error.message || "기록 시작에 실패했습니다.");
-      }
+      await stopStudySession(logId);
+
+      setRunning(false);
+      setLogId(null);
+      setTime(0);
+
+      await loadSummary();
+      await loadCategoryStatsToday();
     }
   };
 
-  // (시간 포맷 함수 및 렌더링 로직... 생략)
-  const formatTime = (seconds) => {
-    const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
-    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
-    const s = String(seconds % 60).padStart(2, "0");
-    return `${h}:${m}:${s}`;
-  };
-  const formatTimer = (t_ms) => {
-    const totalSeconds = Math.floor(t_ms / 1000);
-    const h = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
-    const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
-    const s = String(totalSeconds % 60).padStart(2, "0");
-    return `${h}:${m}:${s}`;
-  };
-  const colors = ["#FFD400", "#4DA3FF", "#6DD56C", "#FF6B81", "#B26EFF"];
-  const colorCount = colors.length;
-  const fullCycle = 3600000;
-  const currentHour = Math.floor(time / fullCycle);
-  const nextColorIndex = (currentHour + 1) % colorCount;
-  const currentColorIndex = currentHour % colorCount;
-  const progressRatio = (time % fullCycle) / fullCycle;
-  const progress = progressRatio * 360;
-  const hexToRgb = (hex) => {
-    const bigint = parseInt(hex.slice(1), 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-    return [r, g, b];
-  };
-  const [r1, g1, b1] = hexToRgb(colors[currentColorIndex]);
-  const [r2, g2, b2] = hexToRgb(colors[nextColorIndex]);
-  const blendedColor = `rgb(${Math.round(r1 + (r2 - r1) * progressRatio)}, 
-                             ${Math.round(g1 + (g2 - g1) * progressRatio)}, 
-                             ${Math.round(b1 + (b2 - b1) * progressRatio)})`;
-
-  // Live today/week accumulation while running (exclude pre-boundary portion)
+  /* ===========================================================
+      실시간 반영
+  =========================================================== */
   const elapsedSec = Math.floor(time / 1000);
-  let addToday = elapsedSec;
-  let addWeek = elapsedSec;
-  if (running && startTimeRef.current) {
-    const todayOffset = Math.ceil((startOfTodayMs() - startTimeRef.current) / 1000);
-    if (todayOffset > 0) addToday = Math.max(0, elapsedSec - todayOffset);
-    const weekOffset = Math.ceil((startOfWeekMs() - startTimeRef.current) / 1000);
-    if (weekOffset > 0) addWeek = Math.max(0, elapsedSec - weekOffset);
-  }
-  const liveToday = todayStudy + addToday;
-  const liveWeek = weekStudy + addWeek;
+  const liveToday = running ? todayStudy + elapsedSec : todayStudy;
+  const liveWeek = running ? weekStudy + elapsedSec : weekStudy;
 
+  const selectedCategory =
+    subjects.find((s) => s.id === currentSubject)?.categoryName || "없음";
+
+  /* ===========================================================
+      렌더링
+  =========================================================== */
   return (
     <>
-      <Header1 isLoggedIn={true} />
-      <Header2 isLoggedIn={true} />
+      <Header1/>
+      <Header2/>
 
-      <div className="study-container">
-        <div className="timer-box">
-          <div
-            className="timer-circle"
-            style={{
-              background: `conic-gradient(${blendedColor} ${progress}deg, #fff 0deg)`,
-            }}
-          >
-            <div className="timer-inner">
-              <div className="timer-text">{formatTimer(time)}</div>
+      <div className="page-content" style={{ paddingTop: "93px" }}>
+        <div className="study-container">
+
+          {/* 카테고리 */}
+          <div className="subject-box">
+            <div className="subject-title">카테고리 관리</div>
+
+            <div className="subject-add-row">
+              <input
+                value={subjectInput}
+                placeholder="카테고리 입력"
+                onChange={(e) => setSubjectInput(e.target.value)}
+              />
+              <button onClick={handleAddCategory}>추가</button>
+            </div>
+
+            <div className="subject-list">
+              {subjects.map((s) => (
+                <div
+                  key={s.id}
+                  className={`subject-item ${
+                    currentSubject === s.id ? "active" : ""
+                  }`}
+                  onClick={() => handleSelectSubject(s)}
+                >
+                  <span>{s.categoryName}</span>
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => handleDeleteCategory(s.id, e)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="timer-btns">
-            <button className="timer-btn" onClick={handleStartStop}>
-              {running ? "STOP" : "START"}
-            </button>
-          </div>
-        </div>
 
-        <div className="record-box">
-          <div className="record-title">공부 기록</div>
-          <div className="record-item">
-            <span>이번 주 공부 시간</span>
-            <span>{formatTime(liveWeek)}</span>
+          {/* 타이머 */}
+          <div className="timer-box">
+            <div className="timer-circle">
+              <div className="timer-inner">
+                <div className="timer-text">{formatTimerMS(time)}</div>
+              </div>
+            </div>
+
+            <div className="current-subject">
+              현재 선택된 카테고리: <b>{selectedCategory}</b>
+            </div>
+
+            <div className="timer-btns">
+              <button className="timer-btn" onClick={handleStartStop}>
+                {running ? "STOP" : "START"}
+              </button>
+            </div>
           </div>
-          <div className="record-item">
-            <span>오늘의 공부 시간</span>
-            <span>{formatTime(liveToday)}</span>
+
+          {/* 기록 */}
+          <div className="record-box">
+            <div className="record-title">공부 기록</div>
+
+            <div className="record-item">
+              <span>오늘 공부 시간</span>
+              <span>{formatTime(liveToday)}</span>
+            </div>
+
+            <div className="record-item">
+              <span>이번 주 공부 시간</span>
+              <span>{formatTime(liveWeek)}</span>
+            </div>
+
+            <div className="record-title">카테고리별 누적 시간</div>
+
+            <div className="subject-time-list">
+              {subjects.map((s) => (
+                <div key={s.id} className="record-item">
+                  <span>{s.categoryName}</span>
+                  <span>{formatTime(subjectTimes[s.categoryName] || 0)}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* 카테고리 선택 모달 */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-title">카테고리 선택 필요</div>
+            <div className="modal-text">먼저 공부할 카테고리를 선택해주세요.</div>
+            <button className="modal-btn" onClick={() => setShowModal(false)}>
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

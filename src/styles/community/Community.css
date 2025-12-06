@@ -2,13 +2,13 @@
 .community-wrapper {
   display: flex;
   min-height: calc(100vh - 120px);
-  background-color: #ffeeB5;
+  background-color: var(--theme-bg) !important;
 }
 
 /* 사이드바 영역 */
 .community-sidebar-container {
   width: 240px;
-  background: #ffeeB5;
+  background-color: var(--theme-bg) !important;
   padding: 70px 20px 0px 40px;
   position: relative;
 }
@@ -19,12 +19,13 @@
   padding: 50px 60px;
   background: transparent;
 }
+
 /* 탭 버튼 전체 영역 */
 .faq-tabs {
   display: flex;
-  justify-content: center;   /* 수평 가운데 정렬 */
-  align-items: center;       /* 수직 가운데 정렬 */
-  gap: 30px;                 /* 버튼 간격 */
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
   margin-bottom: 25px;
 }
 
@@ -39,15 +40,26 @@
   transition: all 0.2s;
 }
 
-/* 활성화 탭 */
+/* 활성화된 탭 → 테마색 기반 */
 .faq-tabs button.active {
-  color: #000;
-  border-bottom: 3px solid #000;
+  color: var(--theme-accent);
+  border-bottom: 3px solid var(--theme-accent);
 }
 
-/* 이전글, 다음글, 목록으로 버튼 크기 조정 */
+/* 이전글, 다음글, 목록으로 버튼 */
 .small-btn {
   padding: 6px 14px;
   font-size: 14px;
   border-radius: 6px;
+
+  /* 테마 적용 버튼 */
+  background-color: var(--theme-accent);
+  color: #333;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.small-btn:hover {
+  background-color: color-mix(in srgb, var(--theme-accent) 85%, #000000 15%);
 }

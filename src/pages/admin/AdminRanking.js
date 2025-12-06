@@ -56,7 +56,7 @@ export default function AdminRanking() {
         <AdminHeader1 isLoggedIn={true} />
         <AdminHeader2 isLoggedIn={true} />
       </div>
-
+      <div className="page-content" style={{ paddingTop: "93px", minHeight: "calc(100vh - 93px)", boxSizing: "border-box" }}>
       <div className="admin-ranking-layout">
 
         {/* ---------------- 통계 카드 ---------------- */}
@@ -108,7 +108,7 @@ export default function AdminRanking() {
         </div>
 
       </div>
-
+      </div>
       <Footer />
     </>
   );

@@ -10,12 +10,15 @@ import {
 
 function AdminNoticeTab() {
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("new"); // 🔥 추가됨: new | old
   const [isWriting, setIsWriting] = useState(false);
   const [editPost, setEditPost] = useState(null);
   const [noticeList, setNoticeList] = useState([]);
   const [originalList, setOriginalList] = useState([]);
 
-  // 공지 불러오기
+  // -------------------------------------------
+  // 🔥 공지 불러오기
+  // -------------------------------------------
   useEffect(() => {
     loadNotices();
   }, []);
@@ -23,7 +26,8 @@ function AdminNoticeTab() {
   const loadNotices = async () => {
     try {
       const data = await getAdminNotices();
-      // time 필드 추가(프론트 표시용)
+
+      // createdAt → time 문자열로 변환
       const mapped = data.map((n) => ({
         ...n,
         time: new Date(n.createdAt).toLocaleString("ko-KR"),
@@ -37,18 +41,26 @@ function AdminNoticeTab() {
     }
   };
 
+  // -------------------------------------------
+  // 🔍 검색
+  // -------------------------------------------
   const handleSearch = () => {
     if (!search.trim()) {
       setNoticeList(originalList);
       return;
     }
+
     const filtered = originalList.filter(
       (item) =>
         item.title.includes(search) || item.content.includes(search)
     );
+
     setNoticeList(filtered);
   };
 
+  // -------------------------------------------
+  // ❌ 삭제
+  // -------------------------------------------
   const handleDelete = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
 
@@ -61,6 +73,23 @@ function AdminNoticeTab() {
     }
   };
 
+  // -------------------------------------------
+  // 🔥 정렬 기능 (더미버전 기능 추가)
+  // -------------------------------------------
+  const sortedList = [...noticeList]
+    .sort((a, b) =>
+      sort === "new"
+        ? new Date(b.createdAt) - new Date(a.createdAt)
+        : new Date(a.createdAt) - new Date(b.createdAt)
+    )
+    .map((item, index, arr) => ({
+      ...item,
+      no: arr.length - index, // 번호 재부여
+    }));
+
+  // -------------------------------------------
+  // ✏ 글쓰기/수정 화면
+  // -------------------------------------------
   if (isWriting || editPost) {
     return (
       <WriteTab
@@ -81,6 +110,7 @@ function AdminNoticeTab() {
             console.error(err);
             alert("저장 중 오류 발생");
           }
+
           setIsWriting(false);
           setEditPost(null);
         }}
@@ -88,14 +118,14 @@ function AdminNoticeTab() {
     );
   }
 
-  const sortedList = [...noticeList]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .map((item, index, arr) => ({ ...item, no: arr.length - index }));
-
+  // -------------------------------------------
+  // 📄 목록 화면
+  // -------------------------------------------
   return (
     <div className="admin-community-tab">
       <h2>공지사항 관리</h2>
 
+      {/* 검색 */}
       <div className="search-box">
         <input
           type="text"
@@ -108,6 +138,23 @@ function AdminNoticeTab() {
         </button>
       </div>
 
+      {/* 🔥 정렬 버튼 추가됨 */}
+      <div className="sort-row">
+        <button
+          className={`sort-btn ${sort === "new" ? "active" : ""}`}
+          onClick={() => setSort("new")}
+        >
+          최신순
+        </button>
+        <button
+          className={`sort-btn ${sort === "old" ? "active" : ""}`}
+          onClick={() => setSort("old")}
+        >
+          오래된 순
+        </button>
+      </div>
+
+      {/* 목록 테이블 */}
       <table className="table">
         <thead>
           <tr>
@@ -142,6 +189,7 @@ function AdminNoticeTab() {
         </tbody>
       </table>
 
+      {/* 글쓰기 버튼 */}
       <div className="btn-right">
         <button className="common-btn" onClick={() => setIsWriting(true)}>
           글쓰기

@@ -1,5 +1,5 @@
 .study-container {
-  background-color: #ffeeB5;
+  background-color: var(--theme-bg) !important;
   min-height: calc(100vh - 200px);
   display: flex;
   justify-content: center;
@@ -10,6 +10,7 @@
   font-family: "Pretendard", sans-serif;
 }
 
+/* 타이머 원형 */
 .timer-box {
   display: flex;
   flex-direction: column;
@@ -22,7 +23,7 @@
   width: clamp(200px, 25vw, 260px);
   height: clamp(200px, 25vw, 260px);
   border-radius: 50%;
-  background: conic-gradient(#ffd400 0deg, #fff 0deg);
+  background: conic-gradient(var(--theme-accent) 0deg, #fff 0deg);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -47,6 +48,7 @@
   color: #000;
 }
 
+/* 타이머 버튼 */
 .timer-btns {
   display: flex;
   justify-content: center;
@@ -56,7 +58,7 @@
 
 .timer-btn {
   background: #fff;
-  border: 2px solid #ffd400;
+  border: 2px solid var(--theme-accent);
   border-radius: 40px;
   padding: clamp(8px, 1vw, 10px) clamp(20px, 3vw, 28px);
   font-size: clamp(14px, 1.6vw, 18px);
@@ -67,46 +69,208 @@
 }
 
 .timer-btn:hover {
-  background: #fff9d1;
+  background: color-mix(in srgb, var(--theme-accent) 15%, white);
 }
 
+/* 기록 박스 */
 .record-box {
-  background: #fff7b5;
+  background: #fff !important;
   border-radius: 24px;
   padding: clamp(25px, 4vw, 40px) clamp(20px, 3vw, 30px);
   width: clamp(260px, 28vw, 300px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--theme-accent);
 }
 
 .record-title {
-  background: #ffd400;
+  background: var(--theme-accent);
   text-align: center;
-  padding: clamp(8px, 1vw, 10px) 0;
+  padding: 10px 0;
   border-radius: 20px;
   font-weight: 800;
-  font-size: clamp(16px, 2vw, 20px);
-  margin-bottom: clamp(18px, 3vw, 25px);
+  font-size: 18px;
+  margin-bottom: 18px;
+}
+
+/* 사이 구분선 */
+.record-divider {
+  height: 1px;
+  width: 100%;
+  background: #ddd;
+  margin: 14px 0;
+}
+
+/* 라벨 텍스트 */
+.record-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 6px;
+  padding-left: 4px;
 }
 
 .record-item {
+  background: #fff;
+  border-radius: 18px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff;
-  border-radius: 20px;
-  padding: clamp(10px, 1.5vw, 15px) clamp(12px, 2vw, 18px);
-  font-size: clamp(14px, 1.6vw, 17px);
+
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: clamp(10px, 1.8vw, 15px);
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-@media (max-width: 900px) {
-  .study-container {
-    flex-direction: column;
-    align-items: center;
-  }
+/* 카테고리 박스 */
+.subject-box {
+  background: #fff !important;
+  border-radius: 24px;
+  padding: 25px;
+  width: clamp(260px, 28vw, 300px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border: 2px solid var(--theme-accent);
+}
 
-  .record-box {
-    width: 90%;
-  }
+.subject-title {
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  background: var(--theme-accent);
+  color: #000;
+  padding: 10px 0;
+  border-radius: 20px;
+  margin-bottom: 15px;
+}
+
+.subject-add-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.subject-add-row input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+.subject-add-row button {
+  padding: 8px 14px;
+  font-weight: bold;
+  background: #fff;
+  border: 2px solid var(--theme-accent);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.subject-add-row button:hover {
+  background: color-mix(in srgb, var(--theme-accent) 15%, white);
+}
+
+/* 리스트 */
+.subject-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 12px 18px;
+  margin-bottom: 12px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.subject-item.active {
+  background: color-mix(in srgb, var(--theme-accent) 35%, white);
+}
+
+.delete-btn {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.subject-time-title {
+  margin-top: 20px;
+  font-size: 17px;
+  font-weight: 700;
+  padding-left: 5px;
+}
+
+.subject-time-list {
+  margin-top: 10px;
+}
+
+.current-subject {
+  font-weight: 600;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+.subject-time-list::-webkit-scrollbar-thumb,
+.subject-list::-webkit-scrollbar-thumb {
+  background: var(--theme-accent);
+}
+
+.subject-time-list::-webkit-scrollbar-track,
+.subject-list::-webkit-scrollbar-track {
+  background: #f6f6f6;
+}
+
+.subject-time-title {
+  margin-top: 20px;
+  font-size: 17px;
+  font-weight: 700;
+  padding-left: 5px;
+}
+
+.subject-time-list {
+  margin-top: 10px;
+}
+
+.current-subject {
+  font-weight: 600;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+.subject-box,
+.record-box {
+  margin: 0 clamp(20px, 3vw, 60px);
+}
+
+/* 카테고리 / 카테고리별 누적시간 리스트 스크롤 */
+.subject-list,
+.subject-time-list {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* 스크롤바 스타일 */
+.subject-list::-webkit-scrollbar,
+.subject-time-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.subject-list::-webkit-scrollbar-thumb,
+.subject-time-list::-webkit-scrollbar-thumb {
+  background: var(--theme-accent);
+  border-radius: 4px;
+}
+
+.subject-list::-webkit-scrollbar-track,
+.subject-time-list::-webkit-scrollbar-track {
+  background: #f6f6f6;
 }

@@ -1,6 +1,6 @@
 /* 전체 배경 */
 .ranking-page {
-  background-color: #ffeeB5;
+  background-color: var(--theme-bg) !important;
   min-height: 100vh;
 }
 
@@ -30,9 +30,8 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-/* 표 헤더 */
 .ranking-table thead {
-  background-color: #ffeb6b;
+  background-color: var(--theme-accent) !important;
 }
 
 .ranking-table th {
@@ -43,7 +42,6 @@
   border-bottom: 1px solid #ddd;
 }
 
-/* 표 내용 */
 .ranking-table td {
   padding: 16px;
   text-align: center;
@@ -51,7 +49,6 @@
   border-bottom: 1px solid #eee;
 }
 
-/* 마지막 줄 경계 제거 */
 .ranking-table tr:last-child td {
   border-bottom: none;
 }

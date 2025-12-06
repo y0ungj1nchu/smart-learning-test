@@ -1,58 +1,76 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../../../styles/profile/Tabs.css";
 
-function NotificationTab() {
-  const [notifications] = useState([
-    {
-      id: 1,
-      time: "1시간 전",
-      title: "캐릭터 레벨이 업그레이드 되었습니다.",
-      content: "축하합니다! 캐릭터의 레벨이 9에서 10으로 상승했습니다. 더 많은 공부로 캐릭터를 성장시켜보세요!",
-    },
-    {
-      id: 2,
-      time: "3시간 전",
-      title: "순공시간 5시간 달성",
-      content: "오늘 순공시간이 5시간을 돌파했습니다. 꾸준한 학습 습관이 쌓이고 있어요!",
-    },
-    {
-      id: 3,
-      time: "5시간 전",
-      title: "이달의 이벤트가 게시판에 공유되었습니다.",
-      content: "새로운 이벤트가 열렸습니다! 지금 바로 ‘커뮤니티 → 이벤트’ 페이지에서 확인해보세요.",
-    },
-    {
-      id: 4,
-      time: "7시간 전",
-      title: "1:1 문의에 답변이 등록되었습니다.",
-      content: "문의하신 ‘로그인 오류 관련’ 내용에 대한 답변이 등록되었습니다. 내 정보 > 1:1 문의 탭에서 확인 가능합니다.",
-    },
-  ]);
+import {
+  getNotifications,   // 알림 목록 GET
+  readNotification,   // 알림 읽음 처리 PATCH
+} from "../../../../utils/api";
 
+function NotificationTab() {
+  const [notifications, setNotifications] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
 
-  const handleClick = (id) => {
+  /* ---------------------------------------
+      1) 알림 불러오기
+  --------------------------------------- */
+  const loadNotifications = async () => {
+    try {
+      const data = await getNotifications();
+      setNotifications(data);
+    } catch (err) {
+      console.error("알림 불러오기 실패:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadNotifications();
+  }, []);
+
+  /* ---------------------------------------
+      2) 알림 클릭 → UI 펼치기 + 읽음 처리
+  --------------------------------------- */
+  const handleClick = async (item) => {
+    const id = item.id;
+
+    // 클릭하면 펼치기/닫기
     setSelectedId(selectedId === id ? null : id);
+
+    // 이미 읽은 알림이면 처리 X
+    if (item.isRead) return;
+
+    try {
+      await readNotification(id);
+      loadNotifications(); // 상태 갱신
+    } catch (e) {
+      console.error("읽음 처리 실패:", e);
+    }
   };
 
   return (
     <div className="tab-inner notification-tab">
-      <h3>알림</h3>
-
       <div className="notification-list">
+
+        {notifications.length === 0 && (
+          <p className="empty-text">알림이 없습니다.</p>
+        )}
+
         {notifications.map((n) => (
           <div
             key={n.id}
             className={`notification-item ${selectedId === n.id ? "open" : ""}`}
-            onClick={() => handleClick(n.id)}
+            onClick={() => handleClick(n)}
           >
+            {/* 알림 기본 헤더 */}
             <div className="notification-header">
-              <div className="notification-time">{n.time}</div>
+              <div className="notification-time">
+                {new Date(n.createdAt).toLocaleString("ko-KR")}
+              </div>
               <div className="notification-title">{n.title}</div>
             </div>
 
+            {/* 펼쳐진 내용 */}
             {selectedId === n.id && (
-              <div className="notification-content">{n.content}</div>
+              <div className="notification-content">{n.message}</div>
             )}
           </div>
         ))}

@@ -1,11 +1,13 @@
+/* 전체 배경 */
 .verify-container {
-  background-color: #FFEEB5;
+  background-color: #FFEEB5 !important; /* 고정 */
   height: calc(100vh - 140px);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+/* 박스 */
 .verify-box {
   background: #fff;
   padding: 40px;
@@ -55,13 +57,10 @@
   background: #e6c200;
 }
 
-/* 모달 스타일 */
+/* 모달 */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
@@ -85,6 +84,7 @@
   line-height: 1.5;
 }
 
+/* 확인 버튼 */
 .modal-btn {
   background: #FFD400;
   border: none;

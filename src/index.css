@@ -1,13 +1,67 @@
+/* 기본 테마 변수 */
+:root {
+  --theme-bg: #FFEEB5;
+  --theme-accent: #FFD400;
+}
+
+/* 사용자 모드 테마 적용 */
+:root.user-mode {
+  --theme-bg: var(--user-theme-bg);
+  --theme-accent: var(--user-theme-accent);
+}
+
+/* 관리자 모드 테마 적용 */
+:root.admin-mode {
+  --theme-bg: var(--admin-theme-bg);
+  --theme-accent: var(--admin-theme-accent);
+}
+
+/* 전체 적용 */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  padding: 0;
+  background-color: var(--theme-bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 
+               'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 
+               'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+.app-wrapper,
+.page-content {
+  background-color: var(--theme-bg);
+}
+
+/* 로그인 전 전용 */
+.before-login-page {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* 인증 페이지 */
+.auth-page {
+  background-color: var(--theme-bg);
+  min-height: 100vh;
+  width: 100%;
+}
+
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* 공통 버튼 스타일 */
+.btn-theme {
+  background-color: var(--theme-accent);
+  color: #333;
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-theme:hover {
+  background-color: color-mix(in srgb, var(--theme-accent) 85%, #000000 15%);
 }

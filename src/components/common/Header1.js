@@ -1,52 +1,52 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Header1.css";
 import userIcon from "../../assets/basicUser.png";
+import { Bell } from "lucide-react";
+import { useAuth } from "../../context/useAuth";  // 🔥 AuthContext 사용
 
-import { getMyProfile } from "../../utils/api";
-
-function Header1({ isLoggedIn = false }) {
+function Header1({
+  onOpenProfile,
+  onOpenSetting,
+  onOpenNotification,
+}) {
   const navigate = useNavigate();
-  const loggedIn = isLoggedIn || localStorage.getItem("isLoggedIn") === "true";
+  const dropdownRef = useRef(null);
+  const [open, setOpen] = useState(false);
 
-  const [nickname, setNickname] = useState("");
+  const { user, role, logout } = useAuth(); // 🔥 Context에서 로그인 상태/role 가져오기
 
-  useEffect(() => {
-    if (loggedIn) {
-      const fetchProfile = async () => {
-        try {
-          const data = await getMyProfile();
-          setNickname(data.nickname);
-        } catch (error) {
-          console.error("헤더 닉네임 로드 실패:", error.message);
-          localStorage.clear();
-          navigate("/user/auth/Login");
-        }
-      };
-      fetchProfile();
-    }
-  }, [loggedIn, navigate]);
+  // 실제 로그인 여부 판별
+  const loggedIn = Boolean(user);
 
-  // 최종 선택된 로그아웃 함수 (HEAD 버전)
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("authToken");
-    navigate("/home/before");
-    window.location.reload();
-  };
-
+  // 로고 클릭 시 이동
   const handleLogoClick = () => {
-    navigate(loggedIn ? "/home/after" : "/home/before");
+    if (loggedIn) navigate("/home/after");
+    else navigate("/home/before");
   };
 
-  const handleProfileClick = () => {
-    if (loggedIn) {
-      navigate("/user/profile/view");
-    } else {
-      alert("로그인이 필요합니다.");
-      navigate("/user/auth/Login");
-    }
+  const handleToggleDropdown = () => setOpen(!open);
+
+  // 드롭다운 외부 클릭 감지
+  useEffect(() => {
+    const clickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", clickOutside);
+    return () => document.removeEventListener("mousedown", clickOutside);
+  }, []);
+
+  // 🔥 로그아웃 (AuthContext logout() 사용)
+  const handleLogout = () => {
+    logout();               // Context로 상태 초기화 + localStorage 초기화
+    setOpen(false);
+    navigate("/home/before");
   };
+
+  // 🔥 관리자 헤더 숨김
+  if (role && role.toUpperCase() === "ADMIN") return null;
 
   return (
     <header className="header1">
@@ -54,19 +54,50 @@ function Header1({ isLoggedIn = false }) {
         스마트 학습 도우미
       </div>
 
-      <nav className="menu">
+      <nav className="menu" ref={dropdownRef}>
         {loggedIn ? (
           <>
-            <span className="welcome-msg">{nickname}님 환영합니다!</span>
-            <button className="menu-btn gray" onClick={handleLogout}>
-              로그아웃
-            </button>
+            <Bell
+              size={22}
+              className="alarm-icon"
+              onClick={() => {
+                if (onOpenNotification) onOpenNotification();
+                else navigate("/user/profile/view?tab=notification");
+              }}
+            />
+
             <img
               src={userIcon}
               alt="user"
               className="user-icon"
-              onClick={handleProfileClick}
+              onClick={handleToggleDropdown}
             />
+
+            {open && (
+              <div className="dropdown-menu">
+                <p
+                  onClick={() => {
+                    if (onOpenProfile) onOpenProfile();
+                    else navigate("/user/profile/view?tab=profile");
+                    setOpen(false);
+                  }}
+                >
+                  프로필
+                </p>
+
+                <p
+                  onClick={() => {
+                    if (onOpenSetting) onOpenSetting();
+                    else navigate("/user/profile/view?tab=setting");
+                    setOpen(false);
+                  }}
+                >
+                  설정
+                </p>
+
+                <p onClick={handleLogout}>로그아웃</p>
+              </div>
+            )}
           </>
         ) : (
           <>

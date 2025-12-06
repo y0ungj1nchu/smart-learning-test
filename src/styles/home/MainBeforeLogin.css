@@ -1,6 +1,6 @@
 .before-login-container {
-  background-color: #FFEEB5;
-  height: calc(100vh - 140px); /* 헤더,푸터 제외 높이*/
+  background-color: #FFEEB5 !important;
+  height: calc(100vh - 140px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -29,9 +29,9 @@
   gap: 10px;
 }
 
-/* (로그인, 회원가입) 공통 버튼 */
-.common-btn{
-  background-color: #ffd400;
+/* 로그인/회원가입 버튼 */
+.common-btn {
+  background-color: #FFD400;
   color: #333;
   font-weight: bold;
   padding: 10px 20px;
@@ -42,6 +42,23 @@
   text-align: center;
 }
 
-.common-btn:hover{
+.common-btn:hover {
   background-color: #e6c200;
+}
+
+.before-login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.before-login-page .common-btn {
+  background-color: #FFD400 !important;
+  border: none !important;
+  color: #333 !important;
+}
+
+.before-login-page .common-btn:hover {
+  background-color: #e6c200 !important;
 }

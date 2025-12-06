@@ -1,5 +1,5 @@
 .admin-ranking-layout {
-  background-color: #ffeeB5;
+  background-color: var(--theme-bg) !important;
   min-height: calc(100vh - 200px);
   display: flex;
   justify-content: center;
@@ -9,6 +9,7 @@
   font-family: "Pretendard", sans-serif;
 }
 
+/* 제목 */
 .section-title {
   font-size: 22px;
   font-weight: 800;
@@ -16,20 +17,24 @@
   margin-bottom: 25px;
 }
 
+/* 왼쪽 요약 박스 */
 .ranking-summary-box {
   flex: 0 0 280px;
-  background: #fff7b5;
+  background: #fff;
+  border: 2px solid var(--theme-accent);
   border-radius: 20px;
   padding: 35px 25px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* 통계 카드 */
 .stat-card {
   background: #fff;
   border-radius: 15px;
   padding: 14px 18px;
   margin-bottom: 18px;
   text-align: center;
+  border: 2px solid var(--theme-accent);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
@@ -45,6 +50,7 @@
   color: #000;
 }
 
+/* 오른쪽 테이블 박스 */
 .ranking-list-box {
   flex: 1;
   background: #fff;
@@ -53,12 +59,14 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* 순위 테이블 */
 .ranking-table {
   width: 100%;
   border-collapse: collapse;
   text-align: center;
 }
 
+/* 표 기본 */
 .ranking-table th,
 .ranking-table td {
   border: 1px solid #ddd;
@@ -66,16 +74,20 @@
   font-size: 16px;
 }
 
+/* 헤더 */
 .ranking-table th {
-  background: #fff7c5;
+  background: color-mix(in srgb, var(--theme-accent) 30%, white);
+  border-bottom: 2px solid var(--theme-accent);
   font-weight: 700;
 }
 
+/* 짝수 행 */
 .ranking-table tr:nth-child(even) {
-  background: #fffdf2;
+  background: color-mix(in srgb, var(--theme-accent) 12%, white);
 }
 
+/* hover */
 .ranking-table tr:hover {
-  background: #fff5a8;
+  background: color-mix(in srgb, var(--theme-accent) 25%, white);
   transition: 0.2s;
 }

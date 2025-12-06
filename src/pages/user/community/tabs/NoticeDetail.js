@@ -46,31 +46,33 @@ function NoticeDetail() {
   };
 
   return (
-    <div className="tab-inner notice-tab">
-      <div className="write-form">
-        <h2>{item.title}</h2>
-        <hr />
-        <p style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
-          {item.content}
-        </p>
-        <p style={{ color: "#777", marginTop: "10px" }}>
-          작성시간: {new Date(item.createdAt).toLocaleString()}
-        </p>
-      </div>
+    <div className="page-content" style={{ paddingTop: "93px", minHeight: "calc(100vh-93px)", boxSizing: "border-box", }}>
+      <div className="tab-inner notice-tab">
+        <div className="write-form">
+          <h2>{item.title}</h2>
+          <hr />
+          <p style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
+            {item.content}
+          </p>
+          <p style={{ color: "#777", marginTop: "10px" }}>
+            작성시간: {new Date(item.createdAt).toLocaleString()}
+          </p>
+        </div>
 
-      <div className="btn-right" style={{ gap: "8px", marginTop: "20px" }}>
-        <button className="common-btn small-btn" onClick={handlePrev}>
-          {"< 이전글"}
-        </button>
-        <button className="common-btn small-btn" onClick={handleNext}>
-          {"다음글 >"}
-        </button>
-        <button
-          className="cancel-btn small-btn"
-          onClick={() => navigate("/user/community/notice")}
-        >
-          목록으로
-        </button>
+        <div className="btn-right" style={{ gap: "8px", marginTop: "20px" }}>
+          <button className="common-btn small-btn" onClick={handlePrev}>
+            {"< 이전글"}
+          </button>
+          <button className="common-btn small-btn" onClick={handleNext}>
+            {"다음글 >"}
+          </button>
+          <button
+            className="cancel-btn small-btn"
+            onClick={() => navigate("/user/community/notice")}
+          >
+            목록으로
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ export default function AdminQnaTab({ initialSelectId }) {
   const [qnaList, setQnaList] = useState([]);
   const [selected, setSelected] = useState(null);
   const [answerText, setAnswerText] = useState("");
+  const [sort, setSort] = useState("new"); // 🔥 최신순 / 오래된순 정렬
 
   useEffect(() => {
     loadInquiries();
@@ -25,7 +26,7 @@ export default function AdminQnaTab({ initialSelectId }) {
     }
   };
 
-  // 🔥 URL에서 받은 문의 ID로 자동 선택
+  // 🔥 URL로 받은 문의 ID 자동 선택
   useEffect(() => {
     if (!initialSelectId || qnaList.length === 0) return;
 
@@ -39,11 +40,27 @@ export default function AdminQnaTab({ initialSelectId }) {
     }
   }, [initialSelectId, qnaList]);
 
+  // 🔥 미답변 필터링
   const filteredList = showUnansweredOnly
     ? qnaList.filter((q) => q.status === "pending")
     : qnaList;
 
-  const unansweredCount = qnaList.filter((q) => q.status === "pending").length;
+  // 🔥 정렬 (createdAt 기준)
+  const sortedList = [...filteredList].sort((a, b) =>
+    sort === "new"
+      ? new Date(b.createdAt) - new Date(a.createdAt)
+      : new Date(a.createdAt) - new Date(b.createdAt)
+  );
+
+  // 🔢 번호 자동 부여 (정렬된 상태 기준)
+  const numberedList = sortedList.map((item, idx, arr) => ({
+    ...item,
+    no: arr.length - idx,
+  }));
+
+  const unansweredCount = qnaList.filter(
+    (q) => q.status === "pending"
+  ).length;
 
   const handleSendAnswer = async () => {
     if (!answerText.trim()) return alert("답변을 입력하세요.");
@@ -62,27 +79,48 @@ export default function AdminQnaTab({ initialSelectId }) {
     }
   };
 
-  return (
-    <div className="tab-inner admin-qna-tab">
-      <h2>1:1 문의 답변</h2>
+  /* ============================
+        📍 목록 화면
+  ============================ */
+  if (!selected) {
+    return (
+      <div className="tab-inner admin-qna-tab">
+        <h2>1:1 문의 답변</h2>
 
-      <div className="qna-stats-box">
-        <div className="qna-tag total">
-          총 문의 개수 <span>{qnaList.length}</span>
+        {/* 🔥 정렬 버튼 추가 */}
+        <div className="sort-row" style={{ marginBottom: "10px" }}>
+          <button
+            className={`sort-btn ${sort === "new" ? "active" : ""}`}
+            onClick={() => setSort("new")}
+          >
+            최신순
+          </button>
+          <button
+            className={`sort-btn ${sort === "old" ? "active" : ""}`}
+            onClick={() => setSort("old")}
+          >
+            오래된 순
+          </button>
         </div>
-        <div className="qna-tag unanswered">
-          미답변 <span>{unansweredCount}</span>
+
+        {/* 통계 + 필터 */}
+        <div className="qna-stats-box">
+          <div className="qna-tag total">
+            총 문의 개수 <span>{qnaList.length}</span>
+          </div>
+          <div className="qna-tag unanswered">
+            미답변 <span>{unansweredCount}</span>
+          </div>
+
+          <button
+            className="filter-btn"
+            onClick={() => setShowUnansweredOnly((prev) => !prev)}
+          >
+            {showUnansweredOnly ? "전체 보기" : "미답변만 보기"}
+          </button>
         </div>
 
-        <button
-          className="filter-btn"
-          onClick={() => setShowUnansweredOnly((prev) => !prev)}
-        >
-          {showUnansweredOnly ? "전체 보기" : "미답변만 보기"}
-        </button>
-      </div>
-
-      {!selected && (
+        {/* 🔥 정렬 + 필터 적용된 목록 */}
         <table className="table">
           <thead>
             <tr>
@@ -94,7 +132,7 @@ export default function AdminQnaTab({ initialSelectId }) {
             </tr>
           </thead>
           <tbody>
-            {filteredList.map((q, idx) => (
+            {numberedList.map((q) => (
               <tr
                 key={q.id}
                 style={{ cursor: "pointer" }}
@@ -103,7 +141,7 @@ export default function AdminQnaTab({ initialSelectId }) {
                   setAnswerText(q.answer || "");
                 }}
               >
-                <td>{idx + 1}</td>
+                <td>{q.no}</td>
                 <td>{q.title}</td>
                 <td>{q.nickname}</td>
                 <td>{new Date(q.createdAt).toLocaleString()}</td>
@@ -120,32 +158,40 @@ export default function AdminQnaTab({ initialSelectId }) {
             ))}
           </tbody>
         </table>
-      )}
+      </div>
+    );
+  }
 
-      {selected && (
-        <div className="write-form">
-          <h3>[{selected.nickname}] {selected.title}</h3>
+  /* ============================
+        📍 상세 화면
+  ============================ */
+  return (
+    <div className="tab-inner admin-qna-tab">
+      <div className="write-form">
 
-          <p className="qna-content">{selected.content}</p>
+        <h3>
+          [{selected.nickname}] {selected.title}
+        </h3>
 
-          <label className="answer-label">관리자 답변</label>
-          <textarea
-            className="answer-textarea"
-            placeholder="답변을 입력하세요."
-            value={answerText}
-            onChange={(e) => setAnswerText(e.target.value)}
-          />
+        <p className="qna-content">{selected.content}</p>
 
-          <div className="btn-right">
-            <button className="common-btn" onClick={handleSendAnswer}>
-              {selected.status === "answered" ? "답변 수정하기" : "답변 보내기"}
-            </button>
-            <button className="cancel-btn" onClick={() => setSelected(null)}>
-              목록으로
-            </button>
-          </div>
+        <label className="answer-label">관리자 답변</label>
+        <textarea
+          className="answer-textarea"
+          placeholder="답변을 입력하세요."
+          value={answerText}
+          onChange={(e) => setAnswerText(e.target.value)}
+        />
+
+        <div className="btn-right">
+          <button className="common-btn" onClick={handleSendAnswer}>
+            {selected.status === "answered" ? "답변 수정하기" : "답변 보내기"}
+          </button>
+          <button className="cancel-btn" onClick={() => setSelected(null)}>
+            목록으로
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

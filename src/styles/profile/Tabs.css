@@ -1,5 +1,15 @@
 /* 공통 카드 */
-.profile-box, .password-box {
+.profile-box {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  padding: 30px 40px;
+  width: 700px;
+  margin: 0 auto;
+  box-shadow: none;
+}
+
+.password-box {
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 15px;
@@ -53,15 +63,14 @@
 
 .level-bar {
   background: #f1f1f1;
-  border-radius: 10px;
-  height: 14px;
   width: 100%;
-  margin-top: 5px;
+  height: 20px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
 .level-fill {
-  background: #FFD400;
+  background: var(--theme-accent);
   height: 100%;
   border-radius: 10px;
   transition: 0.3s;
@@ -83,6 +92,9 @@
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 8px;
+  box-shadow: none !important;
+  outline: none !important;
+  background: white !important;
 }
 
 /* 버튼 */
@@ -159,8 +171,8 @@
 }
 
 .notification-item:hover {
-  border-color: #FFD400;
-  box-shadow: 0 2px 8px rgba(255,212,0,0.15);
+  border-color: var(--theme-accent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--theme-accent) 40%, transparent);
 }
 
 /* 헤더 (시간 + 제목) */
@@ -206,8 +218,8 @@
 
 /* 선택된(open) 카드 */
 .notification-item.open {
-  border-color: #FFD400;
-  background-color: #fffbea;
+  border-color: var(--theme-accent);
+  background-color: color-mix(in srgb, var(--theme-accent) 15%, white);
 }
 
 /* 설정 탭 */
@@ -525,4 +537,15 @@ h2 {
 
 .nav-links span:hover {
   color: #000;
+}
+
+/* 알림 페이지 박스 폭 줄이기 */
+.notification-tab {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.notification-list {
+  max-width: 600px;
+  margin: 0 auto;
 }

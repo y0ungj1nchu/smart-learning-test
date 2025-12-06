@@ -35,7 +35,7 @@ export default function AdminCommunity() {
     <>
       <AdminHeader1 isLoggedIn={true} />
       <AdminHeader2 isLoggedIn={true} />
-
+      <div className="page-content" style={{ paddingTop: "93px", minHeight: "calc(100vh - 93px)", boxSizing: "border-box" }}>
       <div className="community-wrapper">
         <div className="community-sidebar-container">
           <div className="profile-sidebar">
@@ -64,6 +64,7 @@ export default function AdminCommunity() {
         </div>
 
         <div className="community-main-content">{renderContent()}</div>
+      </div>
       </div>
     </>
   );

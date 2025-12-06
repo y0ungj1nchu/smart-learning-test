@@ -1,15 +1,16 @@
 .character-container {
-  background-color: #ffeeB5;
+  background-color: var(--theme-bg) !important;
   min-height: calc(100vh - 200px);
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap; 
+  flex-wrap: wrap;
   gap: clamp(40px, 6vw, 100px);
   padding: clamp(20px, 5vw, 60px);
   font-family: "Pretendard", sans-serif;
 }
 
+/* --- 왼쪽 큰 이미지 영역 --- */
 .character-left {
   background: #fff;
   width: clamp(250px, 30vw, 400px);
@@ -26,16 +27,17 @@
   object-fit: contain;
 }
 
+/* --- 오른쪽 정보 카드 --- */
 .character-right {
-  background: #fff7b5;
+  background: color-mix(in srgb, var(--theme-accent) 25%, white);
   border-radius: 30px;
   padding: clamp(20px, 3vw, 40px);
   width: clamp(300px, 35vw, 400px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .character-title {
-  background: #ffd400;
+  background: var(--theme-accent);
   text-align: center;
   font-weight: 800;
   font-size: clamp(18px, 1.8vw, 22px);
@@ -62,7 +64,6 @@
   flex-shrink: 0;
   font-weight: 700;
   color: #222;
-  letter-spacing: -0.3px;
 }
 
 .value {
@@ -70,7 +71,6 @@
   align-items: baseline;
   gap: 6px;
   font-weight: 700;
-  color: #000;
   font-size: clamp(16px, 1.6vw, 20px);
 }
 
@@ -80,6 +80,7 @@
   font-weight: 500;
 }
 
+/* --- 버튼 그룹 --- */
 .btn-group {
   display: flex;
   justify-content: center;
@@ -89,7 +90,7 @@
 }
 
 .yellow-btn {
-  background: #ffd400;
+  background: var(--theme-accent);
   border: none;
   border-radius: 30px;
   padding: 10px 25px;
@@ -100,7 +101,7 @@
 }
 
 .yellow-btn:hover:not(:disabled) {
-  background: #e6c200;
+  background: color-mix(in srgb, var(--theme-accent) 85%, black 15%);
 }
 
 .yellow-btn:disabled {
@@ -118,6 +119,7 @@
   cursor: pointer;
 }
 
+/* --- 캐릭터 선택 --- */
 .carousel-wrapper {
   position: relative;
   display: flex;
@@ -144,16 +146,16 @@
   transition: all 0.3s ease;
 }
 
-.character-option.locked {
-  opacity: 0.4; 
-  pointer-events: none; 
-  position: relative;
-}
-
 .character-option.selected {
-  border-color: #ffd400;
+  border-color: var(--theme-accent);
   box-shadow: 0 0 10px rgba(255, 212, 0, 0.6);
   transform: scale(1.05);
+}
+
+.character-option.locked {
+  opacity: 0.4;
+  pointer-events: none;
+  position: relative;
 }
 
 .select-img {
@@ -165,7 +167,7 @@
 
 .arrow-btn {
   background: #fff;
-  border: 2px solid #ffd400;
+  border: 2px solid var(--theme-accent);
   border-radius: 50%;
   width: clamp(35px, 4vw, 45px);
   height: clamp(35px, 4vw, 45px);
@@ -173,7 +175,7 @@
   font-weight: bold;
   color: #333;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: 0.2s;
 }
 
 .arrow-btn:hover:not(:disabled) {

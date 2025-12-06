@@ -118,84 +118,85 @@ export default function WordGamePageCustom() {
 
   return (
     <>
-      <Header1 isLoggedIn={true} />
-      <Header2 isLoggedIn={true} />
+      <Header1/>
+      <Header2/>
+      <div className="page-content" style={{ paddingTop: "93px", minHeight: "calc(100vh-93px)", boxSizing: "border-box", }}>
+        <div className="wordgame-page">
+          <h2 className="wordgame-title">내 단어 맞추기</h2>
 
-      <div className="wordgame-page">
-        <h2 className="wordgame-title">내 단어 맞추기</h2>
-
-        {/* 업로드 영역 */}
-        <div className="wordgame-header-section">
-          <input
-            className="wordgame-name-input"
-            type="text"
-            placeholder="세트 이름"
-            value={setTitle}
-            onChange={(e) => setSetTitle(e.target.value)}
-          />
-
-          <label className="wordgame-upload-card">
-            <div className="wordgame-upload-inner">
-              <span className="wordgame-plus-icon">+</span>
-              <span>{file ? "선택 완료" : "엑셀 파일 선택 (.xlsx)"}</span>
-            </div>
+          {/* 업로드 영역 */}
+          <div className="wordgame-header-section">
             <input
-              ref={fileInputRef}
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={handleFileChange}
-              hidden
+              className="wordgame-name-input"
+              type="text"
+              placeholder="세트 이름"
+              value={setTitle}
+              onChange={(e) => setSetTitle(e.target.value)}
             />
-          </label>
 
-          <button className="wordgame-nav-btn" onClick={handleUpload}>
-            등록하기
-          </button>
+            <label className="wordgame-upload-card">
+              <div className="wordgame-upload-inner">
+                <span className="wordgame-plus-icon">+</span>
+                <span>{file ? "선택 완료" : "엑셀 파일 선택 (.xlsx)"}</span>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileChange}
+                hidden
+              />
+            </label>
 
-          <button
-            className="wordgame-nav-btn"
-            onClick={handleDownloadTemplate}
-          >
-            템플릿 다운로드
-          </button>
-        </div>
+            <button className="wordgame-nav-btn" onClick={handleUpload}>
+              등록하기
+            </button>
 
-        {/* 단어장 목록 */}
-        <section style={{ width: "100%", marginTop: "20px" }}>
-          <div className="wordgame-folder-container">
-            {wordSets.length === 0 ? (
-              <p style={{ gridColumn: "1 / span 3", color: "#777" }}>
-                아직 단어장이 없습니다.
-              </p>
-            ) : (
-              wordSets.map((setObj) => (
-                <div className="wordgame-folder-card" key={setObj.id}>
-                  <div
-                    className="wordgame-folder-left"
-                    onClick={() => startQuiz(setObj.id, setObj.setTitle)}
-                  >
-                    <img src={folderIcon} alt="folder" />
-                    <p>{setObj.setTitle}</p>
-                  </div>
-
-                  <button
-                    className="wordgame-delete-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(setObj.id);
-                    }}
-                  >
-                    <img
-                      src={deleteIcon}
-                      alt="delete"
-                      className="wordgame-delete-icon"
-                    />
-                  </button>
-                </div>
-              ))
-            )}
+            <button
+              className="wordgame-nav-btn"
+              onClick={handleDownloadTemplate}
+            >
+              템플릿 다운로드
+            </button>
           </div>
-        </section>
+
+          {/* 단어장 목록 */}
+          <section style={{ width: "100%", marginTop: "20px" }}>
+            <div className="wordgame-folder-container">
+              {wordSets.length === 0 ? (
+                <p style={{ gridColumn: "1 / span 3", color: "#777" }}>
+                  아직 단어장이 없습니다.
+                </p>
+              ) : (
+                wordSets.map((setObj) => (
+                  <div className="wordgame-folder-card" key={setObj.id}>
+                    <div
+                      className="wordgame-folder-left"
+                      onClick={() => startQuiz(setObj.id, setObj.setTitle)}
+                    >
+                      <img src={folderIcon} alt="folder" />
+                      <p>{setObj.setTitle}</p>
+                    </div>
+
+                    <button
+                      className="wordgame-delete-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(setObj.id);
+                      }}
+                    >
+                      <img
+                        src={deleteIcon}
+                        alt="delete"
+                        className="wordgame-delete-icon"
+                      />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        </div>
       </div>
     </>
   );

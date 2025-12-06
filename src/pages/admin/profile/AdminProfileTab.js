@@ -1,32 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../../styles/profile/Tabs.css";
 import adminImg from "../../../assets/basicUser.png";
 
-function AdminProfileTab({ onNavigatePassword }) {
-  const [nickname, setNickname] = useState("관리자");
-  const [profileImg, setProfileImg] = useState(adminImg);
-  const adminId = "admin";
+import { getMyProfile, updateNickname } from "../../../utils/api";
 
-  const handleNicknameChange = () => {
-    alert("관리자 닉네임이 변경되었습니다.");
+function AdminProfileTab({ onNavigatePassword }) {
+  const [nickname, setNickname] = useState("");
+  const [email, setEmail] = useState("");   // ✅ 이메일 상태 추가
+  const [profileImg, setProfileImg] = useState(adminImg);
+
+  // 🔥 관리자 기본 정보 로드
+  useEffect(() => {
+    async function loadAdminProfile() {
+      try {
+        const user = await getMyProfile(); // /api/user/me
+
+        setNickname(user.nickname || "관리자");
+        setEmail(user.email || "관리자 이메일 없음");  // ✅ 이메일 저장
+      } catch (err) {
+        console.log("관리자 프로필 로드 오류:", err);
+      }
+    }
+    loadAdminProfile();
+  }, []);
+
+  // 🔥 닉네임 변경 API 호출
+  const handleNicknameChange = async () => {
+    try {
+      await updateNickname(nickname); // PUT /user/nickname
+      alert("관리자 닉네임이 변경되었습니다.");
+    } catch (err) {
+      console.error("닉네임 변경 오류:", err);
+      alert("닉네임 변경 실패");
+    }
   };
 
+  // 프로필 이미지(미리보기만)
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setProfileImg(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => setProfileImg(reader.result);
+    reader.readAsDataURL(file);
   };
 
   return (
     <div className="tab-inner profile-main">
-
       <div className="profile-box">
-        {/* 프로필 이미지 + 닉네임 */}
+
+        {/* 프로필 상단 */}
         <div className="profile-header">
           <div className="profile-photo">
             <img src={profileImg} alt="admin" />
@@ -46,8 +69,8 @@ function AdminProfileTab({ onNavigatePassword }) {
               </label>
 
               <input
-                type="file"
                 id="imgUpload"
+                type="file"
                 accept="image/*"
                 onChange={handleImageChange}
                 style={{ display: "none" }}
@@ -60,20 +83,12 @@ function AdminProfileTab({ onNavigatePassword }) {
           </div>
         </div>
 
-        {/* 아이디 / 비밀번호 */}
+        {/* 🔥 관리자 이메일 표시 */}
         <div className="profile-info">
-          <div className="info-row">
-            <label>아이디</label>
-            <input type="text" value={adminId} readOnly />
+          <div className="profile-info-row horizontal">
+            <label>Email</label>
+            <div>{email}</div>
           </div>
-        </div>
-
-        {/* 버튼 */}
-        <div className="profile-btns">
-          <button className="yellow-btn" onClick={onNavigatePassword}>
-            비밀번호 재설정
-          </button>
-          <button className="gray-btn">취소</button>
         </div>
       </div>
     </div>

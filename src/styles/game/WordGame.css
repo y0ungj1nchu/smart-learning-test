@@ -1,27 +1,28 @@
 /* Word Game 공통 요소 */
 .wordgame-page {
-  background-color: #ffeeB5;
+  background-color: var(--theme-bg) !important;
   min-height: 100vh;
+  padding: 120px 0 40px;
+  font-family: "Pretendard", sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding: 40px 0;
-  font-family: "Pretendard", sans-serif;
 }
 
 /* 공통 버튼 */
-.wordgame-nav-btn {
-  background: #ffd400;
+.wordgame-btn {
+  background: var(--theme-accent);
   border: none;
-  border-radius: 10px;
-  padding: 10px 18px;
+  border-radius: 12px;
+  padding: 10px 20px;
   font-weight: 700;
+  color: #333;
   cursor: pointer;
   transition: 0.2s;
 }
-.wordgame-nav-btn:hover {
-  background: #ffea7d;
+
+.wordgame-btn:hover {
+  background: color-mix(in srgb, var(--theme-accent) 85%, black);
 }
 
 /* + 아이콘 */
@@ -54,7 +55,7 @@
 .wordgame-card {
   width: 260px;
   background: #fff;
-  border: 2px solid #ffd400;
+  border: 2px solid var(--theme-accent);
   border-radius: 16px;
   padding: 40px 20px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
@@ -66,7 +67,7 @@
 /* 카드 호버 */
 .wordgame-card:hover {
   transform: translateY(-5px);
-  background: #fff6ac;
+  background: color-mix(in srgb, var(--theme-accent) 30%, white);
 }
 
 /* 카드 텍스트 */
@@ -94,7 +95,7 @@
 
 .wordgame-upload-card {
   background: #fff;
-  border: 2px dashed #ffd400;
+  border: 2px dashed var(--theme-accent);
   border-radius: 12px;
   padding: 16px 24px;
   cursor: pointer;
@@ -121,7 +122,7 @@
 
 .wordgame-folder-card {
   background: #fff;
-  border: 2px solid #f5d96f;
+  border: 2px solid color-mix(in srgb, var(--theme-accent) 60%, white);
   border-radius: 16px;
   padding: 20px;
   width: 220px;
@@ -134,7 +135,7 @@
   transition: 0.2s;
 }
 .wordgame-folder-card:hover {
-  background: #fff8d1;
+  background: color-mix(in srgb, var(--theme-accent) 30%, white);
 }
 .wordgame-folder-card img {
   width: 40px;
@@ -190,8 +191,8 @@
   border-color: #d36b6b;
 }
 .wordgame-option-btn:hover:not(:disabled) {
-  border-color: #ffd400;
-  background: #fffbe5;
+  border-color: var(--theme-accent);
+  background: color-mix(in srgb, var(--theme-accent) 20%, white);
 }
 
 /* 네비게이션 */
@@ -206,7 +207,7 @@
 .wordgame-result {
   background: #fff;
   border-radius: 16px;
-  border: 2px solid #ffd400;
+  border: 2px solid var(--theme-accent);
   padding: 40px;
   width: 600px;
   margin: 60px auto;
@@ -223,7 +224,7 @@
 }
 .result-table th,
 .result-table td {
-  border: 2px solid #ffd400;
+  border: 2px solid var(--theme-accent);
   padding: 12px 14px;
   text-align: center;
   background-color: #fff;
@@ -231,8 +232,8 @@
 .result-table th {
   font-weight: 800;
   color: #333;
-  background-color: #ffeeB5;
-  border-bottom: 2px solid #ffd400;
+  background-color: color-mix(in srgb, var(--theme-accent) 40%);
+  border-bottom: 2px solid var(--theme-accent);
 }
 
 .correct-row {
@@ -250,7 +251,7 @@
   margin-top: 24px;
 }
 .wordgame-result-btns .wordgame-nav-btn {
-  background: #ffd400;
+  background: var(--theme-accent);
   color: #333;
   border: none;
   border-radius: 10px;
@@ -260,13 +261,13 @@
   transition: all 0.2s;
 }
 .wordgame-result-btns .wordgame-nav-btn:hover {
-  background: #ffea7d;
+  background: color-mix(in srgb, var(--theme-accent) 80%, white);
 }
 
 /* 업로드된 사용자 세트 영역 */
 .wordgame-user-sets {
   background: #fff;
-  border: 2px solid #ffd400;
+  border: 2px solid var(--theme-accent);
   border-radius: 16px;
   padding: 20px 24px;
   width: 320px;
@@ -292,8 +293,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fffdf0;
-  border: 2px solid #f5d96f;
+  background: color-mix(in srgb, var(--theme-accent) 20%, white);
+  border: 2px solid color-mix(in srgb, var(--theme-accent) 60%, white);
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 12px;
@@ -361,7 +362,7 @@
   width: 260px;
   text-align: center;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  border: 2px solid #ffd400;
+  border: 2px solid var(--theme-accent);
 }
 
 .modal-text {
@@ -381,7 +382,7 @@
 .modal-btn,
 .modal-btn-cancel,
 .modal-btn-danger {
-  background: #ffd400;
+  background: var(--theme-accent);
   border: none;
   border-radius: 10px;
   padding: 10px 16px;
@@ -393,14 +394,14 @@
 .modal-btn:hover,
 .modal-btn-cancel:hover,
 .modal-btn-danger:hover {
-  background: #ffea7d;
+  background: color-mix(in srgb, var(--theme-accent) 80%, white);
 }
 
 /* 산성비 */
 .acid-container {
   position: relative;
   background: #fff;
-  border: 2px solid #ffd400;
+  border: 2px solid var(--theme-accent);
   border-radius: 16px;
   overflow: hidden;
   margin-top: 40px;
@@ -422,8 +423,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  background: #fff6ac;
-  border: 2px solid #ffd400;
+  background: color-mix(in srgb, var(--theme-accent) 35%, white);
+  border: 2px solid var(--theme-accent);
   border-radius: 10px;
   padding: 6px 10px;
   font-weight: 800;
@@ -440,7 +441,7 @@
 .acid-input {
   width: 260px;
   height: 38px;
-  border: 2px solid #ffd400;
+  border: 2px solid var(--theme-accent);
   border-radius: 10px;
   padding: 0 12px;
   font-weight: 700;
@@ -451,7 +452,7 @@
   height: 30px;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 2px solid #ffd400;
+  border: 2px solid var(--theme-accent);
   font-weight: 600;
   text-align: center;
   background-color: #fff;
@@ -470,7 +471,7 @@
   background: rgba(255, 255, 255, 0.9);
   padding: 24px 50px;
   border-radius: 14px;
-  border: 3px solid #ffd400;
+  border: 3px solid var(--theme-accent);
   text-align: center;
   box-shadow: 0 4px 14px rgba(0,0,0,0.25);
   margin-bottom: 20px;
@@ -490,4 +491,49 @@
   display: flex;
   justify-content: center;
   gap: 20px;
+}
+
+.wordgame-result-btns .wordgame-nav-btn,
+.acid-input-row .wordgame-nav-btn,
+.game-out-wrapper .wordgame-nav-btn {
+  background: #fff !important;
+  color: #333;
+  border: 2px solid color-mix(in srgb, var(--theme-accent) 75%, black 10%);
+  border-radius: 12px;
+  padding: 10px 22px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.wordgame-result-btns .wordgame-nav-btn:hover,
+.acid-input-row .wordgame-nav-btn:hover,
+.game-out-wrapper .wordgame-nav-btn:hover {
+  border-color: color-mix(in srgb, var(--theme-accent) 85%, black 10%);
+  background: color-mix(in srgb, var(--theme-accent) 10%, white 90%);
+}
+
+/* 게임 시작 버튼 (시작 모달 내부) */
+.game-out-wrapper .wordgame-nav-btn {
+  background: var(--theme-bg) !important;
+  color: #333;
+  border: 2px solid color-mix(in srgb, var(--theme-accent));
+}
+/* 공통 단어게임 버튼 스타일 */
+.wordgame-nav-btn {
+  background: #fff;
+  color: #333;
+  border: 2px solid color-mix(in srgb, var(--theme-accent) 75%, black 10%);
+  border-radius: 12px;
+  padding: 10px 22px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.wordgame-nav-btn:hover {
+  border-color: var(--theme-accent);
+  background: color-mix(in srgb, var(--theme-accent) 20%, white);
 }

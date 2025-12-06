@@ -3,27 +3,32 @@
   display: flex;
   justify-content: space-evenly;
   padding: 12px 0;
-  background-color: #fff;
+  background-color: #fff !important;
   border-bottom: 1px solid #eee;
+  position: fixed;
+  top: 59px;
+  left: 0;
+  width: 100%;
+  z-index: 999;
 }
 
 /* 메뉴 */
 .header2 a {
   color: #333;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: bold;
   transition: color 0.2s ease
 }
 
 /* 현재 활성 메뉴 */
 .header2 a.active {
-  color: #FFD400;
+  color: var(--theme-accent);
 }
 
 /* 비활성 상태 */
 .header2 .disabled {
   color: #aaa;
   cursor: not-allowed;
-  font-size: 14px;
+  font-size: 20px;
 }

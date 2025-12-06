@@ -35,8 +35,8 @@ export default function WordGamePageBasic() {
 
   return (
     <>
-      <Header1 isLoggedIn={true} />
-      <Header2 isLoggedIn={true} />
+      <Header1/>
+      <Header2/>
 
       <div className="wordgame-page">
         <h2 className="wordgame-title">기본 제공 단어 맞추기</h2>

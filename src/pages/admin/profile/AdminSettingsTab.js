@@ -1,23 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import "../../../styles/profile/Tabs.css";
 import { Bell } from "lucide-react";
+import { ThemeContext } from "../../../context/ThemeContext";
 
-function AdminSettingTab() {
+function AdminSettingsTab() {
   const [isAllowed, setIsAllowed] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState("#9CA2AE");
+  const [selectedTheme, setSelectedTheme] = useState(null);
+
+  const { themeColor, applyTheme } = useContext(ThemeContext);
 
   const themes = [
-    "#BFC0C4", "#F9C4C4", "#FFE5C1", "#FFF9BF",
-    "#6C7A89", "#D9C9D9", "#E6F2F8", "#BFEDE0",
+    "#BFC0C4", "#F9C4C4", "#FFC1E7", "#FFEEB5",
+    "#6C7A89", "#D9C9D9", "#BFD6ED", "#C1FFCE",
   ];
 
-  const toggleNotification = () => {
-    setIsAllowed((prev) => !prev);
-  };
+  // ❗ 현재 테마 불러와 선택 표시
+  useEffect(() => {
+    if (themeColor) {
+      setSelectedTheme(themeColor);
+    }
+  }, [themeColor]);
+
+  const toggleNotification = () => setIsAllowed(prev => !prev);
 
   const handleThemeSelect = (color) => {
     setSelectedTheme(color);
-    document.body.style.backgroundColor = color + "20";  
+    applyTheme(color); // ⭐ ThemeContext → CSS + DB 저장
   };
 
   return (
@@ -48,12 +56,10 @@ function AdminSettingTab() {
           {themes.map((color, idx) => (
             <div
               key={idx}
-              className={`theme-box ${
-                selectedTheme === color ? "selected" : ""
-              }`}
+              className={`theme-box ${selectedTheme === color ? "selected" : ""}`}
               style={{ backgroundColor: color }}
               onClick={() => handleThemeSelect(color)}
-            ></div>
+            />
           ))}
         </div>
       </div>
@@ -61,4 +67,4 @@ function AdminSettingTab() {
   );
 }
 
-export default AdminSettingTab;
+export default AdminSettingsTab;

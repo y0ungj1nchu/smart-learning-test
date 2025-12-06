@@ -173,8 +173,8 @@ export default function WordQuizPage() {
   --------------------------------------------------------- */
   return (
     <>
-      <Header1 isLoggedIn={true} />
-      <Header2 isLoggedIn={true} />
+      <Header1/>
+      <Header2/>
 
       <div className="wordgame-page">
         <div className="wordgame-quiz-container">
