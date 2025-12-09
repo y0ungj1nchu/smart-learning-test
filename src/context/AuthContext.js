@@ -11,7 +11,6 @@ export function AuthProvider({ children }) {
   const API_BASE = "http://localhost:3001/api";
   const isLoggedIn = !!token;
 
-  // 기본 테마색
   const DEFAULT_THEME_COLOR = "#FFD400";
 
   // -----------------------------------------------------
@@ -21,16 +20,13 @@ export function AuthProvider({ children }) {
     try {
       const res = await fetch(`${API_BASE}/user/me`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${savedToken}`,
-        },
+        headers: { Authorization: `Bearer ${savedToken}` },
       });
 
       if (!res.ok) throw new Error("ME API 실패");
 
       const data = await res.json();
 
-      // ✅ themeColor 없으면 기본값 설정
       const userData = {
         ...data,
         themeColor: data.themeColor || DEFAULT_THEME_COLOR,
@@ -38,6 +34,7 @@ export function AuthProvider({ children }) {
 
       setUser(userData);
       setRole(userData.role?.toUpperCase());
+
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("role", userData.role?.toUpperCase());
       localStorage.setItem("themeColor", userData.themeColor);
@@ -67,7 +64,6 @@ export function AuthProvider({ children }) {
   // ▣ 로그인
   // -----------------------------------------------------
   const login = (newToken, userInfo) => {
-    // ✅ themeColor 없으면 기본값 설정
     const userData = {
       ...userInfo,
       themeColor: userInfo.themeColor || DEFAULT_THEME_COLOR,
@@ -84,7 +80,7 @@ export function AuthProvider({ children }) {
   };
 
   // -----------------------------------------------------
-  // ▣ 로그아웃
+  // ▣ 로그아웃 (테마 초기화 포함)
   // -----------------------------------------------------
   const logout = async () => {
     try {
@@ -100,12 +96,29 @@ export function AuthProvider({ children }) {
       console.warn("⚠ 로그아웃 API 실패(무시 가능)");
     }
 
-    // 🔥 프론트 상태 초기화
+    // 🔥 React 상태 초기화
     setToken(null);
     setUser(null);
     setRole(null);
-    localStorage.clear();
     setAuthLoaded(true);
+
+    // 🔥 로컬스토리지 초기화
+    localStorage.clear();
+
+    // 🔥 ⭐⭐⭐ CSS 테마 초기화 (문제 해결 핵심) ⭐⭐⭐
+    const root = document.documentElement;
+
+    root.classList.remove("user-mode");
+    root.classList.remove("admin-mode");
+
+    root.style.removeProperty("--theme-bg");
+    root.style.removeProperty("--theme-accent");
+
+    root.style.removeProperty("--user-theme-bg");
+    root.style.removeProperty("--user-theme-accent");
+
+    root.style.removeProperty("--admin-theme-bg");
+    root.style.removeProperty("--admin-theme-accent");
   };
 
   return (
