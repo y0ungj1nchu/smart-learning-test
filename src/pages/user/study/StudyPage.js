@@ -24,14 +24,16 @@ function StudyPage() {
 
   const [subjects, setSubjects] = useState([]);
   const [subjectInput, setSubjectInput] = useState("");
-  const [currentSubject, setCurrentSubject] = useState(null); // categoryId
+  const [currentSubject, setCurrentSubject] = useState(null);
 
-  const [subjectTimes, setSubjectTimes] = useState({}); // { "수학": 3600, ... }
+  const [subjectTimes, setSubjectTimes] = useState({});
 
   const [showModal, setShowModal] = useState(false);
 
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
+
+  const ONE_HOUR_MS = 3600000; // 💛 1시간 기준
 
   /* ===========================================================
       시간 포맷 (초 → HH:MM:SS)
@@ -55,7 +57,6 @@ function StudyPage() {
     loadCategoryStatsToday();
   }, []);
 
-  /* 🔥 카테고리 가져오기 */
   const loadCategories = async () => {
     try {
       const list = await getCategories();
@@ -65,10 +66,9 @@ function StudyPage() {
     }
   };
 
-  /* 🔥 오늘/주간 공부 시간 (초 단위) */
   const loadSummary = async () => {
     try {
-      const data = await getStudySummary(); // { today: 초, week: 초 }
+      const data = await getStudySummary();
       setTodayStudy(Number(data.today || 0));
       setWeekStudy(Number(data.week || 0));
     } catch (err) {
@@ -76,15 +76,13 @@ function StudyPage() {
     }
   };
 
-  /* 🔥 카테고리별 오늘 공부시간 (seconds 단위) */
   const loadCategoryStatsToday = async () => {
     try {
       const stats = await getStudyStatsToday();
-      // stats.seconds = [3600, 1800]
 
       const map = {};
       stats.labels.forEach((label, i) => {
-        map[label] = stats.seconds[i] || 0; // ⬅ 초 그대로
+        map[label] = stats.seconds[i] || 0;
       });
 
       setSubjectTimes(map);
@@ -93,7 +91,6 @@ function StudyPage() {
     }
   };
 
-  /* 🔥 진행 중 세션 복원 */
   const restoreSession = async () => {
     try {
       const data = await getCurrentStudySession();
@@ -124,20 +121,18 @@ function StudyPage() {
     } else {
       clearInterval(timerRef.current);
     }
+
     return () => clearInterval(timerRef.current);
   }, [running]);
 
   /* ===========================================================
-      카테고리 클릭
+      카테고리 선택
   =========================================================== */
   const handleSelectSubject = (item) => {
     setCurrentSubject(item.id);
     if (!running) setTime(0);
   };
 
-  /* ===========================================================
-      카테고리 추가
-  =========================================================== */
   const handleAddCategory = async () => {
     if (!subjectInput.trim()) return;
 
@@ -148,9 +143,6 @@ function StudyPage() {
     await loadCategoryStatsToday();
   };
 
-  /* ===========================================================
-      카테고리 삭제
-  =========================================================== */
   const handleDeleteCategory = async (id, e) => {
     e.stopPropagation();
     await deleteCategory(id);
@@ -200,12 +192,17 @@ function StudyPage() {
     subjects.find((s) => s.id === currentSubject)?.categoryName || "없음";
 
   /* ===========================================================
+      💛 원형 타이머 채우기 (1시간 기준)
+  =========================================================== */
+  const progress = (time % ONE_HOUR_MS) / ONE_HOUR_MS * 360;
+
+  /* ===========================================================
       렌더링
   =========================================================== */
   return (
     <>
-      <Header1/>
-      <Header2/>
+      <Header1 />
+      <Header2 />
 
       <div className="page-content" style={{ paddingTop: "93px" }}>
         <div className="study-container">
@@ -246,7 +243,12 @@ function StudyPage() {
 
           {/* 타이머 */}
           <div className="timer-box">
-            <div className="timer-circle">
+            <div
+              className="timer-circle"
+              style={{
+                background: `conic-gradient(var(--theme-accent) ${progress}deg, #fff 0deg)`  // 💛 원형 채움
+              }}
+            >
               <div className="timer-inner">
                 <div className="timer-text">{formatTimerMS(time)}</div>
               </div>
@@ -288,6 +290,7 @@ function StudyPage() {
               ))}
             </div>
           </div>
+
         </div>
       </div>
 
