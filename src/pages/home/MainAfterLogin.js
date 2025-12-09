@@ -28,7 +28,6 @@ import { Line } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
-
 // 날짜 유틸
 function pad(n) {
   return n.toString().padStart(2, "0");
@@ -37,7 +36,6 @@ function ymd(date) {
   const localDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   return `${localDate.getUTCFullYear()}-${pad(localDate.getUTCMonth() + 1)}-${pad(localDate.getUTCDate())}`;
 }
-
 
 function MainAfterLogin() {
   const [todayTodos, setTodayTodos] = useState([]);
@@ -74,20 +72,22 @@ function MainAfterLogin() {
         const rank = await getRanking();
         setRanking(rank.slice(0, 5));
 
+        // 🔥 오늘 공부 시간 (초 → 분 변환)
         const sToday = await getStudyStatsToday();
         setSubjectLabels(sToday.labels);
-        setSubjectHours(sToday.seconds.map(sec => (sec / 3600).toFixed(2)));
+        setSubjectHours(sToday.seconds.map(sec => (sec / 60).toFixed(1)));
 
+        // 🔥 최근 7일 공부 시간 (초 → 분 변환)
         const s7 = await getStudyStatsLast7();
         setLast7Labels(s7.labels);
-        setLast7Hours(s7.seconds.map(sec => (sec / 3600).toFixed(2)));
+        setLast7Hours(s7.seconds.map(sec => (sec / 60).toFixed(1)));
+
       } catch (err) {
         console.error("데이터 로드 실패:", err);
       }
     };
     loadAll();
   }, []);
-
 
   return (
     <>
@@ -121,7 +121,6 @@ function MainAfterLogin() {
             </div>
           </div>
 
-
           {/* ===================== 캐릭터 ===================== */}
           <div className="card-group">
             <p className="card-title">캐릭터</p>
@@ -145,7 +144,6 @@ function MainAfterLogin() {
               <Link to="/user/character" className="more-link">바로가기 →</Link>
             </div>
           </div>
-
 
           {/* ===================== 사용자 레벨 ===================== */}
           <div className="card-group">
@@ -173,16 +171,15 @@ function MainAfterLogin() {
 
         </div>
 
-
         {/* ===================== 공부 통계 ===================== */}
         <div className="study-stat-big">
-          <p className="card-title" style={{marginLeft:"6px"}}>공부 통계</p>
+          <p className="card-title" style={{ marginLeft: "6px" }}>공부 통계</p>
 
           <div className="stats-inner-row">
 
             {/* 오늘 */}
             <div className="stats-small-card today">
-              <h3 className="graph-title">오늘 과목별 공부시간</h3>
+              <h3 className="graph-title">오늘 과목별 공부시간 (분)</h3>
 
               <Line
                 data={{
@@ -199,9 +196,9 @@ function MainAfterLogin() {
               />
             </div>
 
-            {/* 7일 */}
+            {/* 최근 7일 */}
             <div className="stats-small-card week">
-              <h3 className="graph-title">최근 7일 공부시간</h3>
+              <h3 className="graph-title">최근 7일 공부시간 (분)</h3>
 
               <Line
                 data={{
