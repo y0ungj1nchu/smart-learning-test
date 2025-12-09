@@ -28,6 +28,12 @@ function Login() {
     const data = await res.json();
     window.location.href = data.url;
   };
+  // naver
+  const handleNaverLogin = async () => {
+    const res = await fetch("http://localhost:3001/auth/naver/login");
+    const data = await res.json();
+    window.location.href = data.url;
+  };
 
   // dependency 넣으면 로그인 무한 루프 발생해버림 --> 경고 없애려고 ESLint 설정 규칙
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -137,7 +143,7 @@ function Login() {
               <p>소셜 로그인</p>
               <div className="social-icons">
                 <img src={kakaoLogo} alt="카카오 로그인" onClick={handleKakaoLogin} style={{ cursor: "pointer" }} />
-                <img src={naverLogo} alt="네이버 로그인" />
+                <img src={naverLogo} alt="네이버 로그인" onClick={handleNaverLogin} style={{ cursor: "pointer" }} />
                 <img src={googleLogo} alt="구글 로그인" />
               </div>
             </div>
