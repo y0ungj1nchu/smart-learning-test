@@ -14,24 +14,25 @@ import {
 function FaqQnaTab() {
   const [activeSubTab, setActiveSubTab] = useState("faq");
   const [search, setSearch] = useState("");
+
   const [isWriting, setIsWriting] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [editPost, setEditPost] = useState(null);
 
-  // FAQ / QNA 리스트
+  const [isEditingContent, setIsEditingContent] = useState(false);
+  const [editContentText, setEditContentText] = useState("");
+
   const [faqList, setFaqList] = useState([]);
   const [originalFaqList, setOriginalFaqList] = useState([]);
 
   const [qnaList, setQnaList] = useState([]);
   const [originalQnaList, setOriginalQnaList] = useState([]);
 
-  // =========================
-  // FAQ 목록 조회
-  // =========================
+  /* =========================
+     FAQ 목록 조회
+  ========================= */
   const fetchFaqs = async () => {
     try {
       const faqs = await getFaqs();
-
       const mapped = faqs.map((faq) => ({
         id: faq.id,
         title: faq.question,
@@ -41,121 +42,96 @@ function FaqQnaTab() {
 
       setFaqList(mapped);
       setOriginalFaqList(mapped);
-    } catch (error) {
-      console.error("FAQ 목록 조회 실패:", error);
+    } catch {
       alert("FAQ 목록을 불러오는 데 실패했습니다.");
     }
   };
 
-  // =========================
-  // QnA 목록 조회
-  // =========================
+  /* =========================
+     QnA 목록 조회
+  ========================= */
   const fetchQnas = async () => {
     try {
       const qnas = await getMyInquiries();
-
       const mapped = qnas.map((qna) => ({
         id: qna.id,
         title: qna.title,
         content: qna.content,
         createdAt: qna.createdAt,
+
+        // 관리자 답변
+        answer: qna.answer,
+        answerTime: qna.answeredAt ?? null,
+        updatedAt: qna.updatedAt ?? null,
       }));
 
       setQnaList(mapped);
       setOriginalQnaList(mapped);
-    } catch (error) {
-      console.error("Q&A 목록 조회 실패:", error);
+    } catch {
       alert("Q&A 목록을 불러오는 데 실패했습니다.");
     }
   };
 
-  // 첫 로딩 시 FAQ/QNA 불러오기
   useEffect(() => {
     fetchFaqs();
     fetchQnas();
   }, []);
 
-  // =========================
-  // 검색
-  // =========================
+  /* =========================
+     검색 기능
+  ========================= */
   const handleSearchClick = () => {
     const keyword = search.trim().toLowerCase();
 
     if (activeSubTab === "faq") {
-      if (!keyword) {
-        setFaqList(originalFaqList);
-        return;
-      }
-      const filtered = originalFaqList.filter(
-        (item) =>
-          item.title.toLowerCase().includes(keyword) ||
-          (item.content && item.content.toLowerCase().includes(keyword))
+      if (!keyword) return setFaqList(originalFaqList);
+      setFaqList(
+        originalFaqList.filter(
+          (item) =>
+            item.title.toLowerCase().includes(keyword) ||
+            item.content?.toLowerCase().includes(keyword)
+        )
       );
-      setFaqList(filtered);
     } else {
-      if (!keyword) {
-        setQnaList(originalQnaList);
-        return;
-      }
-      const filtered = originalQnaList.filter(
-        (item) =>
-          item.title.toLowerCase().includes(keyword) ||
-          (item.content && item.content.toLowerCase().includes(keyword))
+      if (!keyword) return setQnaList(originalQnaList);
+      setQnaList(
+        originalQnaList.filter(
+          (item) =>
+            item.title.toLowerCase().includes(keyword) ||
+            item.content?.toLowerCase().includes(keyword) ||
+            item.answer?.toLowerCase().includes(keyword)
+        )
       );
-      setQnaList(filtered);
     }
   };
 
-  // 검색어 공백 → 자동 복원
   useEffect(() => {
     if (!search.trim()) {
       setFaqList(originalFaqList);
       setQnaList(originalQnaList);
     }
-  }, [search, originalFaqList, originalQnaList]);
+  }, [search]);
 
-  // =========================
-  // QNA 등록
-  // =========================
+  /* =========================
+     문의 등록
+  ========================= */
   const handleAddQna = async (newPost) => {
     try {
       await createInquiry({
         title: newPost.title,
         content: newPost.content,
       });
-
       alert("문의가 등록되었습니다.");
       setIsWriting(false);
       fetchQnas();
-    } catch (error) {
-      console.error(error);
-      alert("문의 등록에 실패했습니다.");
+    } catch {
+      alert("문의 등록 실패");
     }
   };
 
-  // =========================
-  // QNA 수정
-  // =========================
-  const handleEditSubmit = async (updatedPost) => {
-    try {
-      await updateInquiry(updatedPost.id, {
-        title: updatedPost.title,
-        content: updatedPost.content,
-      });
-
-      alert("문의가 수정되었습니다.");
-      setEditPost(null);
-      setSelectedPost(null);
-      fetchQnas();
-    } catch (error) {
-      console.error(error);
-      alert("문의 수정에 실패했습니다.");
-    }
-  };
-
-  // =========================
-  // QNA 삭제
-  // =========================
+  /* =========================
+     문의 삭제
+  ========================= */
   const handleDelete = async (postId) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
 
@@ -164,64 +140,87 @@ function FaqQnaTab() {
       alert("삭제되었습니다.");
       setSelectedPost(null);
       fetchQnas();
-    } catch (error) {
-      console.error(error);
+    } catch {
       alert("삭제 실패");
     }
   };
 
-  const handleViewPost = (item) => setSelectedPost(item);
-
   const handleBackToList = () => {
     setSelectedPost(null);
-    setEditPost(null);
-    setIsWriting(false);
+    setIsEditingContent(false);
   };
 
-  // =========================
-  // 글쓰기 모드
-  // =========================
-  if (isWriting)
-    return <WriteTab onBack={handleBackToList} onSubmit={handleAddQna} />;
-
-  // 수정 모드
-  if (editPost)
-    return (
-      <WriteTab
-        onBack={handleBackToList}
-        onSubmit={handleEditSubmit}
-        editPost={editPost}
-      />
-    );
-
-  // 상세 보기 모드
+  /* =========================
+     상세 보기 (User 화면)
+  ========================= */
   if (selectedPost) {
+    const hasAnswer = !!selectedPost.answer;
+
     return (
       <div className="tab-inner faq-tab">
         <div className="write-form">
           <h2>{selectedPost.title}</h2>
+
+          <p style={{ color: "#777" }}>
+            작성시간: {new Date(selectedPost.createdAt).toLocaleString()}
+          </p>
+
+          {selectedPost.updatedAt && (
+            <p style={{ color: "#777" }}>
+              수정됨: {new Date(selectedPost.updatedAt).toLocaleString()}
+            </p>
+          )}
+
           <hr />
-          <p style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
-            {selectedPost.content}
-          </p>
-          <p style={{ color: "#777", marginTop: "10px" }}>
-            작성시간:{" "}
-            {selectedPost.createdAt
-              ? new Date(selectedPost.createdAt).toLocaleString()
-              : "-"}
-          </p>
+
+          {/* 🔥 사용자 문의 내용 */}
+          <h3>문의 내용</h3>
+
+          {!isEditingContent ? (
+            <p style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
+              {selectedPost.content}
+            </p>
+          ) : (
+            <textarea
+              className="answer-textarea"
+              value={editContentText}
+              onChange={(e) => setEditContentText(e.target.value)}
+            />
+          )}
+
+          {/* 🔥 관리자 답변 */}
+          {hasAnswer && (
+            <>
+              <h3 style={{ marginTop: "20px" }}>관리자 답변</h3>
+
+              <p style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
+                {selectedPost.answer}
+              </p>
+
+              <p style={{ color: "#777" }}>
+                {selectedPost.answerTime &&
+                  `답변시간: ${new Date(
+                    selectedPost.answerTime
+                  ).toLocaleString()}`}
+              </p>
+            </>
+          )}
         </div>
 
-        <div className="btn-right" style={{ gap: "10px" }}>
-          {/* QNA일 때만 수정/삭제표시 */}
-          {activeSubTab === "qna" && (
+        {/* 버튼 영역 */}
+        <div className="btn-right" style={{ marginTop: "20px" }}>
+          {!isEditingContent && !hasAnswer && (
             <>
               <button
                 className="common-btn"
-                onClick={() => setEditPost(selectedPost)}
+                onClick={() => {
+                  setEditContentText(selectedPost.content);
+                  setIsEditingContent(true);
+                }}
               >
                 수정
               </button>
+
               <button
                 className="common-btn"
                 onClick={() => handleDelete(selectedPost.id)}
@@ -229,6 +228,29 @@ function FaqQnaTab() {
                 삭제
               </button>
             </>
+          )}
+
+          {/* 저장 버튼 */}
+          {isEditingContent && (
+            <button
+              className="common-btn"
+              onClick={async () => {
+                try {
+                  await updateInquiry(selectedPost.id, {
+                    content: editContentText,
+                  });
+
+                  alert("수정되었습니다.");
+                  setIsEditingContent(false);
+                  setSelectedPost(null);
+                  fetchQnas();
+                } catch {
+                  alert("수정 실패");
+                }
+              }}
+            >
+              저장
+            </button>
           )}
 
           <button className="cancel-btn" onClick={handleBackToList}>
@@ -239,7 +261,16 @@ function FaqQnaTab() {
     );
   }
 
-  // 리스트 정렬
+  /* =========================
+     글쓰기 모드
+  ========================= */
+  if (isWriting) {
+    return <WriteTab onBack={handleBackToList} onSubmit={handleAddQna} />;
+  }
+
+  /* =========================
+     정렬 + 리스트
+  ========================= */
   const sortedFaq = [...faqList]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .map((item, idx) => ({ ...item, no: idx + 1 }));
@@ -257,26 +288,19 @@ function FaqQnaTab() {
       <div className="faq-tabs">
         <button
           className={activeSubTab === "faq" ? "active" : ""}
-          onClick={() => {
-            setActiveSubTab("faq");
-            setSelectedPost(null);
-            setEditPost(null);
-          }}
+          onClick={() => setActiveSubTab("faq")}
         >
           FAQ
         </button>
         <button
           className={activeSubTab === "qna" ? "active" : ""}
-          onClick={() => {
-            setActiveSubTab("qna");
-            setSelectedPost(null);
-            setEditPost(null);
-          }}
+          onClick={() => setActiveSubTab("qna")}
         >
           Q&A
         </button>
       </div>
 
+      {/* 검색 */}
       <div className="search-box">
         <input
           type="text"
@@ -289,30 +313,39 @@ function FaqQnaTab() {
         </button>
       </div>
 
-      {/* 목록 테이블 */}
+      {/* 목록 */}
       <table className="table">
         <thead>
           <tr>
             <th>No</th>
             <th>제목</th>
             <th>작성시간</th>
+            {activeSubTab === "qna" && <th>답변 상태</th>}
           </tr>
         </thead>
+
         <tbody>
           {listToShow.map((item) => (
-            <tr key={item.id} style={{ cursor: "pointer" }} onClick={() => handleViewPost(item)}>
+            <tr
+              key={item.id}
+              style={{ cursor: "pointer" }}
+              onClick={() => setSelectedPost(item)}
+            >
               <td>{item.no}</td>
               <td>{item.title}</td>
-              <td>
-                {item.createdAt
-                  ? new Date(item.createdAt).toLocaleString()
-                  : "-"}
-              </td>
+              <td>{new Date(item.createdAt).toLocaleString()}</td>
+
+              {activeSubTab === "qna" && (
+                <td className={item.answer ? "status-complete" : "status-pending"}>
+                  {item.answer ? "답변완료" : "미답변"}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
       </table>
 
+      {/* 문의 작성 버튼 */}
       {activeSubTab === "qna" && (
         <div className="btn-right">
           <button className="common-btn" onClick={() => setIsWriting(true)}>
