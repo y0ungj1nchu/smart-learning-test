@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../../../styles/auth/Login.css";
 import lockIcon from "../../../assets/lock.png";
@@ -21,6 +21,31 @@ function Login() {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  // kakao
+  const handleKakaoLogin = async () => {
+    const res = await fetch("http://localhost:3001/auth/kakao/login");
+    const data = await res.json();
+    window.location.href = data.url;
+  };
+  // naver
+  const handleNaverLogin = async () => {
+    const res = await fetch("http://localhost:3001/auth/naver/login");
+    const data = await res.json();
+    window.location.href = data.url;
+  };
+
+  // dependency 넣으면 로그인 무한 루프 발생해버림 --> 경고 없애려고 ESLint 설정 규칙
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      login(token, {});
+      fetchMe(token);
+      navigate("/home/after");
+    }
+  }, []);
 
   // ----------------------------------------------------
   // 🔥 수정된 핵심 로그인 로직
@@ -117,8 +142,8 @@ function Login() {
             <div className="social-login">
               <p>소셜 로그인</p>
               <div className="social-icons">
-                <img src={kakaoLogo} alt="카카오 로그인" />
-                <img src={naverLogo} alt="네이버 로그인" />
+                <img src={kakaoLogo} alt="카카오 로그인" onClick={handleKakaoLogin} style={{ cursor: "pointer" }} />
+                <img src={naverLogo} alt="네이버 로그인" onClick={handleNaverLogin} style={{ cursor: "pointer" }} />
                 <img src={googleLogo} alt="구글 로그인" />
               </div>
             </div>
