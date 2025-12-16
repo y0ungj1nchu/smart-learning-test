@@ -39,7 +39,7 @@ export default function AdminCommunity() {
       <div className="community-wrapper">
         <div className="community-sidebar-container">
           <div className="profile-sidebar">
-            <p className="sidebar-title">관리자 커뮤니티</p>
+            <p className="sidebar-title">공지 및 문의관리</p>
             <ul>
               <li
                 className={activeTab === "notice" ? "active" : ""}
