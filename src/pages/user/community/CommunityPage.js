@@ -36,7 +36,7 @@ function CommunityPage() {
           {/* 사이드바 */}
           <div className="community-sidebar-container">
             <div className="profile-sidebar">
-              <p className="sidebar-title">커뮤니티</p>
+              <p className="sidebar-title">공지 및 문의</p>
               <ul>
                 <li
                   className={activeTab === "notice" ? "active" : ""}
