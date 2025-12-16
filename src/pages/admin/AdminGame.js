@@ -15,17 +15,20 @@ import {
   deleteAdminWord,
   updateAdminWord,
   uploadAdminWordExcel,
-  updateAdminWordSet
+  updateAdminWordSet,
 } from "../../utils/api";
 
 export default function AdminGame() {
-  const [sets, setSets] = useState([]);
+  const [menu, setMenu] = useState("sets");
 
-  const [newSetName, setNewSetName] = useState("");
-  const [uploadedWords, setUploadedWords] = useState([]);
+  // DB 데이터
+  const [sets, setSets] = useState([]);
 
   const [searchText, setSearchText] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
+
+  const [newSetName, setNewSetName] = useState("");
+  const [uploadedWords, setUploadedWords] = useState([]);
 
   const [selectedSet, setSelectedSet] = useState(null);
 
@@ -40,17 +43,9 @@ export default function AdminGame() {
   const [editingSetId, setEditingSetId] = useState(null);
   const [editingSetTitle, setEditingSetTitle] = useState("");
 
-  const [showDuplicates, setShowDuplicates] = useState(false);
-
-  const [page, setPage] = useState(0);
-  const ITEMS_PER_PAGE = 4;
-
   const [loading, setLoading] = useState(false);
-  
 
-  // ===================================================================
-  // 1) 세트 / 단어 로드
-  // ===================================================================
+  // 세트 / 단어 로드
   useEffect(() => {
     loadSets();
   }, []);
@@ -58,258 +53,324 @@ export default function AdminGame() {
   const loadSets = async () => {
     try {
       setLoading(true);
+
       const setsFromApi = await getAdminWordSets();
 
       const setsWithWords = await Promise.all(
-        setsFromApi.map(async (set) => {
+        (setsFromApi || []).map(async (set) => {
           try {
             const words = await getAdminWordsBySet(set.id);
-            return { ...set, title: set.setTitle, words };
+            return {
+              ...set,
+              title: set.setTitle ?? set.title ?? "",
+              words: words || [],
+            };
           } catch {
-            return { ...set, title: set.setTitle, words: [] };
+            return {
+              ...set,
+              title: set.setTitle ?? set.title ?? "",
+              words: [],
+            };
           }
         })
       );
 
       setSets(setsWithWords);
     } catch (err) {
-      alert("세트 목록을 불러오는 중 오류가 발생했습니다.");
       console.error(err);
+      alert("세트 목록을 불러오는 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
   };
 
-  const currentSet = sets.find((s) => s.id === selectedSet);
-
   const refreshSetWords = async (setId) => {
     try {
       const words = await getAdminWordsBySet(setId);
       setSets((prev) =>
-        prev.map((s) => (s.id === setId ? { ...s, words } : s))
+        prev.map((s) => (s.id === setId ? { ...s, words: words || [] } : s))
       );
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("단어 목록을 새로고침하는 중 오류가 발생했습니다.");
     }
   };
 
-  // ===================================================================
-  // 2) 검색 & 페이징
-  // ===================================================================
+  const currentSet = useMemo(
+    () => sets.find((s) => s.id === selectedSet),
+    [sets, selectedSet]
+  );
+
+  // 검색
   const filteredSets = useMemo(() => {
-    if (!searchKeyword.trim()) return sets;
-    return sets.filter((set) =>
-      (set.title || "").toLowerCase().includes(searchKeyword.toLowerCase())
-    );
+    const list = searchKeyword.trim()
+      ? sets.filter((set) =>
+          set.title.toLowerCase().includes(searchKeyword.toLowerCase())
+        )
+      : sets;
+
+    return [...list].reverse();
   }, [searchKeyword, sets]);
 
-  const paginatedSets = filteredSets.slice(
-    page * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE + ITEMS_PER_PAGE
-  );
-  const maxPage = Math.max(0, Math.ceil(filteredSets.length / ITEMS_PER_PAGE) - 1);
-
-  // ===================================================================
-  // 3) 중복 단어 계산
-  // ===================================================================
+  // 중복 단어 계산
   const duplicateInfo = useMemo(() => {
     const map = {};
-    sets.forEach((set) => {
+
+    (sets || []).forEach((set) => {
       (set.words || []).forEach((w) => {
-        const key = (w.question || "").trim();
+        const key = String(w.question ?? w.word ?? "").trim();
         if (!key) return;
 
         if (!map[key]) map[key] = new Set();
-        map[key].add(set.title);
+        map[key].add(set.title || "");
       });
     });
 
     return Object.entries(map)
       .filter(([_, v]) => v.size >= 2)
-      .map(([question, setNames]) => ({
-        question,
-        sets: Array.from(setNames),
+      .map(([word, setNames]) => ({
+        word,
+        sets: Array.from(setNames).filter(Boolean),
       }));
   }, [sets]);
 
-  // ===================================================================
-  // 4) 세트 생성
-  // ===================================================================
+  // 세트 생성
+
   const createSet = async () => {
     if (!newSetName.trim()) return alert("세트 이름을 입력하세요.");
 
     try {
-      const result = await createAdminWordSet(newSetName.trim());
-      const setId = result.setId;
+      setLoading(true);
 
-      if (uploadedWords.length > 0) {
+      const result = await createAdminWordSet(newSetName.trim());
+      const setId = result?.setId;
+
+      if (setId && uploadedWords.length > 0) {
         for (const w of uploadedWords) {
           await addAdminWord(setId, w.word, w.correct);
         }
       }
 
       alert("세트 생성 완료!");
-
       setNewSetName("");
       setUploadedWords([]);
-
       await loadSets();
     } catch (err) {
-      console.error("세트 생성 실패", err);
+      console.error(err);
       alert("세트 생성 중 오류 발생");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ===================================================================
-  // 5) 엑셀 단어 업로드
-  // ===================================================================
+  // 엑셀 업로드
   const handleExcelUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     try {
+      setLoading(true);
+
       const res = await uploadAdminWordExcel(file);
 
-      if (!res.words || res.words.length === 0) {
+      if (!res?.words || res.words.length === 0) {
         alert("엑셀에서 단어를 찾지 못했습니다.");
         return;
       }
 
       setUploadedWords(res.words);
-      alert("엑셀 분석 완료! 세트 추가 버튼을 눌러 저장하세요.");
-
+      alert("엑셀 분석 완료! '추가' 버튼을 눌러 세트 생성 시 함께 저장하세요.");
     } catch (err) {
       console.error(err);
       alert("엑셀 업로드 실패");
     } finally {
+      setLoading(false);
       e.target.value = "";
     }
   };
 
-  // ===================================================================
-  // 6) 세트 삭제
-  // ===================================================================
-  const deleteSet = async (id) => {
-    if (!window.confirm("세트를 삭제하시겠습니까?")) return;
+  // 세트 삭제
+  const handleDeleteSet = async (id) => {
+    if (!window.confirm("삭제하시겠습니까?")) return;
 
     try {
+      setLoading(true);
       await deleteAdminWordSet(id);
+
       setSets((prev) => prev.filter((s) => s.id !== id));
 
       if (selectedSet === id) {
         setSelectedSet(null);
         setEditingIndex(null);
+        setEditingWordId(null);
       }
-
     } catch (err) {
+      console.error(err);
       alert("세트 삭제 오류");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ===================================================================
-  // 7) 세트 선택
-  // ===================================================================
+  // 세트 선택
   const handleSetSelect = async (id) => {
     if (selectedSet === id) {
       setSelectedSet(null);
+      setEditingIndex(null);
+      setEditingWordId(null);
       return;
     }
 
     setSelectedSet(id);
+    setEditingIndex(null);
+    setEditingWordId(null);
     await refreshSetWords(id);
   };
 
-  // ===================================================================
-  // 8) 단어 추가
-  // ===================================================================
-  const addWord = async () => {
-    if (!selectedSet) return alert("먼저 세트를 선택하세요.");
-    if (!newWord.trim() || !newCorrect.trim())
-      return alert("단어와 뜻을 입력하세요.");
+  // 세트 제목 수정
+  const saveSetTitle = async () => {
+    if (!editingSetId) return;
+    if (!editingSetTitle.trim()) return alert("세트 이름을 입력하세요.");
 
     try {
-      await addAdminWord(selectedSet, newWord, newCorrect);
+      setLoading(true);
+      await updateAdminWordSet(editingSetId, editingSetTitle.trim());
+
+      setSets((prev) =>
+        prev.map((s) =>
+          s.id === editingSetId ? { ...s, title: editingSetTitle.trim() } : s
+        )
+      );
+
+      setEditingSetId(null);
+      setEditingSetTitle("");
+      alert("세트 이름이 수정되었습니다!");
+    } catch (err) {
+      console.error(err);
+      alert("세트 이름 수정 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 단어 추가
+  const handleAddWord = async () => {
+    if (!selectedSet) return alert("먼저 세트를 선택하세요.");
+    if (!newWord.trim() || !newCorrect.trim())
+      return alert("영단어와 뜻을 모두 입력하세요.");
+
+    try {
+      setLoading(true);
+      await addAdminWord(selectedSet, newWord.trim(), newCorrect.trim());
       setNewWord("");
       setNewCorrect("");
       await refreshSetWords(selectedSet);
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("단어 추가 실패");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ===================================================================
-  // 9) 단어 삭제
-  // ===================================================================
-  const handleDeleteWord = async (id) => {
+  // 단어 삭제
+  const handleDeleteWord = async (wordId) => {
     if (!window.confirm("단어를 삭제하시겠습니까?")) return;
 
     try {
-      await deleteAdminWord(id);
+      setLoading(true);
+      await deleteAdminWord(wordId);
       await refreshSetWords(selectedSet);
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("단어 삭제 오류");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ===================================================================
-  // 10) 단어 수정
-  // ===================================================================
-  const saveEdit = async () => {
+  // 단어 수정
+  const saveWordEdit = async () => {
     if (!editingWordId) return;
 
     try {
+      setLoading(true);
       await updateAdminWord(editingWordId, editWord, editCorrect);
 
       setEditingIndex(null);
       setEditingWordId(null);
+      setEditWord("");
+      setEditCorrect("");
 
       await refreshSetWords(selectedSet);
-
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("단어 수정 오류");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const saveSet = async () => {
-  if (!editingSetId) return;
-  if (!editingSetTitle.trim()) return alert("세트 이름을 입력하세요.");
+  const renderStatus = () => (
+    <div className="right-card status">
+      <h2>단어게임 현황</h2>
 
-  try {
-    await updateAdminWordSet(editingSetId, editingSetTitle.trim());
+      <div className="status-column">
+        <div className="stat-box">
+          <h3>총 세트 개수</h3>
+          <p>{sets.length}개</p>
+        </div>
 
-    // UI 업데이트
-    setSets((prev) =>
-      prev.map((s) =>
-        s.id === editingSetId ? { ...s, title: editingSetTitle.trim() } : s
-      )
-    );
+        <div className="stat-box">
+          <h3>총 단어 개수</h3>
+          <p>{sets.reduce((t, s) => t + (s.words?.length || 0), 0)}개</p>
+        </div>
+      </div>
+    </div>
+  );
 
-    setEditingSetId(null);
-    setEditingSetTitle("");
-    alert("세트 이름이 수정되었습니다!");
-  } catch (err) {
-    console.error(err);
-    alert("세트 이름 수정 중 오류가 발생했습니다.");
-  }
-};
+  const renderDuplicates = () => (
+    <div className="right-card">
+      <h2>겹친 단어</h2>
 
+      <table className="word-table duplicate-table">
+        <thead>
+          <tr>
+            <th className="col-word">단어</th>
+            <th>겹치는 세트</th>
+          </tr>
+        </thead>
 
-  // ===================================================================
-  // UI (첫 번째 코드의 UI 100% 적용)
-  // ===================================================================
-  return (
-    <>
-      <AdminHeader1 />
-      <AdminHeader2 />
+        <tbody>
+          {duplicateInfo.length === 0 ? (
+            <tr>
+              <td colSpan={2} className="empty-text">
+                겹친 단어가 없습니다.
+              </td>
+            </tr>
+          ) : (
+            duplicateInfo.map((item, i) => (
+              <tr key={i}>
+                <td className="col-word">{item.word}</td>
+                <td>{item.sets.join(", ")}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
 
-      <div className="page-content" style={{ paddingTop: "93px" }}>
-        <div className="admin-game-bg">
+  const renderSetManager = () => {
+    const target = currentSet;
 
-          {/* 검색 */}
-          <div className="search-row">
+    return (
+      <div className="right-card">
+        <h2>세트 관리</h2>
+        <div className="set-control-row">
+          <div className="left-part">
             <input
               className="search-input"
-              type="text"
               placeholder="세트 검색"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -325,150 +386,88 @@ export default function AdminGame() {
             </button>
           </div>
 
-          {/* 통계 */}
-          <div className="admin-stats">
-            <div className="stat-card">
-              <h3>총 세트 개수</h3>
-              <p>{sets.length}개</p>
-            </div>
-
-            <div className="stat-card">
-              <h3>총 단어 개수</h3>
-              <p>
-                {sets.reduce((acc, s) => acc + (s.words?.length || 0), 0)}개
-              </p>
-            </div>
-
-            <div
-              className="stat-card clickable"
-              onClick={() => setShowDuplicates(!showDuplicates)}
-            >
-              <h3>겹친 단어 개수</h3>
-              <p>{duplicateInfo.length}개</p>
-            </div>
-          </div>
-
-          {/* 중복 단어 상세 */}
-          {showDuplicates && (
-            <div className="duplicate-box">
-              <h3 className="duplicate-title">중복 단어 상세</h3>
-
-              <table className="word-table wide-col-table">
-                <thead>
-                  <tr>
-                    <th>단어</th>
-                    <th>겹치는 세트</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {duplicateInfo.map((item, idx) => (
-                    <tr key={idx}>
-                      <td>{item.question}</td>
-                      <td>{item.sets.join(", ")}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* 세트 추가 */}
-          <div className="add-set-section">
+          <div className="right-part">
             <input
               className="input-set"
-              type="text"
               placeholder="새 세트 이름"
               value={newSetName}
               onChange={(e) => setNewSetName(e.target.value)}
             />
 
-            <button className="yellow-btn white-accent-btn" onClick={createSet}>
-              세트 추가
+            <button className="yellow-btn" onClick={createSet}>
+              추가
             </button>
 
-            <label className="yellow-btn excel-label white-accent-btn">
+            <label className="yellow-btn excel-label">
               엑셀 업로드
               <input
+                hidden
                 type="file"
                 accept=".xls,.xlsx"
                 onChange={handleExcelUpload}
-                hidden
               />
             </label>
           </div>
+        </div>
 
-          {/* 세트 카드 목록 */}
-          <div className="set-list-wrapper">
-            <button
-              className="page-btn"
-              disabled={page === 0}
-              onClick={() => setPage((p) => p - 1)}
-            >
-              &lt;
-            </button>
+        <div className="set-layout">
+          {/* 세트 목록 */}
+          <div className="left-set-column">
+            <div className="set-list-title">세트 목록</div>
 
-            <div className="default-set-list scrollable">
-              {paginatedSets.map((set) => (
+            <div className="left-set-list">
+              {filteredSets.map((set) => (
                 <div
                   key={set.id}
-                  className={`default-set-card ${
+                  className={`set-item ${
                     selectedSet === set.id ? "selected" : ""
                   }`}
-                  onClick={() => handleSetSelect(set.id)}
+                  onClick={() => {
+                    handleSetSelect(set.id);
+                    setEditingIndex(null);
+                    setEditingWordId(null);
+                  }}
                 >
-                  {/* 수정 모드 */}
-                  {editingSetId === set.id ? (
-                    <>
-                      <div className="set-title-row">
+                  <div className="set-row">
+                    {editingSetId === set.id ? (
+                      <>
                         <input
                           className="set-title-input"
                           value={editingSetTitle}
                           onClick={(e) => e.stopPropagation()}
                           onChange={(e) => setEditingSetTitle(e.target.value)}
                         />
-                      </div>
 
-                      <div className="set-bottom-row">
-                        <button
-                          className="yellow-btn small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            saveSet(); // 제목 저장 함수 필요하면 추가 가능
-                          }}
-                        >
-                          저장
-                        </button>
-
-                        <button
-                          className="yellow-btn small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingSetId(null);
-                          }}
-                        >
-                          취소
-                        </button>
-
-                        <button
-                          className="small-btn red"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteSet(set.id);
-                          }}
-                        >
-                          삭제
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="set-title-row">
-                        <h3 className="set-title">{set.title}</h3>
-
-                        <div className="set-title-buttons">
+                        <div className="set-btn-group">
                           <button
-                            className="yellow-btn small edit-set-btn"
+                            className="yellow-btn small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              saveSetTitle();
+                            }}
+                          >
+                            저장
+                          </button>
+
+                          <button
+                            className="small-btn red"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingSetId(null);
+                              setEditingSetTitle("");
+                            }}
+                          >
+                            취소
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span className="set-title">{set.title}</span>
+
+                        <div className="set-btn-group">
+                          <button
+                            className="yellow-btn small"
                             onClick={(e) => {
                               e.stopPropagation();
                               setEditingSetId(set.id);
@@ -479,142 +478,203 @@ export default function AdminGame() {
                           </button>
 
                           <button
-                            className="small-btn red delete-set-btn"
+                            className="small-btn red"
                             onClick={(e) => {
                               e.stopPropagation();
-                              deleteSet(set.id);
+                              handleDeleteSet(set.id);
                             }}
                           >
                             삭제
                           </button>
                         </div>
-                      </div>
+                      </>
+                    )}
+                  </div>
 
-                      <p className="set-word-count">{set.words.length}개의 단어</p>
-                    </>
-                  )}
+                  <p className="set-count">단어 {set.words?.length || 0}개</p>
                 </div>
               ))}
-            </div>
 
-            <button
-              className="page-btn"
-              disabled={page >= maxPage}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              &gt;
-            </button>
+              {filteredSets.length === 0 && (
+                <div className="empty-text">검색 결과가 없습니다.</div>
+              )}
+            </div>
           </div>
 
-          {/* 단어 구성 */}
-          {selectedSet && currentSet && (
-            <div className="word-manager-section">
-              <div className="manager-header">
-                <h3>{currentSet.title} — 단어 구성</h3>
-              </div>
+          {/* 단어 패널 */}
+          <div className="word-panel">
+            {selectedSet && target ? (
+              <>
+                <h3>{target.title}</h3>
 
-              {/* 단어 추가 */}
-              <div className="word-add-row">
-                <input
-                  className="word-input wide"
-                  placeholder="영단어"
-                  value={newWord}
-                  onChange={(e) => setNewWord(e.target.value)}
-                />
-                <input
-                  className="word-input wide"
-                  placeholder="뜻"
-                  value={newCorrect}
-                  onChange={(e) => setNewCorrect(e.target.value)}
-                />
-                <button className="yellow-btn" onClick={addWord}>
-                  추가
-                </button>
-              </div>
+                <div className="word-add-row">
+                  <input
+                    className="word-input"
+                    placeholder="영단어"
+                    value={newWord}
+                    onChange={(e) => setNewWord(e.target.value)}
+                  />
+                  <input
+                    className="word-input"
+                    placeholder="뜻"
+                    value={newCorrect}
+                    onChange={(e) => setNewCorrect(e.target.value)}
+                  />
+                  <button className="yellow-btn" onClick={handleAddWord}>
+                    추가
+                  </button>
+                </div>
 
-              {/* 단어 테이블 */}
-              <table className="word-table wide-col-table">
-                <thead>
-                  <tr>
-                    <th>영단어</th>
-                    <th>뜻</th>
-                    <th>관리</th>
-                  </tr>
-                </thead>
+                <div className="word-table-wrapper">
+                  <table className="word-table">
+                    <thead>
+                      <tr>
+                        <th>영단어</th>
+                        <th>뜻</th>
+                        <th>관리</th>
+                      </tr>
+                    </thead>
 
-                <tbody>
-                  {currentSet.words.map((item, idx) => (
-                    <tr key={item.id || idx}>
-                      {editingIndex === idx ? (
-                        <>
-                          <td>
-                            <input
-                              className="word-input wide"
-                              value={editWord}
-                              onChange={(e) => setEditWord(e.target.value)}
-                            />
+                    <tbody>
+                      {(target.words || []).length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="empty-text">
+                            등록된 단어가 없습니다.
                           </td>
-
-                          <td>
-                            <input
-                              className="word-input wide"
-                              value={editCorrect}
-                              onChange={(e) => setEditCorrect(e.target.value)}
-                            />
-                          </td>
-
-                          <td>
-                            <div className="word-btn-row">
-                              <button className="yellow-btn small" onClick={saveEdit}>
-                                저장
-                              </button>
-
-                              <button
-                                className="small-btn red"
-                                onClick={() => {
-                                  setEditingIndex(null);
-                                  setEditingWordId(null);
-                                }}
-                              >
-                                취소
-                              </button>
-                            </div>
-                          </td>
-                        </>
+                        </tr>
                       ) : (
-                        <>
-                          <td>{item.question}</td>
-                          <td>{item.answer}</td>
-                          <td>
-                            <div className="word-btn-row">
-                              <button
-                                className="yellow-btn small"
-                                onClick={() => {
-                                  setEditingIndex(idx);
-                                  setEditingWordId(item.id);
-                                  setEditWord(item.question);
-                                  setEditCorrect(item.answer);
-                                }}
-                              >
-                                수정
-                              </button>
+                        (target.words || []).map((w, idx) => {
+                          const q = w.question ?? w.word ?? "";
+                          const a = w.answer ?? w.correct ?? "";
 
-                              <button
-                                className="small-btn red"
-                                onClick={() => handleDeleteWord(item.id)}
-                              >
-                                삭제
-                              </button>
-                            </div>
-                          </td>
-                        </>
+                          return (
+                            <tr key={w.id ?? idx}>
+                              {editingIndex === idx ? (
+                                <>
+                                  <td>
+                                    <input
+                                      className="word-input"
+                                      value={editWord}
+                                      onChange={(e) => setEditWord(e.target.value)}
+                                    />
+                                  </td>
+
+                                  <td>
+                                    <input
+                                      className="word-input"
+                                      value={editCorrect}
+                                      onChange={(e) =>
+                                        setEditCorrect(e.target.value)
+                                      }
+                                    />
+                                  </td>
+
+                                  <td>
+                                    <div className="set-btn-group">
+                                      <button
+                                        className="yellow-btn small"
+                                        onClick={saveWordEdit}
+                                      >
+                                        저장
+                                      </button>
+
+                                      <button
+                                        className="small-btn red"
+                                        onClick={() => {
+                                          setEditingIndex(null);
+                                          setEditingWordId(null);
+                                          setEditWord("");
+                                          setEditCorrect("");
+                                        }}
+                                      >
+                                        취소
+                                      </button>
+                                    </div>
+                                  </td>
+                                </>
+                              ) : (
+                                <>
+                                  <td>{q}</td>
+                                  <td>{a}</td>
+                                  <td>
+                                    <div className="set-btn-group">
+                                      <button
+                                        className="yellow-btn small"
+                                        onClick={() => {
+                                          setEditingIndex(idx);
+                                          setEditingWordId(w.id);
+                                          setEditWord(q);
+                                          setEditCorrect(a);
+                                        }}
+                                      >
+                                        수정
+                                      </button>
+
+                                      <button
+                                        className="small-btn red"
+                                        onClick={() => handleDeleteWord(w.id)}
+                                      >
+                                        삭제
+                                      </button>
+                                    </div>
+                                  </td>
+                                </>
+                              )}
+                            </tr>
+                          );
+                        })
                       )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            ) : (
+              <p className="empty-text">왼쪽에서 세트를 선택하세요.</p>
+            )}
+          </div>
+        </div>
+
+        {loading && <div className="loading-text">로딩 중...</div>}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <AdminHeader1 isLoggedIn={true} />
+      <AdminHeader2 isLoggedIn={true} />
+
+      <div className="admin-page">
+        <div className="left-sidebar">
+          <h2 className="sidebar-title">단어게임 관리</h2>
+
+          <div
+            className={`side-btn ${menu === "sets" ? "active" : ""}`}
+            onClick={() => setMenu("sets")}
+          >
+            세트 관리
+          </div>
+
+          <div
+            className={`side-btn ${menu === "dup" ? "active" : ""}`}
+            onClick={() => setMenu("dup")}
+          >
+            겹친 단어
+          </div>
+
+          <div
+            className={`side-btn ${menu === "status" ? "active" : ""}`}
+            onClick={() => setMenu("status")}
+          >
+            단어게임 현황
+          </div>
+        </div>
+
+        {/* 우측 컨텐츠 */}
+        <div className="right-content">
+          {menu === "sets" && renderSetManager()}
+          {menu === "dup" && renderDuplicates()}
+          {menu === "status" && renderStatus()}
         </div>
       </div>
     </>
