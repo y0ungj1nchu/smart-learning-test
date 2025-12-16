@@ -158,7 +158,6 @@ function AdminNoticeTab() {
       <table className="table">
         <thead>
           <tr>
-            <th>No</th>
             <th>제목</th>
             <th>작성시간</th>
             <th>관리</th>
@@ -167,7 +166,6 @@ function AdminNoticeTab() {
         <tbody>
           {sortedList.map((item) => (
             <tr key={item.id}>
-              <td>{item.no}</td>
               <td>{item.title}</td>
               <td>{item.time}</td>
               <td className="action-cell">
