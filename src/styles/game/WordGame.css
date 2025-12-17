@@ -1,7 +1,7 @@
 /* Word Game 공통 요소 */
 .wordgame-page {
-  background-color: var(--theme-bg) !important;
-  min-height: 100vh;
+  background-color: var(--theme-bg);
+  min-height: calc(100vh - 93px);
   padding: 120px 0 40px;
   font-family: "Pretendard", sans-serif;
   display: flex;
@@ -37,7 +37,7 @@
 /*  [GamePage.js] 게임 선택 페이지 */
 /* 제목 */
 .wordgame-title {
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 800;
   color: #333;
   margin-bottom: 40px;
@@ -406,6 +406,10 @@
   overflow: hidden;
   margin-top: 40px;
   box-shadow: 0 4px 10px rgba(0,0,0,.15);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .acid-hud {
@@ -536,4 +540,28 @@
 .wordgame-nav-btn:hover {
   border-color: var(--theme-accent);
   background: color-mix(in srgb, var(--theme-accent) 20%, white);
+}
+
+/*산성비*/
+.page-content.wordgame-acid {
+  padding-top: 40px;
+  min-height: calc(100vh - 93px);
+  background-color: transparent;
+}
+
+/* 게임 영역 */
+.wordgame-page.acid-page {
+  background-color: transparent;
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 40px;     
+}
+
+.page-content.wordgame-upload {
+  padding-top: 40px;
+  min-height: calc(100vh - 93px);
+  background-color: transparent;
 }

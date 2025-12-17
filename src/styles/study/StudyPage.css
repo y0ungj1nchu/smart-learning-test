@@ -1,6 +1,6 @@
 .study-container {
-  background-color: var(--theme-bg) !important;
-  min-height: calc(100vh - 200px);
+  background-color: transparent;
+  min-height: calc(100vh - 200px - 120px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -8,6 +8,7 @@
   gap: clamp(40px, 5vw, 80px);
   padding: clamp(30px, 5vw, 60px);
   font-family: "Pretendard", sans-serif;
+  overflow: hidden;
 }
 
 /* 타이머 원형 */
@@ -273,4 +274,13 @@
 .subject-list::-webkit-scrollbar-track,
 .subject-time-list::-webkit-scrollbar-track {
   background: #f6f6f6;
+}
+
+.page-content {
+  background-color: var(--theme-bg);
+  min-height: calc(100vh - 93px);
+}
+.study-container {
+  max-width: 1400px;
+  margin: 0 auto;
 }

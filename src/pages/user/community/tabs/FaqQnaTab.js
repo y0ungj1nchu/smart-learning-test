@@ -14,6 +14,7 @@ import {
 function FaqQnaTab() {
   const [activeSubTab, setActiveSubTab] = useState("faq");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("new");  
 
   const [isWriting, setIsWriting] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -26,6 +27,7 @@ function FaqQnaTab() {
 
   const [qnaList, setQnaList] = useState([]);
   const [originalQnaList, setOriginalQnaList] = useState([]);
+  const [showUnansweredOnly, setShowUnansweredOnly] = useState(false);
 
   /* =========================
      FAQ 목록 조회
@@ -271,16 +273,22 @@ function FaqQnaTab() {
   /* =========================
      정렬 + 리스트
   ========================= */
-  const sortedFaq = [...faqList]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .map((item, idx) => ({ ...item, no: idx + 1 }));
+  const sortByDate = (list) =>
+  [...list].sort((a, b) =>
+    sort === "new"
+      ? new Date(b.createdAt) - new Date(a.createdAt)
+      : new Date(a.createdAt) - new Date(b.createdAt)
+  );
 
-  const sortedQna = [...qnaList]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .map((item, idx) => ({ ...item, no: idx + 1 }));
+  const sortedFaq = sortByDate(faqList);
+  const sortedQna = sortByDate(qnaList);
 
-  const listToShow = activeSubTab === "faq" ? sortedFaq : sortedQna;
-
+  const listToShow = activeSubTab === "faq"
+  ? sortedFaq
+  : showUnansweredOnly
+    ? sortedQna.filter(item => !item.answer)
+    : sortedQna;
+    
   return (
     <div className="tab-inner faq-tab">
       <h2>{activeSubTab === "faq" ? "자주 묻는 질문" : "1:1 문의"}</h2>
@@ -313,11 +321,34 @@ function FaqQnaTab() {
         </button>
       </div>
 
+      {/* 정렬 버튼 */}
+      <div className="sort-row">
+        <button
+          className={`sort-btn ${sort === "new" ? "active" : ""}`}
+          onClick={() => setSort("new")}
+        >
+          최신순
+        </button>
+        <button
+          className={`sort-btn ${sort === "old" ? "active" : ""}`}
+          onClick={() => setSort("old")}
+        >
+          오래된 순
+        </button>
+        {activeSubTab === "qna" && (
+          <button
+            className="filter-btn"
+            onClick={() => setShowUnansweredOnly(prev => !prev)}
+          >
+            {showUnansweredOnly ? "전체 보기" : "미답변만"}
+          </button>
+        )}
+      </div>
+
       {/* 목록 */}
       <table className="table">
         <thead>
           <tr>
-            <th>No</th>
             <th>제목</th>
             <th>작성시간</th>
             {activeSubTab === "qna" && <th>답변 상태</th>}
@@ -331,7 +362,6 @@ function FaqQnaTab() {
               style={{ cursor: "pointer" }}
               onClick={() => setSelectedPost(item)}
             >
-              <td>{item.no}</td>
               <td>{item.title}</td>
               <td>{new Date(item.createdAt).toLocaleString()}</td>
 

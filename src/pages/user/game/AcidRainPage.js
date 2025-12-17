@@ -199,105 +199,107 @@ export default function AcidRainPage() {
       <Header1 isLoggedIn={true} />
       <Header2 isLoggedIn={true} />
 
-      <div className="wordgame-page">
-        {/* 시작 안내 모달 */}
-        {showStartGuide && (
-          <div className="game-out-wrapper">
-            <div className="game-out-text" style={{ color: "#333", fontSize: "18px" }}>
-              기회는 총 3번!<br />
-              떨어지는 단어의 짝을 입력하여<br />
-              30초를 버티시오!<br />
-              <button className="wordgame-nav-btn" onClick={startGame} style={{ marginTop: "15px" }}>
-                게임 시작
+      <div className="page-content wordgame-acid">
+        <div className="wordgame-page acid-page">
+          {/* 시작 안내 모달 */}
+          {showStartGuide && (
+            <div className="game-out-wrapper">
+              <div className="game-out-text" style={{ color: "#333", fontSize: "18px" }}>
+                기회는 총 3번!<br />
+                떨어지는 단어의 짝을 입력하여<br />
+                30초를 버티시오!<br />
+                <button className="wordgame-nav-btn" onClick={startGame} style={{ marginTop: "15px" }}>
+                  게임 시작
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="acid-container" style={{ width: GAME_WIDTH, height: GAME_HEIGHT }}>
+            {/* HUD */}
+            <div className="acid-hud">
+              <span>
+                <img src={timerIcon} className="hud-icon" alt="timer" /> {seconds}s
+              </span>
+              <span>
+                <img src={heartIcon} className="hud-icon" alt="heart" /> {Math.max(0, MAX_MISS - miss)}
+              </span>
+              <span>
+                <img src={heartBrokenIcon} className="hud-icon" alt="broken" /> {miss}
+              </span>
+            </div>
+
+            {/* 낙하 단어 */}
+            {drops.map((d) => (
+              <div key={d.id} className="acid-drop" style={{ transform: `translate(${d.x}px, ${d.y}px)` }}>
+                {d.word}
+              </div>
+            ))}
+
+            {/* 결과 */}
+            {resultText && (
+              <div className="game-out-wrapper">
+                <div className="game-out-text">{resultText}</div>
+              </div>
+            )}
+          </div>
+
+          {/* 입력창 */}
+          {!showStartGuide && (
+            <form className="acid-input-row" onSubmit={onSubmit}>
+              <input
+                className="acid-input"
+                placeholder="뜻을 입력하고 Enter"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={!playing}
+              />
+              <button className="wordgame-nav-btn" disabled={!playing}>
+                확인
+              </button>
+            </form>
+          )}
+
+          {/* 버튼 */}
+          {!showStartGuide && (
+            <div className="wordgame-result-btns">
+              <button className="wordgame-nav-btn" onClick={restartGame}>재시작하기</button>
+
+              {playing && resultText === "" && (
+                <button className="wordgame-nav-btn" onClick={() => setPlaying(false)}>일시정지</button>
+              )}
+
+              {!playing && resultText === "" && (
+                <button className="wordgame-nav-btn" onClick={() => setPlaying(true)}>다시 진행</button>
+              )}
+
+              {!playing && resultText === "" && (
+                <button className="wordgame-nav-btn" onClick={() => setShowSetModal(true)}>단어세트 보기</button>
+              )}
+
+              <button className="wordgame-nav-btn" onClick={() => navigate("/user/game")}>
+                나가기
               </button>
             </div>
-          </div>
-        )}
+          )}
 
-        <div className="acid-container" style={{ width: GAME_WIDTH, height: GAME_HEIGHT }}>
-          {/* HUD */}
-          <div className="acid-hud">
-            <span>
-              <img src={timerIcon} className="hud-icon" alt="timer" /> {seconds}s
-            </span>
-            <span>
-              <img src={heartIcon} className="hud-icon" alt="heart" /> {Math.max(0, MAX_MISS - miss)}
-            </span>
-            <span>
-              <img src={heartBrokenIcon} className="hud-icon" alt="broken" /> {miss}
-            </span>
-          </div>
-
-          {/* 낙하 단어 */}
-          {drops.map((d) => (
-            <div key={d.id} className="acid-drop" style={{ transform: `translate(${d.x}px, ${d.y}px)` }}>
-              {d.word}
-            </div>
-          ))}
-
-          {/* 결과 */}
-          {resultText && (
-            <div className="game-out-wrapper">
-              <div className="game-out-text">{resultText}</div>
+          {/* 단어세트 모달 */}
+          {showSetModal && (
+            <div className="modal-overlay">
+              <div className="modal-box" style={{ maxHeight: "450px", overflowY: "auto" }}>
+                <h2>단어</h2>
+                <ul style={{ marginTop: "20px", textAlign: "left", lineHeight: "1.7" }}>
+                  {baseList.map((w, i) => (
+                    <li key={i}>
+                      <strong>{w.word}</strong> : {w.correct}
+                    </li>
+                  ))}
+                </ul>
+                <button className="modal-btn" onClick={() => setShowSetModal(false)}>닫기</button>
+              </div>
             </div>
           )}
         </div>
-
-        {/* 입력창 */}
-        {!showStartGuide && (
-          <form className="acid-input-row" onSubmit={onSubmit}>
-            <input
-              className="acid-input"
-              placeholder="뜻을 입력하고 Enter"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={!playing}
-            />
-            <button className="wordgame-nav-btn" disabled={!playing}>
-              확인
-            </button>
-          </form>
-        )}
-
-        {/* 버튼 */}
-        {!showStartGuide && (
-          <div className="wordgame-result-btns">
-            <button className="wordgame-nav-btn" onClick={restartGame}>재시작하기</button>
-
-            {playing && resultText === "" && (
-              <button className="wordgame-nav-btn" onClick={() => setPlaying(false)}>일시정지</button>
-            )}
-
-            {!playing && resultText === "" && (
-              <button className="wordgame-nav-btn" onClick={() => setPlaying(true)}>다시 진행</button>
-            )}
-
-            {!playing && resultText === "" && (
-              <button className="wordgame-nav-btn" onClick={() => setShowSetModal(true)}>단어세트 보기</button>
-            )}
-
-            <button className="wordgame-nav-btn" onClick={() => navigate("/user/game")}>
-              나가기
-            </button>
-          </div>
-        )}
-
-        {/* 단어세트 모달 */}
-        {showSetModal && (
-          <div className="modal-overlay">
-            <div className="modal-box" style={{ maxHeight: "450px", overflowY: "auto" }}>
-              <h2>단어</h2>
-              <ul style={{ marginTop: "20px", textAlign: "left", lineHeight: "1.7" }}>
-                {baseList.map((w, i) => (
-                  <li key={i}>
-                    <strong>{w.word}</strong> : {w.correct}
-                  </li>
-                ))}
-              </ul>
-              <button className="modal-btn" onClick={() => setShowSetModal(false)}>닫기</button>
-            </div>
-          </div>
-        )}
       </div>
     </>
   );

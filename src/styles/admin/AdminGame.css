@@ -1,287 +1,267 @@
-/* 공통 배경 */
-.admin-game-bg {
-  width: 100%;
-  margin: 0 auto;
-  padding: 60px 30px 30px;
-  background-color: var(--theme-bg) !important;
+/* 페이지 전체 */
+.admin-page {
+  display: flex;
+  gap: 30px;
+  padding: 160px 60px 50px;
+  background: var(--theme-bg);
   min-height: 100vh;
   box-sizing: border-box;
 }
 
-/* 제목 */
-.admin-title {
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 25px;
-  color: #333;
+/* 왼쪽 사이드바 */
+.left-sidebar {
+  width: 280px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 25px 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-self: flex-start;
 }
 
-/* 검색 영역 */
-.search-row {
+.sidebar-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* 메뉴 버튼 */
+.side-btn {
+  background: color-mix(in srgb, var(--theme-accent) 18%, white);
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: 0.2s;
+}
+
+.side-btn.active {
+  border-color: var(--theme-accent);
+}
+
+/* 오른쪽 패널 */
+.right-content {
+  flex: 1;
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-bottom: 30px;
 }
 
-.search-input {
-  width: 260px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 2px solid var(--theme-accent);
+.right-card {
+  width: 100%;
+  max-width: 900px;
   background: #fff;
-  font-size: 14px;
+  padding: 35px;
+  border-radius: 18px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.07);
+  overflow: visible;
+}
+
+.right-card h2 {
+  margin-bottom: 25px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* 현황 */
+.status-column {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  margin: 0;
+}
+
+.stat-box {
+  background: #ffffff;
+  padding: 14px 18px;
+  border: 2px solid var(--theme-accent);
+  border-radius: 14px;
+  text-align: center;
+  width: 280px;
+}
+
+.stat-box p {
+  font-size: 24px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.right-card.status {
+  height: auto !important;
+  padding-bottom: 10px;
+}
+
+/* 상단 컨트롤(검색 + 세트추가 + 엑셀) */
+.set-control-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.left-part {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.right-part {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* 검색창 */
+.search-input {
+  padding: 10px;
+  width: 220px;
+  border: 2px solid var(--theme-accent);
+  border-radius: 10px;
 }
 
 .search-btn {
-  background: var(--theme-accent);
-  border: none;
-  padding: 10px 15px;
+  background: #ffffff;
   border-radius: 10px;
+  border: 2px solid var(--theme-accent);
+  padding: 10px 14px;
   cursor: pointer;
-  transition: 0.2s;
 }
 
 .search-btn:hover {
-  background: color-mix(in srgb, var(--theme-accent) 85%, black 15%);
-}
-
-/* 통계 카드 */
-.admin-stats {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-  justify-content: center;
-}
-
-.stat-card {
-  background: white;
-  padding: 15px 20px;
-  border-radius: 15px;
-  border: 2px solid var(--theme-accent);
-  text-align: center;
-  min-width: 150px;
-  cursor: default;
-}
-
-.stat-card.clickable {
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.stat-card.clickable:hover {
-  background: color-mix(in srgb, var(--theme-accent) 20%, white);
+  border-color: var(--theme-accent);
+  background-color: #ffffff;
 }
 
 /* 세트 추가 */
-.add-set-section {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin: 20px 0;
-}
-
 .input-set {
-  padding: 10px 12px;
-  width: 240px;
+  width: 200px;
+  padding: 10px;
   border-radius: 10px;
   border: 2px solid var(--theme-accent);
 }
 
 .yellow-btn {
-  background: var(--theme-accent);
-  border: none;
-  padding: 10px 15px;
+  padding: 10px 16px;
   border-radius: 10px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.yellow-btn:hover {
-  background: color-mix(in srgb, var(--theme-accent) 85%, black);
-}
-
-/* 페이지 버튼 */
-.page-btn {
-  width: 40px;
-  height: 40px;
-  background: var(--theme-accent);
   border: none;
-  border-radius: 10px;
+  font-weight: 700;
+  background: var(--theme-accent);
   cursor: pointer;
-  transition: 0.2s;
 }
 
-.page-btn:disabled {
-  background: #ddd;
-  cursor: default;
+.excel-label {
+  cursor: pointer;
 }
 
-.page-btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--theme-accent) 80%, black);
-}
-
-/* 세트 리스트 전체 래퍼 */
-.set-list-wrapper {
+/* 세트/단어 영역 레이아웃 */
+.set-layout {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 24px;
+  margin-top: 10px;
 }
 
-/* 스크롤 리스트 */
-.default-set-list {
+.left-set-column {
+  width: 300px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  width: 380px;
-  max-height: 380px;
-  overflow-y: auto;
 }
 
-/* 세트 카드 */
-.default-set-card {
-  background: white;
-  border: 2px solid var(--theme-accent);
-  border-radius: 15px;
-  padding: 15px;
-  cursor: pointer;
-  transition: 0.2s;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.default-set-card.selected {
-  background: color-mix(in srgb, var(--theme-accent) 25%, white);
-  border-color: var(--theme-accent);
-}
-
-/* 세트 제목 줄 */
-.set-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 16px;
-}
-
-.set-title-row h3 {
-  margin: 0;
+.set-list-title {
   font-size: 18px;
   font-weight: 700;
-  color: #333;
+  margin-bottom: 8px;
+  padding-left: 2px;
 }
 
-/* 세트 제목 입력 */
-.set-title-input {
-  flex: 1;
-  padding: 8px;
-  border-radius: 8px;
-  border: 2px solid var(--theme-accent);
-  font-size: 15px;
-}
-
-/* 수정 모드 첫 줄 */
-.set-title-edit-row {
+.left-set-list {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* 세트 아이템 */
+.set-item {
+  padding: 18px;
+  background: #fff;
+  border: 2px solid var(--theme-accent);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.set-item.selected {
+  background: color-mix(in srgb, var(--theme-accent) 22%, white);
+}
+
+.set-row {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
   width: 100%;
-  gap: 10px;
 }
 
-/* 수정 모드 아래줄 버튼 */
-.set-bottom-row {
+.set-title {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.set-title-input {
+  flex: 1;
+  width: 120px;
+  padding: 6px 8px;
+  border: 2px solid var(--theme-accent);
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.set-count {
+  margin-top: 8px;
+  color: #555;
+}
+
+/* 버튼 그룹 */
+.set-btn-group {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
+  flex-shrink: 0;
+  gap: 6px;
+  flex-direction: row;
+  white-space: nowrap;
 }
 
-/* 버튼 공통 */
-.set-title-buttons button,
-.set-bottom-row button {
-  width: 60px;
-  height: 32px;
-  font-size: 14px;
+.small-btn,
+.yellow-btn.small {
+  width: 70px;
+  height: 34px;
   border-radius: 8px;
-  padding: 0;
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.small-btn {
+  padding: 6px 10px;
   cursor: pointer;
   border: none;
+  transition: 0.2s;
 }
 
-/* 수정 버튼 */
-.edit-set-btn {
-  background-color: var(--theme-accent);
-}
-.edit-set-btn:hover {
-  background-color: color-mix(in srgb, var(--theme-accent) 80%, black);
+.small-btn.red {
+  background: #ff7d7d;
+  color: white;
 }
 
-/* 삭제 버튼 */
-.delete-set-btn {
-  background-color: #ff8b8b;
-}
-.delete-set-btn:hover {
-  background-color: #ff6e6e;
-}
-
-/* 저장 버튼 */
-.save-set-btn {
-  background-color: var(--theme-accent);
-}
-.save-set-btn:hover {
-  background-color: color-mix(in srgb, var(--theme-accent) 80%, black);
-}
-
-/* 취소 버튼 */
-.cancel-set-btn {
-  background-color: #ffb6b6;
-}
-.cancel-set-btn:hover {
-  background-color: #ff8e8e;
-}
-
-/* 단어 개수 줄 */
-.set-word-count {
-  margin-top: 5px;
-  font-size: 16px;
-  color: #444;
-  text-align: left;
-}
-
-/* 중복 단어 박스 */
-.duplicate-box {
-  background: #ffffff;
-  border: 2px solid var(--theme-accent);
-  border-radius: 15px;
-  padding: 20px;
-  margin: 20px auto;
-  width: 80%;
-}
-
-.duplicate-title {
-  margin-bottom: 15px;
-  font-size: 20px;
-  font-weight: 700;
-  color: #333;
-}
-
-/* 단어 관리 영역 */
-.word-manager-section {
-  margin-top: 30px;
-  background: #ffffff;
-  border: 2px solid var(--theme-accent);
-  border-radius: 15px;
-  padding: 20px;
-}
-
-.manager-header h3 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 15px;
-  color: #333;
+/* 단어 패널 */
+.word-panel {
+  flex: 1;
+  min-width: 0;
 }
 
 /* 단어 추가 */
@@ -292,81 +272,75 @@
 }
 
 .word-input {
+  flex: 1;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 2px solid var(--theme-accent);
 }
 
-.word-input.wide {
-  flex: 1;
+/* 단어 테이블 */
+.word-table-wrapper {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding-right: 4px;
 }
 
-/* 단어 표 */
 .word-table {
   width: 100%;
   border-collapse: collapse;
 }
 
 .word-table th {
-  background: color-mix(in srgb, var(--theme-accent) 30%, white);
   padding: 12px;
-  border-bottom: 2px solid var(--theme-accent);
+  background: color-mix(in srgb, var(--theme-accent) 25%, white);
 }
 
 .word-table td {
   padding: 10px;
-  border-bottom: 1px solid color-mix(in srgb, var(--theme-accent) 30%, #eee);
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+  height: 50px;
+  white-space: nowrap;
 }
 
-/* 단어 수정/삭제 버튼 */
-.word-btn-row {
-  display: flex;
-  gap: 8px;
-}
-
-.small-btn {
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  border: none;
-  transition: 0.2s;
-}
-
-.small-btn.red {
-  background: #ff8b8b;
-}
-
-.small-btn.red:hover {
-  background: #ff6e6e;
-}
-
-/* 관리자 - 흰색 버튼 공통 스타일 */
-.white-accent-btn {
-  background: #fff !important;
-  color: #333 !important;
-  border: 2px solid color-mix(in srgb, var(--theme-accent) 95%, black 5%) !important;
-  padding: 10px 16px !important;
+/* 테이블 안 input */
+.word-table td input.word-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
   border-radius: 10px;
+  border: 2px solid var(--theme-accent);
+}
+
+/* 겹친 단어 테이블 */
+.duplicate-table .col-word {
+  width: 260px;
+  max-width: 260px;
+  word-break: break-word;
+}
+
+/* 빈 텍스트 */
+.empty-text {
+  padding: 20px;
+  text-align: center;
+  color: #777;
+}
+
+/* 로딩 텍스트 */
+.loading-text {
+  margin-top: 12px;
+  text-align: center;
+  color: #555;
   font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s ease;
 }
 
-.white-accent-btn:hover {
-  background: color-mix(in srgb, var(--theme-accent) 15%, white 85%) !important;
+.search-input:focus,
+.input-set:focus,
+.word-input:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--theme-accent);
 }
 
-.set-title-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.set-title-buttons {
-  display: flex;
-  gap: 14px;
-}
-
-.word-btn-row {
-  display: flex;
-  gap: 14px;
-}

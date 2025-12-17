@@ -6,8 +6,10 @@ import { getNotices } from "../../../../utils/api";
 
 function NoticeTab() {
   const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState("new");
   const [noticeList, setNoticeList] = useState([]);
   const navigate = useNavigate();
+  const [originList, setOriginList] = useState([]);
 
   // 공지 불러오기
   useEffect(() => {
@@ -28,8 +30,10 @@ function NoticeTab() {
   );
 
   // 최신순
-  const sorted = [...filtered].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  const sorted = [...filtered].sort((a, b) =>
+    sortOrder === "new"
+      ? new Date(b.createdAt) - new Date(a.createdAt)
+      : new Date(a.createdAt) - new Date(b.createdAt)
   );
 
   // 번호 부여
@@ -38,20 +42,64 @@ function NoticeTab() {
     no: sorted.length - index,
   }));
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getNotices();
+        setNoticeList(data);
+        setOriginList(data);
+      } catch (err) {
+        console.error("공지 불러오기 실패:", err);
+      }
+    };
+    fetchData();
+  }, []);
+  
+  const handleSearchClick = () => {
+    const keyword = search.trim().toLowerCase();
+
+    if (!keyword) {
+      setNoticeList(originList);
+      return;
+    }
+
+    setNoticeList(
+      originList.filter((item) =>
+        item.title.toLowerCase().includes(keyword)
+      )
+    );
+  };
+
   return (
     <div className="tab-inner notice-tab">
       <h2>공지사항</h2>
 
       {/* 검색 */}
-      <div className="search-box">
+      <div className="search-box" >
         <input
           type="text"
           placeholder="검색하세요."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button className="search-btn">
+        <button className="search-btn" onClick={handleSearchClick}>
           <Search size={18} />
+        </button>
+      </div>
+
+      {/* 정렬 버튼 */}
+      <div className="sort-row">
+        <button
+          className={`sort-btn ${sortOrder === "new" ? "active" : ""}`}
+          onClick={() => setSortOrder("new")}
+        >
+          최신순
+        </button>
+        <button
+          className={`sort-btn ${sortOrder === "old" ? "active" : ""}`}
+          onClick={() => setSortOrder("old")}
+        >
+          오래된 순
         </button>
       </div>
 
@@ -59,7 +107,6 @@ function NoticeTab() {
       <table className="table">
         <thead>
           <tr>
-            <th>No</th>
             <th>제목</th>
             <th>작성시간</th>
           </tr>
@@ -72,7 +119,6 @@ function NoticeTab() {
               style={{ cursor: "pointer" }}
               onClick={() => navigate(`/user/community/notice-detail/${item.id}`)}
             >
-              <td>{item.no}</td>
               <td>{item.title}</td>
               <td>{new Date(item.createdAt).toLocaleString()}</td>
             </tr>

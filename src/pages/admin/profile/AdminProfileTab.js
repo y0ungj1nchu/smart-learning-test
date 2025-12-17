@@ -90,6 +90,12 @@ function AdminProfileTab({ onNavigatePassword }) {
             <div>{email}</div>
           </div>
         </div>
+
+        <div className="profile-btns">
+          <button className="yellow-btn" onClick={onNavigatePassword}>
+            비밀번호 재설정
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,14 +1,14 @@
 /* 전체 배경 */
 .community-wrapper {
   display: flex;
-  min-height: calc(100vh - 120px);
-  background-color: var(--theme-bg) !important;
+  min-height: calc(100vh - 93px);
+  background-color: transparent !important;
 }
 
 /* 사이드바 영역 */
 .community-sidebar-container {
   width: 240px;
-  background-color: var(--theme-bg) !important;
+  background-color: transparent !important;
   padding: 70px 20px 0px 40px;
   position: relative;
 }
@@ -17,7 +17,7 @@
 .community-main-content {
   flex: 1;
   padding: 50px 60px;
-  background: transparent;
+  background-color: transparent !important;
 }
 
 /* 탭 버튼 전체 영역 */
@@ -62,4 +62,16 @@
 
 .small-btn:hover {
   background-color: color-mix(in srgb, var(--theme-accent) 85%, #000000 15%);
+}
+
+.sidebar-title {
+  font-size: 20px;
+  margin-bottom: 20px;
+  color: #333;
+}
+.tab-inner h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 25px;
 }

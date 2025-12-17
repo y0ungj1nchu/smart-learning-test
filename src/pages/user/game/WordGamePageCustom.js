@@ -120,7 +120,7 @@ export default function WordGamePageCustom() {
     <>
       <Header1/>
       <Header2/>
-      <div className="page-content" style={{ paddingTop: "93px", minHeight: "calc(100vh-93px)", boxSizing: "border-box", }}>
+      <div className="page-content wordgame-upload">
         <div className="wordgame-page">
           <h2 className="wordgame-title">내 단어 맞추기</h2>
 

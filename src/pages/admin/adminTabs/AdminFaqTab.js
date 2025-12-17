@@ -164,8 +164,7 @@ export default function AdminFaqTab() {
       <table className="table">
         <thead>
           <tr>
-            <th>No</th>
-            <th>질문</th>
+            <th>제목</th>
             <th>작성시간</th>
             <th>관리</th>
           </tr>
@@ -174,7 +173,6 @@ export default function AdminFaqTab() {
         <tbody>
           {sortedList.map((item) => (
             <tr key={item.id}>
-              <td>{item.no}</td>
               <td>{item.question}</td>
               <td>{item.time}</td>
 
