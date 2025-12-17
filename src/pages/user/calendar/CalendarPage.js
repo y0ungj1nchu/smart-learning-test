@@ -15,21 +15,25 @@ import {
   deleteTodoApi,
   addDiary,
   updateDiary,
-  deleteDiaryApi
+  deleteDiaryApi,
 } from "../../../utils/api";
 
-// 날짜 포맷 함수
+/* ================= 날짜 유틸 ================= */
 function pad(n) {
   return n.toString().padStart(2, "0");
 }
 function ymd(date) {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+    date.getDate()
+  )}`;
 }
 
 const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
 
 export default function CalendarPage() {
-  const [current, setCurrent] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [current, setCurrent] = useState(
+    () => new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+  );
   const [selected, setSelected] = useState(() => new Date());
 
   const [monthSummary, setMonthSummary] = useState([]);
@@ -48,26 +52,30 @@ export default function CalendarPage() {
   const [diaryTitle, setDiaryTitle] = useState("");
   const [diaryContent, setDiaryContent] = useState("");
 
-  // 날짜 텍스트
+  /* ================= 날짜 라벨 ================= */
   const dateLabel = (() => {
     const m = selected.getMonth() + 1;
     const d = selected.getDate();
-    const w = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
-    return `${m}월 ${d}일 ${w[selected.getDay()]}`;
+    const ko = [
+      "일요일",
+      "월요일",
+      "화요일",
+      "수요일",
+      "목요일",
+      "금요일",
+      "토요일",
+    ];
+    return `${m}월 ${d}일 ${ko[selected.getDay()]}`;
   })();
 
-  /* ---------------------------
-      월 데이터 불러오기
-  ---------------------------- */
+  /* ================= 월 요약 ================= */
   const fetchMonth = useCallback(async () => {
     try {
       const y = current.getFullYear();
       const m = current.getMonth() + 1;
-
       const data = await getCalendarMonthSummary(y, m);
       setMonthSummary(data || []);
-    } catch (err) {
-      console.error("월 요약 로딩 실패", err);
+    } catch {
       setMonthSummary([]);
     }
   }, [current]);
@@ -76,16 +84,13 @@ export default function CalendarPage() {
     fetchMonth();
   }, [fetchMonth]);
 
-  /* ---------------------------
-      일 데이터 불러오기
-  ---------------------------- */
+  /* ================= 일 데이터 ================= */
   const fetchDay = useCallback(async () => {
     try {
       const data = await getCalendarDay(ymd(selected));
       setTodos(data.todos || []);
       setDiary(data.diary || null);
-    } catch (err) {
-      console.error("일 데이터 로딩 실패", err);
+    } catch {
       setTodos([]);
       setDiary(null);
     }
@@ -95,9 +100,7 @@ export default function CalendarPage() {
     fetchDay();
   }, [fetchDay]);
 
-  /* ---------------------------
-      달력 grid 생성
-  ---------------------------- */
+  /* ================= 달력 grid ================= */
   const grid = useMemo(() => {
     const y = current.getFullYear();
     const m = current.getMonth();
@@ -106,34 +109,29 @@ export default function CalendarPage() {
     });
   }, [current]);
 
-  const monthLabel = `${current.getFullYear()}년 ${current.getMonth() + 1}월`;
+  const monthLabel = `${current.getFullYear()}년 ${
+    current.getMonth() + 1
+  }월`;
 
-  const getDaySummary = (dateString) => {
-    return monthSummary.find((d) => d.date === dateString) || {
+  const getDaySummary = (dateStr) =>
+    monthSummary.find((d) => d.date === dateStr) || {
       todoCount: 0,
       hasDiary: 0,
-      totalStudy: 0
     };
-  };
 
   const isSameDate = (a, b) =>
     a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
 
-  /* ---------------------------
-      Todo 처리
-  ---------------------------- */
+  /* ================= Todo ================= */
   const saveTodo = async () => {
-    if (!todoTitle.trim()) {
-      alert("할 일을 입력하세요.");
-      return;
-    }
+    if (!todoTitle.trim()) return;
 
     const body = {
       title: todoTitle.trim(),
       memo: todoMemo.trim(),
-      dueDate: ymd(selected)
+      dueDate: ymd(selected),
     };
 
     try {
@@ -150,9 +148,9 @@ export default function CalendarPage() {
     }
   };
 
-  const toggleTodoDone = async (todoItem) => {
+  const toggleTodoDone = async (todo) => {
     try {
-      await toggleTodo(todoItem.id, !todoItem.isCompleted);
+      await toggleTodo(todo.id, !todo.isCompleted);
       fetchDay();
       fetchMonth();
     } catch {
@@ -162,7 +160,6 @@ export default function CalendarPage() {
 
   const deleteTodoItem = async (id) => {
     if (!window.confirm("삭제할까요?")) return;
-
     try {
       await deleteTodoApi(id);
       fetchDay();
@@ -179,14 +176,12 @@ export default function CalendarPage() {
     setTodoMemo("");
   };
 
-  /* ---------------------------
-      Diary 처리
-  ---------------------------- */
+  /* ================= Diary ================= */
   const saveDiaryEntry = async () => {
     const body = {
       title: diaryTitle.trim(),
       content: diaryContent.trim(),
-      diaryDate: ymd(selected)
+      diaryDate: ymd(selected),
     };
 
     try {
@@ -205,7 +200,6 @@ export default function CalendarPage() {
 
   const clearDiary = async () => {
     if (!window.confirm("삭제하시겠습니까?")) return;
-
     try {
       await deleteDiaryApi(diary.id);
       fetchDay();
@@ -222,40 +216,54 @@ export default function CalendarPage() {
     setDiaryContent("");
   };
 
-  /* ---------------------------
-      Rendering
-  ---------------------------- */
+  /* ================= JSX ================= */
   return (
     <div className="calendar-page">
-      <Header1 isLoggedIn={true} />
-      <Header2 isLoggedIn={true} />
+      <Header1 isLoggedIn />
+      <Header2 isLoggedIn />
 
       <div className="page-content" style={{ paddingTop: "93px" }}>
         <div className="calendar-layout">
 
-          {/* 달력 */}
+          {/* ===== 달력 ===== */}
           <div className="calendar-card">
             <div className="calendar-head">
               <button
                 className="nav-btn"
                 onClick={() =>
-                  setCurrent(new Date(current.getFullYear(), current.getMonth() - 1, 1))
+                  setCurrent(
+                    new Date(
+                      current.getFullYear(),
+                      current.getMonth() - 1,
+                      1
+                    )
+                  )
                 }
-              >‹</button>
-
+              >
+                ‹
+              </button>
               <div className="month-label">{monthLabel}</div>
-
               <button
                 className="nav-btn"
                 onClick={() =>
-                  setCurrent(new Date(current.getFullYear(), current.getMonth() + 1, 1))
+                  setCurrent(
+                    new Date(
+                      current.getFullYear(),
+                      current.getMonth() + 1,
+                      1
+                    )
+                  )
                 }
-              >›</button>
+              >
+                ›
+              </button>
             </div>
 
             <div className="weekday-row">
               {weekDays.map((w) => (
-                <div key={w} className="weekday">{w}</div>
+                <div key={w} className="weekday">
+                  {w}
+                </div>
               ))}
             </div>
 
@@ -263,22 +271,21 @@ export default function CalendarPage() {
               {grid.map((d, i) => {
                 const dateStr = ymd(d);
                 const { todoCount, hasDiary } = getDaySummary(dateStr);
-
                 const inMonth = d.getMonth() === current.getMonth();
                 const isSel = isSameDate(d, selected);
 
                 return (
                   <div
                     key={i}
-                    className={`cell ${inMonth ? "" : "dim"} ${isSel ? "selected" : ""}`}
+                    className={`cell ${inMonth ? "" : "dim"} ${
+                      isSel ? "selected" : ""
+                    }`}
                     onClick={() => setSelected(d)}
                   >
-                    <span className="day">{d.getDate()}</span>
-
-                    {todoCount > 0 ? (
+                    <span className="day day-left">{d.getDate()}</span>
+                    {todoCount > 0 && (
                       <span className="todo-underline">{todoCount}</span>
-                    ) : null}
-
+                    )}
                     {hasDiary ? <span className="diary-dot"></span> : null}
                   </div>
                 );
@@ -286,13 +293,12 @@ export default function CalendarPage() {
             </div>
           </div>
 
-          {/* 오른쪽 패널 */}
+          {/* ===== 오른쪽 패널 ===== */}
           <div className="side-panel">
-
-            {/* To-do */}
+            {/* Todo */}
             <div className="panel-card">
               <div className="panel-head">
-                <h3>To-Do</h3>
+                <h3>To-Do List</h3>
                 <img
                   src={writeIcon}
                   className="icon-img large"
@@ -304,13 +310,11 @@ export default function CalendarPage() {
 
               <ul className="todo-list scrollable-list">
                 {todos.length === 0 ? (
-                  <li className="muted">(할 일이 없습니다)</li>
+                  <li className="muted">(등록된 체크리스트가 없습니다)</li>
                 ) : (
                   todos.map((t) => (
                     <li key={t.id} className="todo-item">
-
                       <div className="todo-left">
-                        {/* 체크박스 클릭 시 모달 열리지 않도록 수정 */}
                         <input
                           type="checkbox"
                           checked={t.isCompleted}
@@ -319,8 +323,6 @@ export default function CalendarPage() {
                             toggleTodoDone(t);
                           }}
                         />
-
-                        {/* 텍스트 부분 클릭 시에만 수정 모달 */}
                         <div
                           className="todo-text-area"
                           onClick={() => {
@@ -330,16 +332,22 @@ export default function CalendarPage() {
                             setShowTodoModal(true);
                           }}
                         >
-                          <div className={`todo-title ${t.isCompleted ? "done" : ""}`}>
+                          <div
+                            className={`todo-title ${
+                              t.isCompleted ? "done" : ""
+                            }`}
+                          >
                             {t.title}
                           </div>
-                          {t.memo && <div className="todo-memo">{t.memo}</div>}
+                          {t.memo && (
+                            <div className="todo-memo">{t.memo}</div>
+                          )}
                         </div>
                       </div>
 
                       <img
                         src={deleteIcon}
-                        className="icon-img large"
+                        className="icon-delete"
                         onClick={(e) => {
                           e.stopPropagation();
                           deleteTodoItem(t.id);
@@ -376,7 +384,7 @@ export default function CalendarPage() {
                     />
                     <img
                       src={deleteIcon}
-                      className="icon-img large"
+                      className="icon-delete"
                       onClick={clearDiary}
                     />
                   </>
@@ -385,14 +393,15 @@ export default function CalendarPage() {
 
               {diary ? (
                 <div className="diary-box diary-scroll">
-                  {diary.title && <div className="diary-title">{diary.title}</div>}
+                  {diary.title && (
+                    <div className="diary-title">{diary.title}</div>
+                  )}
                   <div className="diary-content">{diary.content}</div>
                 </div>
               ) : (
                 <div className="empty-text">내용이 없습니다.</div>
               )}
             </div>
-
           </div>
         </div>
 
@@ -401,13 +410,16 @@ export default function CalendarPage() {
           <div className="modal-backdrop" onClick={closeTodoModal}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
               <div className="modal-title">
-                {editingTodo ? "할 일 수정" : "할 일 추가"}
+                {editingTodo ? "체크리스트 수정" : "체크리스트 추가"}
               </div>
 
               <div className="modal-body">
                 <label className="field">
-                  <span>할 일</span>
-                  <input value={todoTitle} onChange={(e) => setTodoTitle(e.target.value)} />
+                  <span>항목 이름</span>
+                  <input
+                    value={todoTitle}
+                    onChange={(e) => setTodoTitle(e.target.value)}
+                  />
                 </label>
 
                 <label className="field">
@@ -421,8 +433,15 @@ export default function CalendarPage() {
               </div>
 
               <div className="modal-actions">
-                <button className="btn secondary" onClick={closeTodoModal}>취소</button>
-                <button className="btn primary" onClick={saveTodo}>확인</button>
+                <button
+                  className="btn secondary"
+                  onClick={closeTodoModal}
+                >
+                  취소
+                </button>
+                <button className="btn primary" onClick={saveTodo}>
+                  확인
+                </button>
               </div>
             </div>
           </div>
@@ -439,7 +458,10 @@ export default function CalendarPage() {
               <div className="modal-body">
                 <label className="field">
                   <span>제목</span>
-                  <input value={diaryTitle} onChange={(e) => setDiaryTitle(e.target.value)} />
+                  <input
+                    value={diaryTitle}
+                    onChange={(e) => setDiaryTitle(e.target.value)}
+                  />
                 </label>
 
                 <label className="field">
@@ -453,13 +475,22 @@ export default function CalendarPage() {
               </div>
 
               <div className="modal-actions">
-                <button className="btn secondary" onClick={closeDiaryModal}>취소</button>
-                <button className="btn primary" onClick={saveDiaryEntry}>확인</button>
+                <button
+                  className="btn secondary"
+                  onClick={closeDiaryModal}
+                >
+                  취소
+                </button>
+                <button
+                  className="btn primary"
+                  onClick={saveDiaryEntry}
+                >
+                  확인
+                </button>
               </div>
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

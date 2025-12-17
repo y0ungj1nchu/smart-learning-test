@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AdminHeader1 from "../../components/common/AdminHeader1";
 import AdminHeader2 from "../../components/common/AdminHeader2";
-import Footer from "../../components/common/Footer";
 import "../../styles/admin/AdminCharacter.css";
 
 import {
@@ -11,6 +10,9 @@ import {
 } from "../../utils/api";
 
 export default function AdminCharacter() {
+  // =========================
+  // 상태
+  // =========================
   const [characters, setCharacters] = useState([]);
   const [newChar, setNewChar] = useState({
     name: "",
@@ -19,20 +21,36 @@ export default function AdminCharacter() {
     preview: "",
   });
 
-  // 🔥 DB에서 캐릭터 목록 로드
+  // =========================
+  // 캐릭터 목록 로드
+  // =========================
   const loadCharacters = async () => {
-    const data = await fetchAdminCharacters();
-    setCharacters(data);
+    try {
+      const data = await fetchAdminCharacters();
+      setCharacters(data || []);
+    } catch (err) {
+      console.error("캐릭터 목록 불러오기 실패:", err);
+      alert("캐릭터 목록을 불러오지 못했습니다.");
+    }
   };
 
   useEffect(() => {
     loadCharacters();
+
+    // 🔒 스크롤 고정 (완성 코드 유지)
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
   }, []);
 
+  // =========================
   // 이미지 업로드
+  // =========================
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
+    if (file && file.type.startsWith("image")) {
       setNewChar({
         ...newChar,
         image: file,
@@ -41,33 +59,52 @@ export default function AdminCharacter() {
     }
   };
 
-  // 캐릭터 등록
+  // =========================
+  // 캐릭터 추가
+  // =========================
   const handleAddCharacter = async (e) => {
     e.preventDefault();
+
     if (!newChar.name || !newChar.level || !newChar.image) {
       alert("모든 정보를 입력해주세요.");
       return;
     }
 
-    const formData = new FormData();
-    formData.append("name", newChar.name);
-    formData.append("level", newChar.level);
-    formData.append("image", newChar.image);
+    try {
+      const formData = new FormData();
+      formData.append("name", newChar.name);
+      formData.append("level", newChar.level);
+      formData.append("image", newChar.image);
 
-    await createAdminCharacter(formData);
-    alert("캐릭터가 등록되었습니다.");
+      await createAdminCharacter(formData);
+      alert("캐릭터가 등록되었습니다.");
 
-    setNewChar({ name: "", level: "", image: null, preview: "" });
-    loadCharacters();
+      setNewChar({ name: "", level: "", image: null, preview: "" });
+      loadCharacters();
+    } catch (err) {
+      console.error("캐릭터 등록 실패:", err);
+      alert("캐릭터 등록 실패");
+    }
   };
 
-  // 삭제
+  // =========================
+  // 캐릭터 삭제
+  // =========================
   const handleDelete = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
-    await deleteAdminCharacter(id);
-    loadCharacters();
+
+    try {
+      await deleteAdminCharacter(id);
+      loadCharacters();
+    } catch (err) {
+      console.error("캐릭터 삭제 실패:", err);
+      alert("캐릭터 삭제 실패");
+    }
   };
 
+  // =========================
+  // 렌더링
+  // =========================
   return (
     <>
       <div className="adminChar-page">
@@ -77,37 +114,44 @@ export default function AdminCharacter() {
         </div>
 
         <div className="adminChar-layout">
-          {/* 캐릭터 목록 */}
+          {/* =========================
+              캐릭터 목록
+          ========================= */}
           <div className="adminChar-list-box">
             <h2 className="adminChar-title">등록된 캐릭터</h2>
 
             {characters.length === 0 ? (
               <p className="adminChar-empty">등록된 캐릭터가 없습니다.</p>
             ) : (
-              <div className="adminChar-list">
-                {characters.map((char) => (
-                  <div key={char.id} className="adminChar-card">
-                    <img
+              <div className="adminChar-list-scroll">
+                <div className="adminChar-list">
+                  {characters.map((char) => (
+                    <div key={char.id} className="adminChar-card">
+                      <img
                         src={`http://localhost:3001/uploads/characters/${char.imagePath}`}
+                        alt={char.name}
                         className="adminChar-img"
                       />
-                    <div className="adminChar-info">
-                      <h4>{char.name}</h4>
-                      <p>Lv. {char.level}</p>
+                      <div className="adminChar-info">
+                        <h4>{char.name}</h4>
+                        <p>Lv. {char.level}</p>
+                      </div>
+                      <button
+                        className="adminChar-delete"
+                        onClick={() => handleDelete(char.id)}
+                      >
+                        삭제
+                      </button>
                     </div>
-                    <button
-                      className="adminChar-delete"
-                      onClick={() => handleDelete(char.id)}
-                    >
-                      삭제
-                    </button>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
-          {/* 캐릭터 추가 */}
+          {/* =========================
+              캐릭터 추가
+          ========================= */}
           <div className="adminChar-add-box">
             <h2 className="adminChar-title">새 캐릭터 추가</h2>
 
@@ -137,8 +181,12 @@ export default function AdminCharacter() {
               </label>
 
               <label>
-                캐릭터 이미지
-                <input type="file" onChange={handleImageUpload} />
+                캐릭터 이미지 (PNG)
+                <input
+                  type="file"
+                  accept="image/png"
+                  onChange={handleImageUpload}
+                />
               </label>
 
               {newChar.preview && (
@@ -153,8 +201,6 @@ export default function AdminCharacter() {
             </form>
           </div>
         </div>
-
-        <Footer />
       </div>
     </>
   );

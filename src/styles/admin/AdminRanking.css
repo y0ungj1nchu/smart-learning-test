@@ -1,15 +1,25 @@
+:root {
+  --ranking-block-height : 420px;
+}
+.admin-header-fixed {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  background: white;
+}
+
 .admin-ranking-layout {
-  background-color: var(--theme-bg) !important;
+  background: var(--theme-accent);
   min-height: calc(100vh - 200px);
   display: flex;
   justify-content: center;
   align-items: flex-start;
   gap: 60px;
-  padding: 130px 80px 80px;
+  padding: 30px 80px 80px;
   font-family: "Pretendard", sans-serif;
 }
 
-/* 제목 */
 .section-title {
   font-size: 22px;
   font-weight: 800;
@@ -17,77 +27,70 @@
   margin-bottom: 25px;
 }
 
-/* 왼쪽 요약 박스 */
 .ranking-summary-box {
+  height: var(--ranking-block-height);
   flex: 0 0 280px;
-  background: #fff;
-  border: 2px solid var(--theme-accent);
+  background: #ffffff;
   border-radius: 20px;
   padding: 35px 25px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
-/* 통계 카드 */
 .stat-card {
-  background: #fff;
-  border-radius: 15px;
-  padding: 14px 18px;
-  margin-bottom: 18px;
+  background: color-mix(in srgb, var(--theme-accent) 25%, white);
+  border-radius: 18px;
+  padding: 16px 14px;
+  margin-bottom: 14px;
   text-align: center;
-  border: 2px solid var(--theme-accent);
+  font-size: 15px;
+  font-weight: 600;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .stat-card p {
-  font-size: 15px;
-  color: #555;
-  margin-bottom: 5px;
+  margin: 0 0 6px 0;
 }
 
 .stat-card strong {
-  font-size: 22px;
-  font-weight: 800;
-  color: #000;
+  font-size: 20px;
 }
 
-/* 오른쪽 테이블 박스 */
 .ranking-list-box {
-  flex: 1;
-  background: #fff;
+  height: var(--ranking-block-height);
+  flex: 0 0 420px;
+  background: #ffffff;
   border-radius: 20px;
-  padding: 40px 35px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 28px 24px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
-/* 순위 테이블 */
 .ranking-table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 15px;
+}
+
+.ranking-table th,
+.ranking-table td {
+  padding: 10px 8px;
   text-align: center;
 }
 
-/* 표 기본 */
-.ranking-table th,
-.ranking-table td {
-  border: 1px solid #ddd;
-  padding: 12px 0;
-  font-size: 16px;
+.ranking-table thead th {
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
 }
 
-/* 헤더 */
-.ranking-table th {
-  background: color-mix(in srgb, var(--theme-accent) 30%, white);
-  border-bottom: 2px solid var(--theme-accent);
-  font-weight: 700;
+.ranking-scroll-container {
+  max-height: 260px;
+  overflow-y: auto;
+  margin-top: 8px;
 }
 
-/* 짝수 행 */
-.ranking-table tr:nth-child(even) {
-  background: color-mix(in srgb, var(--theme-accent) 12%, white);
+.ranking-scroll-container::-webkit-scrollbar {
+  width: 6px;
 }
 
-/* hover */
-.ranking-table tr:hover {
-  background: color-mix(in srgb, var(--theme-accent) 25%, white);
-  transition: 0.2s;
+.ranking-scroll-container::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.25);
 }

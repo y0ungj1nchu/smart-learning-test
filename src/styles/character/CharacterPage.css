@@ -6,11 +6,10 @@
   align-items: center;
   flex-wrap: wrap;
   gap: clamp(40px, 6vw, 100px);
-  padding: clamp(20px, 5vw, 60px);
+  padding: clamp(30px, 5vw, 60px);
   font-family: "Pretendard", sans-serif;
 }
 
-/* --- 왼쪽 큰 이미지 영역 --- */
 .character-left {
   background: #fff;
   width: clamp(250px, 30vw, 400px);
@@ -27,7 +26,6 @@
   object-fit: contain;
 }
 
-/* --- 오른쪽 정보 카드 --- */
 .character-right {
   background: color-mix(in srgb, var(--theme-accent) 25%, white);
   border-radius: 30px;
@@ -80,7 +78,6 @@
   font-weight: 500;
 }
 
-/* --- 버튼 그룹 --- */
 .btn-group {
   display: flex;
   justify-content: center;
@@ -110,7 +107,7 @@
 }
 
 .gray-btn {
-  background: #eee;
+  background: var(--theme-accent);
   border: none;
   border-radius: 30px;
   padding: 10px 25px;
@@ -119,7 +116,6 @@
   cursor: pointer;
 }
 
-/* --- 캐릭터 선택 --- */
 .carousel-wrapper {
   position: relative;
   display: flex;
@@ -148,7 +144,7 @@
 
 .character-option.selected {
   border-color: var(--theme-accent);
-  box-shadow: 0 0 10px rgba(255, 212, 0, 0.6);
+  box-shadow: 0 0 10px var(--theme-accent);
   transform: scale(1.05);
 }
 
@@ -195,3 +191,5 @@
   width: 60%;
   text-align: center;
 }
+
+
