@@ -1,4 +1,3 @@
-// src/pages/admin/MainAdmin.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminHeader1 from "../../components/common/AdminHeader1";
@@ -10,9 +9,6 @@ import { getAdminDashboard } from "../../utils/api";
 export default function MainAdmin() {
   const navigate = useNavigate();
 
-  // -----------------------------
-  // 🔵 API로 가져올 상태
-  // -----------------------------
   const [userStats, setUserStats] = useState({
     totalUsers: 0,
     todayLogin: 0,
@@ -25,26 +21,25 @@ export default function MainAdmin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // -----------------------------
-  // 🔵 API 호출 (두 번째 버전의 핵심 로직)
-  // -----------------------------
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
         setLoading(true);
+
         const data = await getAdminDashboard();
+        console.log("📌 관리자 대시보드 데이터:", data);
 
-        // 📌 사용자 통계
-        setUserStats(data.userStats || { totalUsers: 0, todayLogin: 0, newUsers: 0 });
+        setUserStats({
+          totalUsers: data?.userStats?.totalUsers ?? 0,
+          todayLogin: data?.userStats?.todayLogin ?? 0,
+          newUsers: data?.userStats?.newUsers ?? 0,
+        });
 
-        // 📌 문의 데이터 (구조: {answered:[], unanswered:[]})
-        if (data.inquiries) {
-          setUnanswered(data.inquiries.unanswered || []);
-          setAnswered(data.inquiries.answered || []);
-        }
+        setUnanswered(data?.inquiries?.unanswered ?? []);
+        setAnswered(data?.inquiries?.answered ?? []);
       } catch (err) {
-        console.error("관리자 대시보드 로드 실패:", err);
-        setError(err.message || "관리자 대시보드 불러오기 실패");
+        console.error("❌ 관리자 대시보드 로드 실패:", err);
+        setError("관리자 대시보드를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
@@ -55,31 +50,28 @@ export default function MainAdmin() {
 
   return (
     <>
-      {/* --------------------- */}
-      {/* 🔵 상단 헤더 (첫 버전 UI 유지) */}
-      {/* --------------------- */}
       <div className="admin-header-fixed">
-        <AdminHeader1 />
-        <AdminHeader2 />
+        <AdminHeader1 isLoggedIn={true} />
+        <AdminHeader2 isLoggedIn={true} />
       </div>
 
       <div className="admin-main-layout">
-
-        {/* --------------------- */}
-        {/* 🔵 왼쪽 패널 (첫 번째 UI) */}
-        {/* --------------------- */}
         <div className="admin-left">
           <h2 className="section-title">👥 사용자 현황</h2>
 
           {loading ? (
             <p className="empty-text">로딩 중...</p>
           ) : error ? (
-            <p className="empty-text" style={{ color: "red" }}>{error}</p>
+            <p className="empty-text" style={{ color: "red" }}>
+              {error}
+            </p>
           ) : (
             <>
               <div className="stats-card">
                 <p className="stat-title">총 사용자 수</p>
-                <h3 className="stat-value">{userStats.totalUsers.toLocaleString()}명</h3>
+                <h3 className="stat-value">
+                  {userStats.totalUsers.toLocaleString()}명
+                </h3>
               </div>
 
               <div className="stats-card">
@@ -95,12 +87,7 @@ export default function MainAdmin() {
           )}
         </div>
 
-        {/* --------------------- */}
-        {/* 🔵 오른쪽 패널 (첫 번째 UI + API 연동) */}
-        {/* --------------------- */}
         <div className="admin-right">
-          
-          {/* 미답변 문의 */}
           <h2 className="section-title">
             📬 미답변 문의 ({unanswered.length}건)
           </h2>
@@ -115,20 +102,25 @@ export default function MainAdmin() {
                 <div
                   key={q.id}
                   className="timeline-item"
-                  onClick={() => navigate(`/admin/community?qna=${q.id}`)}
+                  onClick={() =>
+                    navigate(`/admin/community?qna=${q.id}`)
+                  }
                 >
                   <div className="timeline-dot" />
                   <div className="timeline-content">
-                    <p className="timeline-date">{q.date}</p>
+                    <p className="timeline-date">
+                      {new Date(q.date).toLocaleString()}
+                    </p>
                     <h4 className="timeline-title">{q.title}</h4>
-                    <p className="timeline-user">작성자: {q.name}</p>
+                    <p className="timeline-user">
+                      작성자: {q.name}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* 답변 완료된 문의 */}
           <h2 className="section-title" style={{ marginTop: "50px" }}>
             ✅ 답변 완료된 문의 ({answered.length}건)
           </h2>
@@ -136,20 +128,28 @@ export default function MainAdmin() {
           {loading ? (
             <p className="empty-text">로딩 중...</p>
           ) : answered.length === 0 ? (
-            <p className="empty-text">아직 답변 완료된 문의가 없습니다.</p>
+            <p className="empty-text">
+              아직 답변 완료된 문의가 없습니다.
+            </p>
           ) : (
             <div className="timeline-container">
               {answered.map((q) => (
                 <div
                   key={q.id}
                   className="timeline-item answered"
-                  onClick={() => navigate(`/admin/community?qna=${q.id}`)}
+                  onClick={() =>
+                    navigate(`/admin/community?qna=${q.id}`)
+                  }
                 >
                   <div className="timeline-dot answered-dot" />
                   <div className="timeline-content">
-                    <p className="timeline-date">{q.date}</p>
+                    <p className="timeline-date">
+                      {new Date(q.date).toLocaleString()}
+                    </p>
                     <h4 className="timeline-title">{q.title}</h4>
-                    <p className="timeline-user">작성자: {q.name}</p>
+                    <p className="timeline-user">
+                      작성자: {q.name}
+                    </p>
                     <span className="answered-label">답변 완료</span>
                   </div>
                 </div>
@@ -159,7 +159,6 @@ export default function MainAdmin() {
         </div>
       </div>
 
-      {/* 푸터 */}
       <Footer />
     </>
   );

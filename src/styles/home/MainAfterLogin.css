@@ -1,5 +1,6 @@
+
 .afterlogin-container {
-  background-color: var(--theme-bg) !important;
+  background-color: transparent;
   padding: 40px 40px;
   display: flex;
   justify-content: center;
@@ -7,35 +8,51 @@
   gap: 40px;
   flex-wrap: wrap;
 }
-
-/* 카드 공통 */
 .uniform-card {
   background: #fff;
   border-radius: 18px;
   width: 280px;
-  min-height: 260px;
-  padding: 28px;
+  min-height: 300px;
+  padding: 22px 26px;
   box-shadow: 0 6px 14px rgba(0,0,0,0.12);
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; 
 }
 
-.card-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.card-title {
-  font-size: 18px;
+.card-date-inside {
+  font-size: 14px;
   font-weight: 700;
-  color: #333;
-  margin-left: 6px;
-  margin-bottom: 10px;
+  color: #444;
+  margin-bottom: 6px;
 }
 
-/* 캐릭터 */
+.uniform-card h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.todo-count {
+  color: red;
+  font-weight: 900;
+}
+
+.card-bottom {
+  margin-top: auto;
+  text-align: right;
+}
+
+.more-link {
+  font-size: 14px;
+  color: var(--theme-accent);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.more-link:hover {
+  text-decoration: underline;
+}
+
 .char-section {
   text-align: center;
 }
@@ -43,7 +60,7 @@
 .character-image-box {
   width: 160px;
   height: 160px;
-  margin: 0 auto 12px;
+  margin: 10px auto 12px;
   background: #fafafa;
   border-radius: 14px;
   border: 1px solid #ddd;
@@ -75,35 +92,21 @@
   color: #666;
 }
 
-/* 바로가기 */
-.more-link {
-  font-size: 14px;
-  color: var(--theme-accent);
-  text-decoration: none;
-  font-weight: bold;
-  text-align: right;
-  display: block;
-  margin-top: 4px;
-}
-
-.more-link:hover {
-  text-decoration: underline;
-}
-
-.card-bottom {
-  margin-top: auto;
-  text-align: right;
-}
-
-/* 공부 통계 */
 .study-stat-big {
   width: 100%;
   max-width: 1020px;
   padding: 30px;
   border-radius: 20px;
   margin: 20px auto;
-  background: #fff;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+  background: transparent;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin-left: 6px;
+  margin-bottom: 10px;
 }
 
 .stats-inner-row {
@@ -114,15 +117,13 @@
 
 .stats-small-card {
   flex: 1;
-  height: 150px;
+  height: 300px;
   background: #fff;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  text-align: center;
 }
 
 .stats-small-card.today {
@@ -135,29 +136,7 @@
   border: 2px solid #4DA3FF;
 }
 
-.stats-time {
-  margin-top: 10px;
-  font-size: 26px;
-  font-weight: 800;
-}
-
-.todo-count {
-  color: #ff4242; 
-  font-weight: 900;
-}
-
-.todo-ul {
-  margin: 4px 0 0 10px;
-  padding-left: 0;
-}
-
-.date {
-  font-size: 13px;
-  color: #555;
-  margin-bottom: 8px;
-}
-
-.afterlogin-wrapper {
-  padding-top: 95px; /* Header1(50) + Header2(45) = 95px */
-  min-height: calc(100vh - 95px);
+.chart-container {
+  margin-top: 12px;
+  height: 220px;
 }

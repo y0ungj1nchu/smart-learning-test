@@ -114,11 +114,11 @@
 }
 
 .diary-box {
+  height: 50px;
+  overflow-y: auto;
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 12px;
-  max-height: 160px; 
-  overflow-y: auto;
 }
 
 .diary-title {
@@ -130,6 +130,8 @@
 .diary-content {
   color: #444;
   white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .calendar-card {
