@@ -10,7 +10,7 @@
 }
 
 .admin-ranking-layout {
-  background: var(--theme-accent);
+  background: var(--theme-bg);
   min-height: calc(100vh - 200px);
   display: flex;
   justify-content: center;

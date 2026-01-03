@@ -7,27 +7,31 @@ import Footer from "../../components/common/Footer";
 
 function MainBeforeLogin() {
   return (
-    <>
+    <div className="before-login-page">
       {/* 상단 헤더 */}
-      <Header1/>
-      <Header2/>
+      <Header1 />
+      <Header2 />
 
-      <div className="page-content" style={{paddingTop: "93px", minHeight: "calc(100vh-93px)", boxSizing: "border-box",}}>
       {/* 메인 컨텐츠 */}
       <div className="before-login-container">
         <div className="before-login-content">
           <h1>로그인 하고 이용해주세요!</h1>
           <p>로그인하고 이용</p>
+
           <div className="btn-group">
-            <Link to="/user/auth/Login" className="common-btn">로그인</Link>
-            <Link to="/user/auth/Register" className="common-btn">회원 가입 </Link>
+            <Link to="/user/auth/Login" className="common-btn">
+              로그인
+            </Link>
+            <Link to="/user/auth/Register" className="common-btn">
+              회원 가입
+            </Link>
           </div>
         </div>
       </div>
 
       {/* 하단 */}
-      <Footer /></div>
-    </>
+      <Footer />
+    </div>
   );
 }
 
